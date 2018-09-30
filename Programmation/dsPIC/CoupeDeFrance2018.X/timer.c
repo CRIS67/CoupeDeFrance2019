@@ -1,0 +1,669 @@
+/*
+ * File:   timer.c
+ * Author: Quentin BOYER
+ *
+ * Created on 19 septembre 2017, 17:17
+ */
+
+#include "timer.h"
+
+extern volatile double x;
+extern volatile double y;
+extern volatile double theta;
+
+extern double xc;
+extern double yc;
+extern double thetac;
+
+extern double xf;
+extern double yf;
+extern double tf;
+
+extern uint8_t finalPoint;
+
+extern volatile double receivedX,receivedY,receivedTheta;
+
+extern volatile char   US_ON[NB_US];
+extern volatile char   US_R[NB_US];
+extern volatile double US[NB_US];
+
+unsigned int n,n2;
+
+extern volatile PID pidSpeedLeft, pidSpeedRight, pidDistance, pidAngle;
+
+double volatile prevCommandeL;
+double volatile prevCommandeR;
+
+double volatile prevPrevCommandeL;
+double volatile prevPrevCommandeR;
+
+
+double volatile speedLSum;
+double volatile speedRSum;
+
+double volatile smoothSpeedL;
+double volatile smoothSpeedR;
+
+extern volatile char arrived;
+extern volatile char arrived_2;
+
+volatile double d;
+
+unsigned char i_us,n_us;
+
+extern volatile char sendBT;
+extern volatile unsigned char debugPosRpiAsserv;
+
+extern volatile unsigned char stop;
+
+extern unsigned char detectUS;
+extern unsigned char sensDetectUS;
+volatile unsigned char hUS = 0;
+
+volatile unsigned char US_received = 0;
+
+volatile unsigned char back = 0;
+
+double var_ACC_MAX = ACC_MAX;
+
+unsigned char timer2Overflow = 0;
+
+/*Génération de trajectoire*/
+    
+unsigned char statePathGeneration;
+unsigned char stateTrap;
+
+double cx,cy,ct;
+
+double sign;
+
+double phi;
+double angle;
+
+double theta0;
+double angularVelocity;
+double prevAngularVelocity;
+double maxAngularVelocity;
+
+double AngularAcceleration;
+
+double angle1;
+
+
+double dx;
+double dy;
+double alpha;
+
+double totalDistance;
+double dist;
+
+double y_0;
+double x_0;
+double speed;
+double precSpeed;
+
+double acc;
+double speedMax;
+
+double dist1;
+	
+
+void initTimer() {
+    initTimer1();
+    initTimer2();
+    //initTimer3();
+    initTimer4();
+    initTimer5();
+    
+    prevCommandeL = 0;
+    prevCommandeR = 0;
+    
+    speedLSum = 0;
+    speedRSum = 0;
+    smoothSpeedL = 0;
+    smoothSpeedR = 0;
+    
+    d = 0;
+    i_us = 0;
+    n_us = 0;
+}
+
+void initTimer1(){          //Timer 1 -> asserv' interrupt
+    T1CONbits.TON = 0;      //disable timer
+    TMR1 = 0;               // Clear timer register
+    PR1 = 1094;//10937;     //period 10 937 -> ~10ms
+    T1CONbits.TSIDL = 0;    //Continues module operation in Idle mode
+    T1CONbits.TCS = 0;      //internal clock
+    T1CONbits.TCKPS = 0b10; //prescaler : 1:64
+    T1CONbits.TGATE = 0;    //Gated time accumulation is disabled
+    IFS0bits.T1IF = 0;      //Clear flag
+    IEC0bits.T1IE = 1;      //Enable interrupt
+    T1CONbits.TON = 1;      //enable Timer1
+}
+void initTimer2(){          //Timer 2 -> timing (delay_ms,delay_us,millis,micros)
+    /*32bits mode*/
+    /*TMR2 = LSB & TMR3 = MSB*/
+    /*period PR2 = LSB & PR3 = MSB*/
+    
+    T2CONbits.TON = 0;      //disable timer
+    TMR2 = 0;               // Clear timer register
+    TMR3 = 0;
+    /*Fp = 70Mhz -> 1tick = (100/7)ns -> 4200000000tick = 60s -> 4199999999 = 0xFA56E9FF */
+    PR2 = 0xE9FF;           //Period value
+    PR3 = 0xFA56;
+    T2CONbits.TSIDL = 0;    //Continues module operation in Idle mode
+    T2CONbits.TCS = 0;      //internal clock
+    //T2CONbits.TCKPS = 0b10; //prescaler : 1:64
+    T2CONbits.TCKPS = 0b00; //prescaler : 1:1
+    //T2CONbits.TCKPS = 0b01; //prescaler : 1:8
+    T2CONbits.TGATE = 0;    //Gated time accumulation is disabled
+    T2CONbits.T32 = 1;      //Timer2 & Timer 3 form a single 32-bit timer
+    IFS0bits.T2IF = 0;      //Clear flag
+    //IEC0bits.T2IE = 1;      //Enable interrupt
+    IEC0bits.T2IE = 0;
+    
+    IFS0bits.T3IF = 0;      //Clear flag
+    IEC0bits.T3IE = 1;
+    
+    T2CONbits.TON = 1;      //enable Timer1
+}
+void initTimer3(){          //Timer 3   -> 20µs delay
+    /*T3CONbits.TON = 0;      //disable timer
+    TMR3 = 0;               // Clear timer register
+    PR3 = 1400;           //Period value
+    T3CONbits.TSIDL = 0;    //Continues module operation in Idle mode
+    T3CONbits.TCS = 0;      //internal clock
+    T3CONbits.TCKPS = 0b00; //prescaler : 1:1
+    T3CONbits.TGATE = 0;    //Gated time accumulation is disabled
+    IFS0bits.T3IF = 0;      //Clear flag
+    IEC0bits.T3IE = 1;      //Enable interrupt
+    T3CONbits.TON = 0;      //disable Timer3*/
+}
+void initTimer4(){          //Timer 4   -> count US time
+    T4CONbits.TON = 0;      //disable timer
+    TMR4 = 0;               // Clear timer register
+    PR4 = 0xFFFF;           //Period value
+    T4CONbits.TSIDL = 0;    //Continues module operation in Idle mode
+    T4CONbits.TCS = 0;      //internal clock
+    T4CONbits.TCKPS = 0b10; //prescaler : 1:64
+    T4CONbits.TGATE = 0;    //Gated time accumulation is disabled
+    IFS1bits.T4IF = 0;      //Clear flag
+    IEC1bits.T4IE = 0;      //Enable interrupt
+    T4CONbits.TON = 1;      //enable Timer4
+}
+void initTimer5(){          //Timer 5   -> 20µs delay
+    T5CONbits.TON = 0;      //disable timer
+    TMR5 = 0;               // Clear timer register
+    PR5 = 1400;           //Period value
+    T5CONbits.TSIDL = 0;    //Continues module operation in Idle mode
+    T5CONbits.TCS = 0;      //internal clock
+    T5CONbits.TCKPS = 0b00; //prescaler : 1:1
+    T5CONbits.TGATE = 0;    //Gated time accumulation is disabled
+    IFS1bits.T5IF = 0;      //Clear flag
+    IEC1bits.T5IE = 1;      //Enable interrupt
+    T5CONbits.TON = 0;      //disable Timer5
+}
+
+void __attribute__((interrupt,no_auto_psv)) _T1Interrupt(void)
+{
+    IFS0bits.T1IF = 0; //Clear Timer1 interrupt flag
+    // <editor-fold defaultstate="collapsed" desc="Calcul position">
+    
+    //save value
+    unsigned int p1 = POS1CNTL; 
+    unsigned int p2 = POS2CNTL;
+    //reset value
+    POS1CNTL = 0x8000;
+    POS2CNTL = 0x8000;
+    
+    double tL = (double) p1 - 0x8000;
+    double tR = (double) p2 - 0x8000;
+    
+    speedLSum += tL;
+    speedRSum += tR;
+    
+    tL = tL * 2 * PI * ENCODER_WHEEL_RADIUS;
+    tL = tL / 4096;
+
+    tR = tR * 2 * PI * ENCODER_WHEEL_RADIUS;
+    tR = tR / 4096;
+    theta += (tR - tL) / DISTANCE_BETWEEN_ENCODER_WHEELS;
+    
+    //smoothSpeedL = smoothSpeedL + SMOOTHING_FACTOR * (speedL - smoothSpeedL);
+    //smoothSpeedR = smoothSpeedR + SMOOTHING_FACTOR * (speedR - smoothSpeedR);
+    
+    /*if(theta > PI)
+        theta -= 2*PI;
+    else if(theta < -PI)
+        theta += 2*PI;*/
+    
+    double deltaD = (tL + tR) / 2;
+    x += deltaD * cos(theta);
+    y += deltaD * sin(theta);
+    d += deltaD;
+    
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Asservissement">
+    n++;
+    if (n >= N_ASSERV) {//1000
+        n = 0;
+        
+        double speedL = 0; //  /0.01 -> 10ms
+        double speedR = 0;
+        
+        speedL = speedLSum * (1000 / N_ASSERV) * 2 * PI / 4096;
+        speedR = speedRSum * (1000 / N_ASSERV) * 2 * PI / 4096;
+        
+        speedLSum = 0;
+        speedRSum = 0;
+        /*int i;
+        for(i = 1; i < N_SMOOTHING; i++){
+            smoothSpeedL = smoothSpeedL + SMOOTHING_FACTOR * (speedL - smoothSpeedL);
+            smoothSpeedR = smoothSpeedR + SMOOTHING_FACTOR * (speedR - smoothSpeedR);
+        }*/
+        
+        double thetaRobotPoint = atan2(yc-y,xc-x);
+        double thetaRobotPointFinal = atan2(yf-y,xf-x);
+        if(back)
+            thetaRobotPointFinal -= PI;
+        while(thetaRobotPointFinal - theta < -PI)
+            thetaRobotPointFinal += 2*PI;
+        while(thetaRobotPointFinal - theta > PI)
+            thetaRobotPointFinal -= 2*PI;
+        if(thetaRobotPointFinal - theta < -PI/2)
+            thetaRobotPointFinal += PI;
+        if(thetaRobotPointFinal - theta > PI/2)
+            thetaRobotPointFinal -= PI;
+        double distFinal = sqrt((x-xf)*(x-xf) + (y-yf)*(y-yf));
+        
+        double errorD = sqrt((x-xc)*(x-xc) + (y-yc)*(y-yc));
+
+        // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
+        double thetaDiff = theta - thetaRobotPoint;
+        while (thetaDiff > PI) {
+            thetaDiff -= 2 * PI;
+        }
+        while (thetaDiff < -PI) {
+            thetaDiff += 2 * PI;
+        }
+        if (thetaDiff > -PI / 2 && thetaDiff < PI / 2) {
+            errorD = -errorD;
+        }// </editor-fold>
+
+
+        if(distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT)
+            setSetPoint(&pidAngle,thetaRobotPointFinal);
+        else
+            setSetPoint(&pidAngle,thetac);
+        //setSetPoint(&pidAngle,thetac);
+
+        double rD = compute(&pidDistance,errorD);
+        double rA = compute(&pidAngle,theta);
+        
+        if(pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && distFinal < MAX_ERROR_D && (finalPoint == 1) ){
+            rD = 0;
+        }
+        /*if(pidAngle.prevError < MAX_ERROR_A && pidAngle.prevError > -MAX_ERROR_A){
+            rA = 0;
+        }*/
+
+        setSetPoint(&pidSpeedLeft,rD - rA);
+        setSetPoint(&pidSpeedRight,rD + rA);
+        
+        double commandeL = compute(&pidSpeedLeft,speedL);
+        double commandeR = compute(&pidSpeedRight,speedR);
+        
+        if(pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && pidAngle.prevError < MAX_ERROR_A && pidAngle.prevError > -MAX_ERROR_A && speedL < MAX_SPEED_STOP && speedL > -MAX_SPEED_STOP && speedR < MAX_SPEED_STOP && speedR > -MAX_SPEED_STOP && (finalPoint == 1)){
+            commandeL = 0;
+            commandeR = 0;
+            pidSpeedLeft.sumI = 0;
+            pidSpeedLeft.sumI = 0;
+            arrived = 1;
+        }
+        else
+            arrived = 0;
+        
+        
+        /*if(pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && pidAngle.prevError < MAX_ERROR_A && pidAngle.prevError > -MAX_ERROR_A && speedL < MAX_SPEED_STOP && speedL > -MAX_SPEED_STOP && speedR < MAX_SPEED_STOP && speedR > -MAX_SPEED_STOP){
+            commandeL = 0;
+            commandeR = 0;
+            pidSpeedLeft.sumI = 0;
+            pidSpeedLeft.sumI = 0;
+            arrived = 1;
+        }
+        else
+            arrived = 0;*/
+
+        // <editor-fold defaultstate="collapsed" desc="Limit acceleration">
+        /*uint8_t variationR,variationL,prevVariationR,prevVariationL;
+        if((commandeR - prevCommandeR) >= 0)
+            variationR = 1;
+        else
+            variationR = 0;
+        if((prevCommandeR - prevPrevCommandeR) >= 0)
+            prevVariationR = 1;
+        else
+            prevVariationR = 0;
+        
+        if((commandeL - prevCommandeL) >= 0)
+            variationL = 1;
+        else
+            variationL = 0;
+        if((prevCommandeL - prevPrevCommandeL) >= 0)
+            prevVariationL = 1;
+        else
+            prevVariationL = 0;*/
+        //if(variationR != prevVariationR){
+            if (commandeR - prevCommandeR > var_ACC_MAX) {
+                commandeR = prevCommandeR + var_ACC_MAX;
+                //plot(25,-5000);
+            } else if (commandeR - prevCommandeR < -var_ACC_MAX) {
+                commandeR = prevCommandeR - var_ACC_MAX;
+                //plot(25,-4000);
+            }
+        //}
+        
+        //if(variationL != prevVariationL){
+            if (commandeL - prevCommandeL > var_ACC_MAX) {
+                commandeL = prevCommandeL + var_ACC_MAX;
+                //plot(15,-5000);
+            } else if (commandeL - prevCommandeL < -var_ACC_MAX) {
+                commandeL = prevCommandeL - var_ACC_MAX;
+                //plot(15,-4000);
+            }
+        //}
+        // </editor-fold>
+
+        //prevPrevCommandeL = prevCommandeL;
+        //prevPrevCommandeR = prevCommandeR;
+        
+        prevCommandeL = commandeL;
+        prevCommandeR = commandeR;
+        
+        
+        if(!stop){
+            if(detectUS){
+                //unsigned char ok = 1,i;
+                /*for(i = 0; i < 3; i++){
+                    if(US[i] > 300 && US[i] < 1000){
+                        hUS++;
+                        //ok = 0;
+                        printRpi(("US["));
+                        printRpi(itoa((int)i));
+                        printRpi("] = ");
+                        printRpi(itoa((int)US[i]));
+                    }
+                }*/
+                if(sensDetectUS){
+                    if((US[1] > 300 && US[1] < 1000) || (US[0] > 300 && US[0] < 1000) || (US[2] > 300 && US[2] < 1000)){
+                        hUS++;
+                    }
+                    else
+                        hUS = 0;
+                }
+                else{
+                    if(US[4] > 300 && US[4] < 1000){
+                        hUS++;
+                    }
+                    else
+                        hUS = 0;
+                }
+                if(hUS > 10){
+                    sendToMotor(0,0);
+                    while(1);
+                }
+                /*if(!ok){
+                    sendToMotor(0,0);
+                    while(1);
+                }*/
+            }
+            testSendToMotor(commandeR, commandeL);
+        }
+        //plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
+        //plot(2,(uint32_t)((int32_t)(speedR*1000)));
+        //print("=)\n");
+        // <editor-fold defaultstate="collapsed" desc="Génération de trajectoire">
+    /*Génération de trajectoire*/
+        if (statePathGeneration != 0) {
+        //plot(1,(uint32_t)(int32_t)(thetac*1000));
+        //plot(2,(uint32_t)(int32_t)(angularVelocity*1000));
+        //plot(3,(uint32_t)(int32_t)(angle*1000));
+        //plot(4,(uint32_t)(int32_t)(theta*1000));
+        plot(11,(uint32_t)(int32_t)(speedL*1000));
+        plot(21,(uint32_t)(int32_t)(speedR*1000));
+        //plot(31,(uint32_t)(int32_t)(speedR*1000));
+        //plot(41,(uint32_t)(int32_t)(speedR*1000));
+        plot(12,(uint32_t)(int32_t)(pidSpeedLeft.setPoint*1000));
+        plot(22,(uint32_t)(int32_t)(pidSpeedRight.setPoint*1000));
+        /*
+        int32_t pwmR = PWM_R;
+        if(SENS_R == 0)
+            pwmR = -pwmR;
+        int32_t pwmL = PWM_L;
+        if(SENS_L == 0)
+            pwmL = -pwmL;
+        plot(13,(uint32_t)PWM_R);
+        plot(23,(uint32_t)PWM_L);
+        plot(14,(((uint32_t)SENS_R)*5000)-1000);
+        plot(24,(((uint32_t)SENS_L)*5000)-1000);*/
+        
+        //plot(31,(((uint32_t)((pidAngle.prevError*180000/PI)+5000))));
+        /*plot(31,(uint32_t)(int32_t)(x));
+        plot(32,(uint32_t)(int32_t)(y));
+        plot(33,(uint32_t)(int32_t)(xc));
+        plot(34,(uint32_t)(int32_t)(yc));*/
+        /*plot(1,(uint32_t)(int32_t)(pidSpeedLeft.prevSmoothError*1000));
+        plot(2,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
+        plot(3,(uint32_t)(int32_t)(pidSpeedRight.prevSmoothError*1000));
+        plot(4,(uint32_t)(int32_t)(pidSpeedRight.prevError*1000));*/
+        
+        /*plot(41,(uint32_t)(int32_t)(theta*100000));
+        plot(42,(uint32_t)(int32_t)(thetac*100000));
+        plot(43,(uint32_t)(int32_t)(pidAngle.setPoint*100000));*/
+        
+        //plot(5,(uint32_t)(int32_t)(statePathGeneration*1000));
+        //plot(6,(uint32_t)(int32_t)(stateTrap*1000));
+        
+    }
+    switch (statePathGeneration) {
+        case 0:
+            break;
+        case 1: //1st Rotation
+            switch (stateTrap) {
+                case 1: //acceleration
+                    if (angularVelocity < maxAngularVelocity && angle < phi / 2) {
+                        angularVelocity += AngularAcceleration * TE;
+                        angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                        thetac = theta0 + angle * sign;
+                        prevAngularVelocity = angularVelocity;
+                    } else {
+                        stateTrap = 2;
+
+                        angle1 = angle;
+                    }
+                    break;
+                case 2: //constant speed
+                    if (angle < phi - angle1) {
+                        angle += TE * angularVelocity;
+                        thetac = theta0 + angle * sign;
+                        prevAngularVelocity = angularVelocity;
+                    } else {
+                        stateTrap = 3;
+
+                        AngularAcceleration = -AngularAcceleration;
+                    }
+                    break;
+                case 3: //deceleration
+                    if (angularVelocity > 0 && angle < phi) {
+                        angularVelocity += AngularAcceleration * TE;
+                        angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                        thetac = theta0 + angle * sign;
+                        prevAngularVelocity = angularVelocity;
+                    } else {
+                        statePathGeneration = 2;
+                        stateTrap = 1;
+
+                        thetac = theta0 + phi*sign;
+                        xf = cx;
+                        yf = cy;
+                        tf = ct;
+                        y_0 = y;
+                        x_0 = x;
+                        dx = cx - x_0;
+                        dy = cy - y_0;
+                        alpha = atan2(dy, dx);
+                        totalDistance = sqrt(dx * dx + dy * dy);
+
+                    }
+                    break;
+
+            }
+            break;
+        case 2: //Translation
+            switch (stateTrap) {
+                case 1: //acceleration
+                    if (speed < speedMax && dist < totalDistance / 2) {
+                        speed += acc * TE;
+                        dist += TE * (precSpeed + speed) / 2;
+                        xc = x_0 + dist * cos(alpha);
+                        yc = y_0 + dist * sin(alpha);
+                        precSpeed = speed;
+                    } else {
+                        stateTrap = 2;
+
+                        dist1 = dist;
+                        if (speed > speedMax)
+                            speed = speedMax;
+                    }
+                    break;
+                case 2: //constant speed
+                    if (dist < totalDistance - dist1) { //Condition
+                        dist += TE * speed;
+                        xc = x_0 + dist * cos(alpha);
+                        yc = y_0 + dist * sin(alpha);
+                        precSpeed = speed;
+                    } else {
+                        stateTrap = 3;
+
+                        acc = -acc;
+                    }
+                    break;
+                case 3: //deceleration
+                    if (speed > 0 && dist < totalDistance) { //Condition		//v > 0			/		d < totalDistance
+                        speed += acc * TE;
+                        dist += TE * (precSpeed + speed) / 2;
+                        xc = x_0 + dist * cos(alpha);
+                        yc = y_0 + dist * sin(alpha);
+                        precSpeed = speed;
+                    } else {
+                        statePathGeneration = 0;
+                        stateTrap = 1;
+
+                        xc = cx;
+                        yc = cy;
+                        
+                        finalPoint = 1;
+
+                    }
+                    break;
+
+            }
+            break;
+    }
+    // </editor-fold>
+    }// </editor-fold>
+    
+    // <editor-fold defaultstate="collapsed" desc="US">
+    n_us++;
+    if (n_us >= N_US) {
+        n_us = 0;
+        if(!US_received)
+            US[i_us] = 9999;
+        i_us++;
+        if(i_us >= NB_US)
+            i_us = 0;
+        switch(i_us){
+            case 0:
+                TRIG_US_0 = 1;
+                break;
+            case 1:
+                TRIG_US_1 = 1;
+                break;
+            case 2:
+                TRIG_US_2 = 1;
+                break;
+            case 3:
+                TRIG_US_3 = 1;
+                break;
+            case 4:
+                TRIG_US_4 = 1;
+                break;
+            case 5:
+                TRIG_US_5 = 1;
+                break;
+        }
+        unsigned char i = 0;
+        for(i = 0; i < NB_US; i++){
+            US_ON[i] = 0;
+            US_R[i] = 0;
+        }
+        US_received = 0;
+        US_ON[i_us] = 1;
+        T5CONbits.TON = 1;      //enable Timer3
+        /*print("toggle ");
+        print(itoa((int)i_us));
+        print("\n");*/
+    }
+    // </editor-fold>
+}
+/*void __attribute__((interrupt,no_auto_psv)) _T2Interrupt(void){
+    IFS0bits.T2IF = 0; //Clear Timer1 interrupt flag
+}*/
+void __attribute__((interrupt,no_auto_psv)) _T3Interrupt(void){
+    IFS0bits.T3IF = 0; //Clear Timer1 interrupt flag
+    timer2Overflow++;
+}
+void __attribute__((interrupt,no_auto_psv)) _T5Interrupt(void){// _T3Interrupt(void){
+        IFS1bits.T5IF = 0;
+        T5CONbits.TON = 0;      //disable Timer3
+        TMR5 = 0;               //reset Timer3
+        TRIG_US_0 = 0;
+        TRIG_US_1 = 0;
+        TRIG_US_2 = 0;
+        TRIG_US_3 = 0;
+        TRIG_US_4 = 0;
+        TRIG_US_5 = 0;
+}
+
+unsigned long micros(){
+    uint32_t ret = TMR3;
+    ret = ret << 16;
+    ret = ret + TMR2;
+    ret = ret / 70;
+    uint32_t t2of = timer2Overflow;
+    t2of = t2of * 60000000UL;
+    ret = ret + t2of;
+    return ret;
+}
+unsigned long millis(){
+    uint32_t ret = TMR3;
+    ret = ret << 16;
+    ret = ret + TMR2;
+    ret = ret / 70000; //140MHz
+    //ret = ret / 3684;   //7.3728Mhz
+    uint32_t t2of = timer2Overflow;
+    t2of = t2of * 60000UL;    //140Mhz
+    //t2of = t2of * 3157;     //7.3728Mhz
+    ret = ret + t2of;
+    return ret;
+}
+
+void delay_us(uint32_t delay){
+   uint32_t tick = micros();
+   while(micros() - tick < delay);
+}
+void delay_ms(uint32_t delay){
+    uint32_t tick = millis();
+    while(millis() - tick < delay);
+}
