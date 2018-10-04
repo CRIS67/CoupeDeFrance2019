@@ -14,6 +14,7 @@
 #define RX_SIZE_START 2
 #define RX_SIZE_STOP 2
 #define RX_SIZE_SET       // var,type,value
+#define RX_SIZE_SET_8b 	5
 #define RX_SIZE_SET_32b 8
 #define RX_SIZE_GET     3 // var
 #define RX_SIZE_SERVO   5 // id,value_H,value_L
@@ -32,6 +33,8 @@
 #define TX_CODE_
 
 #define TX_SIZE_
+
+#define CODE_VAR_VERBOSE    5
 
 #define CODE_VAR_ALLPID		9
 
@@ -98,6 +101,7 @@ class DsPIC
 		void stop();
 		void go(int16_t x, int16_t y,unsigned char rev, unsigned char relative);
 		void turn(int16_t t,unsigned char rev, unsigned char relative);
+		void setVar8(uint8_t varCode, uint8_t var);
 		void setVar32(uint8_t varCode, uint32_t var);
 		void loadPID();
 		std::string async_read();
