@@ -109,7 +109,7 @@ void initUART2(){   //Raspberry Pi
     U2MODEbits.LPBACK = 0;
     U2MODEbits.ABAUD = 0;
     U2MODEbits.URXINV = 0;
-    U2MODEbits.BRGH = 1;
+    U2MODEbits.BRGH = UART2_HIGH_SPEED;
     U2MODEbits.PDSEL = 0b00;
     U2MODEbits.STSEL = 0;
 
@@ -252,21 +252,13 @@ void CheckMessages(){
         start += RxDMABuffer[start] + 1;
         start = start % RX_DMA_SIZE;
         if (checksum != RxDMABuffer[iChecksum]) {
+            uint8_t saveVerbose = verbose;
+            verbose = 1;
             sendLog("Checksum error !\n");
+            verbose = saveVerbose;
             return;
             //cout << "cheksum error : " << (int)checksum << " =/= " << (int)(inBuf[start + size]) << endl;
         }
-        sendLog("received message : ");
-        sendLog(itoa(RxDMABuffer[start]));
-        sendLog(" & ");
-        sendLog(itoa(RxDMABuffer[iCode]));
-        sendLog(" & ");
-        sendLog(itoa(RxDMABuffer[iArg1]));
-        sendLog(" & ");
-        sendLog(itoa(RxDMABuffer[iArg2]));
-        sendLog(" & ");
-        sendLog(itoa(RxDMABuffer[iArg3]));
-        sendLog("\n");
         
         unsigned char success = 0;
         switch (RxDMABuffer[iCode]) {
@@ -305,7 +297,7 @@ void CheckMessages(){
                             verbose = value;
                             verbose = 1;
                             sendLog("verbose set to ");
-                            sendLog(itoa(verbose));
+                            sendLog(itoa((int)value));
                             verbose = value;
                             break;
                     }
@@ -673,6 +665,8 @@ void send(uint8_t *str,uint16_t size){
     }
 }
 void sendLog(char *str){
+    if(verbose == 0)
+        return;
     int i;
     int len = strlen(str);
     uint8_t header[2];

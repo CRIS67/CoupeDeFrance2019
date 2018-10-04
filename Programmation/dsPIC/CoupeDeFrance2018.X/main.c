@@ -216,13 +216,25 @@ int main(){
     tf = theta;
     for(p = 0; p <= 6; p++)
         servoUs(p,0);
-    /*while(1){
-        SPI2BUF = 32;
-        delay_ms(500);
-        sendLog("Hey ! =) \n");
-        sendLog(itoa(verbose));
+    verbose = 0;
+    while(1){
+        //SPI2BUF = 32;
+        //delay_ms(10);
+        //sendLog("Hey ! =) \n");
+        if(verbose){
+            //sendLog("Ceci est un message de test relativement long, esperons qu'il ne s'y glisse aucune erreur lors de la communication !\n");
+            sendLog("0123456789\n");
+            sendLog("iD2=");
+            sendLog(itoa(iD2));
+            sendLog(" & iF2=");
+            sendLog(itoa(iF2));
+            sendLog("\n");
+            delay_ms(10);
+        }
+        //sendLog(itoa((int)verbose));
+        CheckMessages();
         //sendLog(itoa(SPI2BUF));
-    }*/
+    }
     while(1){
         /*for(p = 10; p < 50; p++){
             plot(p,100);

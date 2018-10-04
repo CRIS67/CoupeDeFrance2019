@@ -47,7 +47,10 @@
 // <editor-fold defaultstate="collapsed" desc="UART">
 #define BAUDRATE 9600
 #define BRGVAL 455  //((CLOCK_FREQ_HZ/2/BAUDRATE)/16) - 1   9600
-#define BRGVAL2 34//7 //34//6//34//37   //  115000
+//#define BRGVAL2 34//7 //34//6//34//37   //  500 000
+#define BRGVAL2 37//7 //34//6//34//37   //  500 000
+#define UART2_HIGH_SPEED 0  //coef *4 : BRGH
+
 #define TX_SIZE 1000     //size of Tx buffer
 #define RX_SIZE 100     //size of Rx buffer
 #define RX_DMA_SIZE 1000 //
