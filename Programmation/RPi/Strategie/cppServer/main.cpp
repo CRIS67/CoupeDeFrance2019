@@ -14,6 +14,51 @@
 #define CODE_VAR_T      3
 #define CODE_VAR_RUPT   4
 
+void *print(void *ptr);
+
+int main()
+{
+	DsPIC dspic;
+    pthread_t thread_print;
+
+    dspic.async_read(); //flush rx buffer
+
+	Web web(&dspic);
+    web.startThread();
+
+    int rc;
+    std::cout << "main() : creating thread, " << std::endl;
+    rc = pthread_create(&thread_print, NULL, print, &web);
+
+    if (rc) {
+    std::cout << "Error:unable to create thread," << rc << std::endl;
+    exit(-1);
+    }
+	/*dspic.start();
+	dspic.stop();
+	dspic.servo(1,1500);
+	dspic.motor(1,-50);
+	dspic.motor(2,75);
+	dspic.go(1500,742,0,0);
+	dspic.turn(360,0,0);
+	dspic.AX12(1,512);
+	dspic.AX12(3,213);*/
+    getchar();
+	dspic.setVar8(CODE_VAR_VERBOSE,1);
+	puts("verbose set to 1");
+
+    getchar();
+	dspic.setVar8(CODE_VAR_VERBOSE,0);
+	puts("verbose set to 0");
+    
+	//std::cout << dspic.read() << std::endl;
+    web.s = "hola ! \n";
+    getchar();
+    puts("exiting ...");
+    //pthread_exit(NULL);
+
+    return 0;
+}
 void *print(void *ptr) {
    /*long tid;
    tid = (long)threadid;*/
@@ -27,7 +72,7 @@ void *print(void *ptr) {
             checksum += msg[i];
         }
         if(checksum != msg[msg.size() - 1]){
-            std::cout << "CHECHSUM ERROR !" << std::endl;
+            std::cout << "CHECKSUM ERROR !" << std::endl;
 			std::cout << "CE dec :";
             for(unsigned int i = 0; i < msg.size(); i++){
                 std::cout << " & [" << i << "] = " << (int)msg[i];
@@ -203,168 +248,4 @@ void *print(void *ptr) {
    }
    std::cout << "Hello World!" << std::endl;
    pthread_exit(NULL);
-}
-
-int main()
-{
-	DsPIC dspic;
-    pthread_t thread_print;
-
-    dspic.async_read(); //flush rx buffer
-
-	Web web(&dspic);
-    web.startThread();
-
-    int rc;
-    std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-
-    if (rc) {
-    std::cout << "Error:unable to create thread," << rc << std::endl;
-    exit(-1);
-    }
-	/*dspic.start();
-	dspic.stop();
-	dspic.servo(1,1500);
-	dspic.motor(1,-50);
-	dspic.motor(2,75);
-	dspic.go(1500,742,0,0);
-	dspic.turn(360,0,0);
-	dspic.AX12(1,512);
-	dspic.AX12(3,213);*/
-    getchar();
-	while(1){
-		fd_set rfds;
-		struct timeval tv;
-		int retval;//, len;
-		//char buff[255] = {0};
-
-		/* Watch stdin (fd 0) to see when it has input. */
-		FD_ZERO(&rfds);
-		FD_SET(0, &rfds);
-
-		/* Wait up to five seconds. */
-		tv.tv_sec = 0;
-		tv.tv_usec = 1000;
-
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		/*else
-			printf("No data within five seconds.\n"); */
-		
-		dspic.go(400,1500,0,0);
-		delay(6000);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.servo(5,1100);			//fermer cube avant
-		delay(500);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.go(800,1500,1,0);
-		delay(5000);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.servo(5,1800);			//ouvrir cube avant
-		delay(500);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.go(1000,1500,1,0);
-		delay(5000);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.go(700,1500,0,0);
-		delay(5000);
-							retval = select(1, &rfds, NULL, NULL, &tv);
-							if (retval == -1){
-								perror("select()");
-								exit(EXIT_FAILURE);
-							}
-							else if (retval){
-								break;
-							}
-		dspic.servo(5,1100);			//fermer cube avant
-		delay(500);
-		retval = select(1, &rfds, NULL, NULL, &tv);
-		if (retval == -1){
-			perror("select()");
-			exit(EXIT_FAILURE);
-		}
-		else if (retval){
-			break;
-		}
-		dspic.go(400,1500,0,0);
-		delay(5000);
-		retval = select(1, &rfds, NULL, NULL, &tv);
-		if (retval == -1){
-			perror("select()");
-			exit(EXIT_FAILURE);
-		}
-		else if (retval){
-			break;
-		}
-		dspic.servo(5,1800);			//ouvrir cube avant
-		delay(500);
-		retval = select(1, &rfds, NULL, NULL, &tv);
-		if (retval == -1){
-			perror("select()");
-			exit(EXIT_FAILURE);
-		}
-		else if (retval){
-			break;
-		}
-		dspic.go(1000,1500,1,0);
-		delay(6000);
-		retval = select(1, &rfds, NULL, NULL, &tv);
-		if (retval == -1){
-			perror("select()");
-			exit(EXIT_FAILURE);
-		}
-		else if (retval){
-			break;
-		}
-	}
-	
-	//std::cout << dspic.read() << std::endl;
-    web.s = "hola ! \n";
-    getchar();
-    puts("exiting ...");
-    //pthread_exit(NULL);
-
-    return 0;
 }
