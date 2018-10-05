@@ -1,7 +1,7 @@
 #include "dspic.hpp"
 
 DsPIC::DsPIC(){
-    fd = serialOpen ("/dev/serial0", 115200);
+    fd = serialOpen ("/dev/serial0", 500000);
 }
 DsPIC::~DsPIC(){
 
@@ -176,16 +176,23 @@ std::string DsPIC::async_read(){
     return s;
 }
  std::vector<uint8_t> DsPIC::read(){
-
-    uint8_t RxSize = serialGetchar(fd);
+ 	int foo = serialGetchar(fd);
+ 	while(foo == -1){
+ 		foo = serialGetchar(fd);
+ 	}
+    uint8_t RxSize = foo;//serialGetchar(fd);
     //uint8_t checksum = RxSize;
     //uint8_t *RxBuf = (uint8_t*)(malloc(RxSize * sizeof(uint8_t)));
     //std::vector<uint8_t> RxBuf(RxSize);
     std::vector<uint8_t> RxBuf;
     RxBuf.push_back(RxSize);
     for(int i = 0; i < RxSize; i++){
-        RxBuf.push_back(serialGetchar(fd));
-        delayMicroseconds(5);
+    	foo = serialGetchar(fd);
+    	while(foo == -1){
+ 			foo = serialGetchar(fd);
+ 		}
+        RxBuf.push_back(foo);
+        //delayMicroseconds(5);
         //RxBuf[i] = serialGetchar(fd);
         //checksum += RxBuf[i];
     }
