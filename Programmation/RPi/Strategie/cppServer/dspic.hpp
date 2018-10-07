@@ -1,6 +1,8 @@
 #ifndef DSPIC_H
 #define DSPIC_H
 
+#define BAUDRATE	500000
+
 #define RX_CODE_START 1
 #define RX_CODE_STOP 2
 #define RX_CODE_SET 3

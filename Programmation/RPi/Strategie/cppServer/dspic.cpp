@@ -1,7 +1,7 @@
 #include "dspic.hpp"
 
 DsPIC::DsPIC(){
-    fd = serialOpen ("/dev/serial0", 500000);
+    fd = serialOpen ("/dev/serial0", BAUDRATE);
 }
 DsPIC::~DsPIC(){
 
@@ -176,6 +176,12 @@ std::string DsPIC::async_read(){
     return s;
 }
  std::vector<uint8_t> DsPIC::read(){
+	double delayUs = 1000000 / BAUDRATE;	// T = 1/f en µs	(0.5Mbaud => 2µs)
+	int n = serialDataAvail(fd);
+	while(n < 1){
+		delayMicroseconds(delayUs);
+		n = serialDataAvail(fd);
+	}
  	int foo = serialGetchar(fd);
  	while(foo == -1){
  		foo = serialGetchar(fd);
@@ -186,6 +192,12 @@ std::string DsPIC::async_read(){
     //std::vector<uint8_t> RxBuf(RxSize);
     std::vector<uint8_t> RxBuf;
     RxBuf.push_back(RxSize);
+	//Test1
+	n = serialDataAvail(fd);
+	while(n < RxSize){
+		delayMicroseconds(delayUs);
+		n = serialDataAvail(fd);
+	}
     for(int i = 0; i < RxSize; i++){
     	foo = serialGetchar(fd);
     	while(foo == -1){
@@ -193,18 +205,28 @@ std::string DsPIC::async_read(){
  		}
         RxBuf.push_back(foo);
         //delayMicroseconds(5);
-        //RxBuf[i] = serialGetchar(fd);
-        //checksum += RxBuf[i];
     }
-    /*if(RxBuf[RxSize - 1] != checksum){
-        printf("CHECHSUM ERROR ! [0] = %d",RxSize);
-        for(int i = 0; i < RxSize; i++){
-            printf(" & [%d] = %d",i+1, RxBuf[i]);
-        }
-        printf("\n");
-        free(RxBuf);
-        std::string ret('\0');
-        return ret;
+	//Test2
+	/*
+	for(int i = 0; i < RxSize; i++){
+    	foo = serialGetchar(fd);
+    	while(foo == -1){
+ 			foo = serialGetchar(fd);
+ 		}
+        RxBuf.push_back(foo);
+        delayMicroseconds(delayUs);
+    }*/
+	//Test3
+	/*n = serialDataAvail(fd);
+	while(n < RxSize){
+		delayMicroseconds(delayUs);
+		n = serialDataAvail(fd);
+	}
+	uint8_t *RxTab = malloc(RxSize * sizeof(uint8_t));
+	if (read (fd, RxTab, RxSize) != RxSize)
+		puts("READ ERROR in function DsPIC::read");
+	for(int i = 0; i < RxSize; i++));
+		RxBuf.push_back(RxTab[i]);
     }*/
     return RxBuf;
 }
