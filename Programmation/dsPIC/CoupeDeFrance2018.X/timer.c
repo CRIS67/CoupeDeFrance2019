@@ -419,6 +419,10 @@ void __attribute__((interrupt,no_auto_psv)) _T1Interrupt(void)
                 }*/
             }
             testSendToMotor(commandeR, commandeL);
+            if(pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21)
+                while(1){
+                    testSendToMotor(0, 0);
+                }
         }
         //plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
         //plot(2,(uint32_t)((int32_t)(speedR*1000)));
@@ -426,16 +430,21 @@ void __attribute__((interrupt,no_auto_psv)) _T1Interrupt(void)
         // <editor-fold defaultstate="collapsed" desc="Génération de trajectoire">
     /*Génération de trajectoire*/
         if (statePathGeneration != 0) {
+        plot(1,(uint32_t)(int32_t)(pidDistance.prevError*100));
+        plot(2,(uint32_t)(int32_t)(pidAngle.prevError*10000));
+        plot(3,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
+        plot(4,(uint32_t)(int32_t)(pidSpeedRight.prevError*1000));
+        
         //plot(1,(uint32_t)(int32_t)(thetac*1000));
         //plot(2,(uint32_t)(int32_t)(angularVelocity*1000));
         //plot(3,(uint32_t)(int32_t)(angle*1000));
         //plot(4,(uint32_t)(int32_t)(theta*1000));
-        plot(11,(uint32_t)(int32_t)(speedL*1000));
-        plot(21,(uint32_t)(int32_t)(speedR*1000));
+        //plot(11,(uint32_t)(int32_t)(speedL*1000));
+        //plot(21,(uint32_t)(int32_t)(speedR*1000));
         //plot(31,(uint32_t)(int32_t)(speedR*1000));
         //plot(41,(uint32_t)(int32_t)(speedR*1000));
-        plot(12,(uint32_t)(int32_t)(pidSpeedLeft.setPoint*1000));
-        plot(22,(uint32_t)(int32_t)(pidSpeedRight.setPoint*1000));
+        //plot(12,(uint32_t)(int32_t)(pidSpeedLeft.setPoint*1000));
+        //plot(22,(uint32_t)(int32_t)(pidSpeedRight.setPoint*1000));
         /*
         int32_t pwmR = PWM_R;
         if(SENS_R == 0)

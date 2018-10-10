@@ -651,9 +651,11 @@ void sendUS(){
     }   
 }
 void send(uint8_t *str,uint16_t size){
+    IEC1bits.U2TXIE = 0;    //disable Tx interrupt
     if(verbose == 0)
         return;
     uint16_t i = 0;
+    //uint8_t saveTxOn2 = TxOn2;  //TxOn2 could change during an interrupt
     if(TxOn2 == 1)
         push2(str[0]);
     for(i = 1; i < size; i++){
@@ -663,6 +665,7 @@ void send(uint8_t *str,uint16_t size){
         TxOn2 = 1;
         U2TXREG = str[0];
     }
+    IEC1bits.U2TXIE = 1;    //reenable TX interrupt
 }
 void sendLog(char *str){
     if(verbose == 0)

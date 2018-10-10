@@ -217,7 +217,7 @@ int main(){
     for(p = 0; p <= 6; p++)
         servoUs(p,0);
     verbose = 0;
-    while(1){
+    /*while(1){
         //SPI2BUF = 32;
         //delay_ms(10);
         //sendLog("Hey ! =) \n");
@@ -234,7 +234,7 @@ int main(){
         //sendLog(itoa((int)verbose));
         CheckMessages();
         //sendLog(itoa(SPI2BUF));
-    }
+    }*/
     while(1){
         /*for(p = 10; p < 50; p++){
             plot(p,100);
