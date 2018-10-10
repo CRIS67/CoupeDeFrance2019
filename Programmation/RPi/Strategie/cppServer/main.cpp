@@ -66,7 +66,7 @@ void *print(void *ptr) {
    //DsPIC *dspic = (DsPIC*)ptr;
    DsPIC *dspic = w->dspic;
    while(1){
-        std::vector<uint8_t> msg = dspic->read();
+        std::vector<uint8_t> msg = dspic->readMsg();
         uint8_t checksum = 0;
         for(unsigned int i = 0; i < msg.size() - 1; i++){
             checksum += msg[i];
@@ -77,10 +77,11 @@ void *print(void *ptr) {
             for(unsigned int i = 0; i < msg.size(); i++){
                 std::cout << " & [" << i << "] = " << (int)msg[i];
             }
-			std::cout << "CE char :";
+			std::cout << std::endl << "CE char :";
 			
             for(unsigned int i = 0; i < msg.size(); i++){
-                std::cout << msg[i];
+                if(msg[i] > 31 && msg[i] < 127)
+                    std::cout << msg[i];
             }
         }
         else{

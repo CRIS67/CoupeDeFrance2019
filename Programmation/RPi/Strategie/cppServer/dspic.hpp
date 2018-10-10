@@ -66,6 +66,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <unistd.h>
 
 struct microswitch{
   unsigned int ass0 : 1;
@@ -107,7 +108,7 @@ class DsPIC
 		void setVar32(uint8_t varCode, uint32_t var);
 		void loadPID();
 		std::string async_read();
-        std::vector<uint8_t> read();
+        std::vector<uint8_t> readMsg();
 		int16_t x = 1500,y = 1000, t = 45;
 		int16_t US[6];
 		microswitch rupt;

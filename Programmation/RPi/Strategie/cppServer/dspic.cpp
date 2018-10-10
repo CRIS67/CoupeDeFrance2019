@@ -175,8 +175,31 @@ std::string DsPIC::async_read(){
     }
     return s;
 }
- std::vector<uint8_t> DsPIC::read(){
-	double delayUs = 1000000 / BAUDRATE;	// T = 1/f en µs	(0.5Mbaud => 2µs)
+ std::vector<uint8_t> DsPIC::readMsg(){
+	//double delayUs = 1000000 / BAUDRATE;	// T = 1/f en µs	(0.5Mbaud => 2µs)
+	
+	int foo = serialGetchar(fd);
+ 	while(foo == -1){	//no reception during 10 sec
+ 		//delayMicroseconds(delayUs);
+ 		foo = serialGetchar(fd);
+ 	}
+ 	uint8_t RxSize = foo;
+    std::vector<uint8_t> RxBuf;
+    RxBuf.push_back(RxSize);
+
+	for(int i = 0; i < RxSize; i++){
+    	foo = serialGetchar(fd);
+    	while(foo == -1){
+    		//delayMicroseconds(delayUs);
+ 			foo = serialGetchar(fd);
+ 		}
+        RxBuf.push_back(foo);
+        //delayMicroseconds(delayUs);
+        //delayMicroseconds(5);
+    }
+
+
+	/*double delayUs = 5;
 	int n = serialDataAvail(fd);
 	while(n < 1){
 		delayMicroseconds(delayUs);
@@ -184,6 +207,7 @@ std::string DsPIC::async_read(){
 	}
  	int foo = serialGetchar(fd);
  	while(foo == -1){
+ 		delayMicroseconds(delayUs);
  		foo = serialGetchar(fd);
  	}
     uint8_t RxSize = foo;//serialGetchar(fd);
@@ -201,11 +225,13 @@ std::string DsPIC::async_read(){
     for(int i = 0; i < RxSize; i++){
     	foo = serialGetchar(fd);
     	while(foo == -1){
+    		delayMicroseconds(delayUs);
  			foo = serialGetchar(fd);
  		}
         RxBuf.push_back(foo);
+        delayMicroseconds(delayUs);
         //delayMicroseconds(5);
-    }
+    }*/
 	//Test2
 	/*
 	for(int i = 0; i < RxSize; i++){
@@ -222,10 +248,10 @@ std::string DsPIC::async_read(){
 		delayMicroseconds(delayUs);
 		n = serialDataAvail(fd);
 	}
-	uint8_t *RxTab = malloc(RxSize * sizeof(uint8_t));
+	uint8_t *RxTab = (uint8_t*)(malloc(RxSize * sizeof(uint8_t)));
 	if (read (fd, RxTab, RxSize) != RxSize)
 		puts("READ ERROR in function DsPIC::read");
-	for(int i = 0; i < RxSize; i++));
+	for(int i = 0; i < RxSize; i++){
 		RxBuf.push_back(RxTab[i]);
     }*/
     return RxBuf;
