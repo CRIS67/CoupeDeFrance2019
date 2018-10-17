@@ -59,6 +59,8 @@ void initSPI2(){
     SPI2STATbits.SPIEN = 0;     //Disable the module
 
     RPINR22bits.SDI2R = 0b01001101;      //INPUT : SDI(MISO) = RPI77 = RD13
+    RPINR22bits.SCK2R = 0b0111001;                     //SCK(CLOCK) = RP57 = RC9
+    //RPINR22bits.SDI2R = 0b01001000;      //INPUT : SDI(MISO) = RPI72 = RD8
     RPOR8bits.RP70R = 0b00001000;//OUTPUT : SDO(MOSI) = RP70 = RD6
     RPOR7bits.RP57R = 0b00001001;//OUTPUT : SCK(CLOCK) = RP57 = RC9
     RPOR8bits.RP69R = 0b00001010;//OUTPUT : SS(Slave Select MOD0) = RP69 = RD5
@@ -162,7 +164,8 @@ void __attribute__((__interrupt__,no_auto_psv)) _SPI2Interrupt(void)
     log[6] = SPI1BUF;
     log[7] = '\n';
     log[8] = '\0';*/
-    int msg = SPI2BUF;
+    uint8_t msg = SPI2BUF;
+    sendLog("SPI2 Interrupt !\n");
     sendLog(itoa(msg));
     IFS2bits.SPI2IF = 0;
 }

@@ -150,7 +150,7 @@ int main(){
     initInt();
     initUS();
     initADC();
-    //initSPI();
+    initSPI();
     
     
     x = 0;
@@ -217,24 +217,21 @@ int main(){
     for(p = 0; p <= 6; p++)
         servoUs(p,0);
     verbose = 0;
-    /*while(1){
-        //SPI2BUF = 32;
-        //delay_ms(10);
-        //sendLog("Hey ! =) \n");
-        if(verbose){
-            //sendLog("Ceci est un message de test relativement long, esperons qu'il ne s'y glisse aucune erreur lors de la communication !\n");
-            sendLog("0123456789\n");
-            sendLog("iD2=");
-            sendLog(itoa(iD2));
-            sendLog(" & iF2=");
-            sendLog(itoa(iF2));
-            sendLog("\n");
-            delay_ms(10);
-        }
-        //sendLog(itoa((int)verbose));
+    while(1){
+        //uint16_t dummy = SPI2BUF;
+        sendLog("0x20 (debug) sent to ComeCard\n");
+        SPI2BUF = 0x20; //debug
+        delay_ms(500);
+        //dummy = SPI2BUF;
+        //CheckMessages();
+        //sendLog(itoa(dummy));
+        sendLog("0x21 (autre) sent to ComeCard\n");
+        SPI2BUF = 0x21; //autre
+        delay_ms(500);
+        //dummy = SPI2BUF;
         CheckMessages();
-        //sendLog(itoa(SPI2BUF));
-    }*/
+        //sendLog(itoa(dummy));
+    }
     while(1){
         /*for(p = 10; p < 50; p++){
             plot(p,100);

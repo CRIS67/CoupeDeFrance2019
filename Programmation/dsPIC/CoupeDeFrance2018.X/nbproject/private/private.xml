@@ -3,11 +3,16 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/CRIS%203/Documents/GitHub/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/UART.h</file>
-            <file>file:/C:/Users/CRIS%203/Documents/GitHub/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/main.c</file>
-            <file>file:/C:/Users/CRIS%203/Documents/GitHub/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/constant.h</file>
-            <file>file:/C:/Users/CRIS%203/Documents/GitHub/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/clock.c</file>
-            <file>file:/C:/Users/CRIS%203/Documents/GitHub/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/UART.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/constant.h</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/confBits.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/main.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/GPIO.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/QEI.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/ADC.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/SPI.h</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/UART.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/SPI.c</file>
+            <file>file:/D:/git/cris/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/timer.c</file>
         </group>
     </open-files>
 </project-private>
