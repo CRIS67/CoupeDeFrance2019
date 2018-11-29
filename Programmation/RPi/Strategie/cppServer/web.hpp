@@ -14,6 +14,9 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
+
+#define DEBUG_PID	0
+
 void* thread_HandleConnnection(void *threadid);
 std::string simulateResponse(double i);
 class Web

@@ -216,7 +216,26 @@ int main(){
     tf = theta;
     for(p = 0; p <= 6; p++)
         servoUs(p,0);
-    verbose = 0;
+    verbose = 1;
+    
+    uint32_t foo = 0;
+    
+    TRISFbits.TRISF7 = 0;
+    uint16_t iDelay,jDelay;
+    LATFbits.LATF7 = 1;
+    while(1){
+        LATFbits.LATF7 = !LATFbits.LATF7;
+        //plot(1,p);
+        //p++;
+        //sendLog("Test");
+        /*plot(1,foo);
+        plot(2,foo);
+        foo++;*/
+        //CheckMessages();
+        //delay_ms(500);
+        for(iDelay = 0; iDelay < 1000; iDelay++)
+            for(jDelay = 0; jDelay < 100; jDelay++);
+    }
     while(1){
         //uint16_t dummy = SPI2BUF;
         sendLog("0x20 (debug) sent to ComeCard\n");

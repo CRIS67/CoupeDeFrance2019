@@ -1,18 +1,22 @@
 #ifndef CONSTANT_H
 #define	CONSTANT_H
 
+#define SECURITE_DISTANCE   120
+#define SECURITE_ANGLE      2
+#define SECURITE_SPEED      40
+
 // <editor-fold defaultstate="collapsed" desc="PID">
 //PID speed left    units : rad/s -> V
-#define KP_SPEED_LEFT       1.5//1//0.38//0.57//0.576
-#define KI_SPEED_LEFT       2//0//0.00535//0.05
-#define KD_SPEED_LEFT       0.5//0//0.001675//0.0013375//0.005
+#define KP_SPEED_LEFT       0.05//1.5//1//0.38//0.57//0.576
+#define KI_SPEED_LEFT       0//2//0//0.00535//0.05
+#define KD_SPEED_LEFT       0//0.5//0//0.001675//0.0013375//0.005
 #define BIAS_SPEED_LEFT     0
 #define T_SPEED_LEFT        0.01    //s
 
 //PID speed right   units : rad/s -> V
-#define KP_SPEED_RIGHT      1.5//1//0.38//0.57//0.576
-#define KI_SPEED_RIGHT      2//0//0.00535//0.05
-#define KD_SPEED_RIGHT      0.5//0//0.001675//0.0013375//0.005
+#define KP_SPEED_RIGHT      0.05//1.5//1//0.38//0.57//0.576
+#define KI_SPEED_RIGHT      0//2//0//0.00535//0.05
+#define KD_SPEED_RIGHT      0//0.5//0//0.001675//0.0013375//0.005
 #define BIAS_SPEED_RIGHT    0
 #define T_SPEED_RIGHT       0.01
 
@@ -54,6 +58,11 @@
 #define TX_SIZE 1000     //size of Tx buffer
 #define RX_SIZE 100     //size of Rx buffer
 #define RX_DMA_SIZE 1000 //
+
+#define COEF_SCALE_PID  10000
+#define COEF_SCALE_COEF_DISSYMETRY                      1000
+#define COEF_SCALE_MM_PER_TICKS                         1000000
+#define COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS      1000
 
 #define RX_CODE_START   1
 #define RX_CODE_STOP    2
@@ -118,6 +127,10 @@
 #define CODE_VAR_P_ANGLE     21
 #define CODE_VAR_I_ANGLE     22
 #define CODE_VAR_D_ANGLE     23
+
+#define CODE_VAR_COEF_DISSYMETRY                    30
+#define CODE_VAR_MM_PER_TICKS                       31
+#define CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS    32
 
 #define CODE_VAR_US     100 //attention range [100 ; 100 + NB_US - 1]
 
@@ -213,6 +226,11 @@
 #define PI                                  3.14159265358979323846
 #define ENCODER_WHEEL_RADIUS                24.6                    //mm         
 #define DISTANCE_BETWEEN_ENCODER_WHEELS     293.83//300//295.8918449447346863    //mm
+
+#define ENCODER_WHEEL_DIAMETER              43.56
+#define TICKS_PER_TURN                      4096
+
+#define MM_PER_TICKS                        PI * ENCODER_WHEEL_DIAMETER / TICKS_PER_TURN
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="ADC">

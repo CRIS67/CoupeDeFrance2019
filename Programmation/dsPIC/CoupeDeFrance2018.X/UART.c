@@ -10,10 +10,11 @@
 #include "UART.h"
 #include "PWM.h"
 
+// <editor-fold defaultstate="collapsed" desc="Variables">
 extern double xc;
 extern int state;
 extern PID pidAngle, pidDistance, pidSpeedLeft, pidSpeedRight;
-extern int R,L;
+extern int R, L;
 extern volatile double US[NB_US];
 extern volatile double x;
 extern volatile double y;
@@ -29,12 +30,12 @@ char RxBuffer[RX_SIZE];
 char RxBuffer2[RX_SIZE];
 volatile uint8_t RxDMABuffer[RX_DMA_SIZE];
 //unsigned char iD,iF,iD2,iF2;                //index of first data and of first free element
-uint16_t iD,iF,iD2,iF2;                //index of first data and of first free element
-unsigned char TxOn,TxOn2;
+uint16_t iD, iF, iD2, iF2; //index of first data and of first free element
+unsigned char TxOn, TxOn2;
 //unsigned char iRx,iRx2;
-uint16_t iRx,iRx2;
+uint16_t iRx, iRx2;
 
-volatile double receivedX,receivedY,receivedTheta;
+volatile double receivedX, receivedY, receivedTheta;
 volatile unsigned char newPosReceived = 0;
 volatile unsigned char newPosBackReceived = 0;
 volatile unsigned char newAngleReceived = 0;
@@ -44,26 +45,34 @@ volatile unsigned char debugPosRpiAsserv = 0;
 
 uint16_t start = 0;
 
-uint32_t testPID = 0;
+uint32_t testPID = 0; 
 
-void initUART(){
+extern long double coef_dissymmetry;
+extern long double mm_per_ticks;
+extern long double distance_between_encoder_wheels;// </editor-fold>
+
+
+// <editor-fold defaultstate="collapsed" desc="Init">
+
+void initUART() {
     //initUART1();
     initUART2();
 }
-void initUART1(){   //Bluetooth
-    IEC0bits.U1TXIE = 0;            //Disable UART1 Tx interrupt
-    IEC0bits.U1RXIE = 0;            //Disable UART1 Rx interrupt
-    
-    TRISBbits.TRISB6 = 0;           //TX
-    TRISBbits.TRISB5 = 1;           //RX
-    
+
+void initUART1() { //Bluetooth
+    IEC0bits.U1TXIE = 0; //Disable UART1 Tx interrupt
+    IEC0bits.U1RXIE = 0; //Disable UART1 Rx interrupt
+
+    TRISBbits.TRISB6 = 0; //TX
+    TRISBbits.TRISB5 = 1; //RX
+
     RPINR18 = 0b0100101;
-    RPOR2bits.RP38R = 0b000001; 
-    
+    RPOR2bits.RP38R = 0b000001;
+
     U1MODEbits.UARTEN = 0;
-    U1MODEbits.USIDL = 0;           // Bit13 Continue in Idle
-    U1MODEbits.IREN = 0;            // Bit12 No IR translation
-    U1MODEbits.RTSMD = 0;           // Bit11 Simplex Mode
+    U1MODEbits.USIDL = 0; // Bit13 Continue in Idle
+    U1MODEbits.IREN = 0; // Bit12 No IR translation
+    U1MODEbits.RTSMD = 0; // Bit11 Simplex Mode
     U1MODEbits.UEN = 0b00;
     U1MODEbits.LPBACK = 0;
     U1MODEbits.ABAUD = 0;
@@ -72,39 +81,40 @@ void initUART1(){   //Bluetooth
     U1MODEbits.PDSEL = 0b00;
     U1MODEbits.STSEL = 0;
 
-    U1STAbits.UTXBRK = 0;           //Bit11 Disabled
+    U1STAbits.UTXBRK = 0; //Bit11 Disabled
     U1STAbits.UTXISEL0 = 0;
-    U1STAbits.UTXISEL1 = 0;         //Interrupt is generated when any character is transferred to the Transmit Shift Register and the transmit buffer is empty (which implies at least one location is empty in the transmit buffer)
+    U1STAbits.UTXISEL1 = 0; //Interrupt is generated when any character is transferred to the Transmit Shift Register and the transmit buffer is empty (which implies at least one location is empty in the transmit buffer)
     U1STAbits.UTXINV = 0;
     U1STAbits.ADDEN = 0;
     U1STAbits.URXISEL = 0;
-    
-    U1BRG = BRGVAL ;
-    
-    IFS0bits.U1TXIF = 0;            // Clear the Transmit Interrupt Flag
-    IEC0bits.U1TXIE = 1;            // Enable Transmit Interrupts
-    IFS0bits.U1RXIF = 0;            // Clear the Recieve Interrupt Flag
-    IEC0bits.U1RXIE = 1;            // Enable Recieve Interrupts
-    
-    U1MODEbits.UARTEN = 1;          //Enable the module
+
+    U1BRG = BRGVAL;
+
+    IFS0bits.U1TXIF = 0; // Clear the Transmit Interrupt Flag
+    IEC0bits.U1TXIE = 1; // Enable Transmit Interrupts
+    IFS0bits.U1RXIF = 0; // Clear the Recieve Interrupt Flag
+    IEC0bits.U1RXIE = 1; // Enable Recieve Interrupts
+
+    U1MODEbits.UARTEN = 1; //Enable the module
     U1STAbits.UTXEN = 1;
-    
+
     iD = 0;
     iF = 0;
     TxOn = 0;
     iRx = 0;
 }
-void initUART2(){   //Raspberry Pi
-    IEC1bits.U2TXIE = 0;            //Disable UART2 Tx interrupt
-    IEC1bits.U2RXIE = 0;            //Disable UART2 Rx interrupt
-    
-    RPINR19 = 0b01010000;          //RPI80(pin52-RE0) tied to UART2 RX
-    RPOR9bits.RP81R = 0b000011;     //RP81 (pin53-RE1) tied to UART2 TX
-    
+
+void initUART2() { //Raspberry Pi
+    IEC1bits.U2TXIE = 0; //Disable UART2 Tx interrupt
+    IEC1bits.U2RXIE = 0; //Disable UART2 Rx interrupt
+
+    RPINR19 = 0b01010000; //RPI80(pin52-RE0) tied to UART2 RX
+    RPOR9bits.RP81R = 0b000011; //RP81 (pin53-RE1) tied to UART2 TX
+
     U2MODEbits.UARTEN = 0;
-    U2MODEbits.USIDL = 0;           // Bit13 Continue in Idle
-    U2MODEbits.IREN = 0;            // Bit12 No IR translation
-    U2MODEbits.RTSMD = 0;           // Bit11 Simplex Mode
+    U2MODEbits.USIDL = 0; // Bit13 Continue in Idle
+    U2MODEbits.IREN = 0; // Bit12 No IR translation
+    U2MODEbits.RTSMD = 0; // Bit11 Simplex Mode
     U2MODEbits.UEN = 0b00;
     U2MODEbits.LPBACK = 0;
     U2MODEbits.ABAUD = 0;
@@ -113,29 +123,31 @@ void initUART2(){   //Raspberry Pi
     U2MODEbits.PDSEL = 0b00;
     U2MODEbits.STSEL = 0;
 
-    U2STAbits.UTXBRK = 0;           //Bit11 Disabled
+    U2STAbits.UTXBRK = 0; //Bit11 Disabled
     U2STAbits.UTXISEL0 = 0;
-    U2STAbits.UTXISEL1 = 0;         //Interrupt is generated when any character is transferred to the Transmit Shift Register and the transmit buffer is empty (which implies at least one location is empty in the transmit buffer)
+    U2STAbits.UTXISEL1 = 0; //Interrupt is generated when any character is transferred to the Transmit Shift Register and the transmit buffer is empty (which implies at least one location is empty in the transmit buffer)
     U2STAbits.UTXINV = 0;
     U2STAbits.ADDEN = 0;
     U2STAbits.URXISEL = 0;
-    
-    U2BRG = BRGVAL2 ;
-    
+
+    U2BRG = BRGVAL2;
+
     IFS1bits.U2RXIF = 0;
     IFS1bits.U2TXIF = 0;
     IEC1bits.U2TXIE = 1;
     IEC1bits.U2RXIE = 0;
-    
-    U2MODEbits.UARTEN = 1;          //Enable the module
+
+    U2MODEbits.UARTEN = 1; //Enable the module
     U2STAbits.UTXEN = 1;
-    
+
     iD2 = 0;
     iF2 = 0;
     TxOn2 = 0;
     iRx2 = 0;
-}
+}// </editor-fold>
 
+
+// <editor-fold defaultstate="collapsed" desc="Interrupts">
 /*void __attribute__((interrupt,no_auto_psv)) _U1RXInterrupt(void)
 {
     IFS0bits.U1RXIF = 0;
@@ -155,15 +167,14 @@ void initUART2(){   //Raspberry Pi
         TxOn = 0;
 }*/
 
-void __attribute__((interrupt,no_auto_psv)) _U2TXInterrupt(void)
-{
+void __attribute__((interrupt, no_auto_psv)) _U2TXInterrupt(void) {
     IFS1bits.U2TXIF = 0; // Clear TX Interrupt flag
-    if(iD2 != iF2){
+    if (iD2 != iF2) {
         U2TXREG = pop2();
-    }
-    else
+    } else
         TxOn2 = 0;
-}
+}// </editor-fold>
+
 
 void push(char c){
     TxLoopBuffer[iF] = c;
@@ -192,8 +203,7 @@ char pop2(){
     return r;
 }
 
-char *itoa(int value) 
- {
+char *itoa(int value) {
      static char buffer[12];        // 12 bytes is big enough for an INT32
      int original = value;        // save original value
  
@@ -215,7 +225,46 @@ char *itoa(int value)
  
      return &buffer[c];
  }
+char *dtoa(double value){
+    static char buffer[10];
+    char tempBuffer[10];
+    /*int*/
+    int8_t i;
+    int8_t j = 0;
+    int integerPart = (int)value;
+    double dec = value;
+    if(value < 0){
+        integerPart = -integerPart;
+        dec = -dec;
+        buffer[0] = '-';
+        j++;
+    }
+    dec = dec - integerPart;
+    for(i = 0; i < 10; i++){
+        tempBuffer[i] = (integerPart % 10) + '0';
+        integerPart /= 10;
+        if(!integerPart)
+            break;
+    }
 
+    /*reverse string*/
+    while(i >= 0){
+        buffer[j] = tempBuffer[i];
+        i--;
+        j++;
+    }
+    /*decimal*/
+    buffer[j] = '.';
+    j++;
+    while(j < 9){
+        dec *= 10;
+        buffer[j] = ((int)dec)%10 + '0';
+        dec = dec - (int)dec;
+        j++;
+    }
+    buffer[9] = '\0';
+    return buffer;
+}
 void CheckMessages(){
     while(1){
         
@@ -318,66 +367,96 @@ void CheckMessages(){
                     uint32_t value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
                     switch (var) {
                         case CODE_VAR_P_SPEED_L:
-                            plot(1,(uint32_t)(pidSpeedLeft.Kp * 1000));
-                            pidSpeedLeft.Kp = (double)value / 1000;
-                            plot(2,(uint32_t)(pidSpeedLeft.Kp * 1000));
-                            testPID = value;
+                            pidSpeedLeft.Kp = (double)value / COEF_SCALE_PID;
                             sendLog("Changed P1 : speed left to ");
-                            sendLog(itoa((int)(pidSpeedLeft.Kp*1000)));
-                            //sendLog("\n");
-                            sendLog(" / 1000\n");
+                            //sendLog(itoa((int)(pidSpeedLeft.Kp*COEF_SCALE_PID)));
+                            sendLog(dtoa(pidSpeedLeft.Kp));
+                            sendLog("\n");
+                            //sendLog(" / 1000\n");
                             break;
                         case CODE_VAR_I_SPEED_L:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidSpeedLeft.Ki = (double)value / 1000;
+                            pidSpeedLeft.Ki = (double)value / COEF_SCALE_PID;
                             sendLog("Changed I1 : speed left to ");
-                            sendLog(itoa((int)(pidSpeedLeft.Ki*1000)));
-                            //sendLog("\n");
-                            sendLog(" / 1000\n");
+                            //sendLog(itoa((int)(pidSpeedLeft.Ki*COEF_SCALE_PID)));
+                            sendLog(dtoa(pidSpeedLeft.Ki));
+                            sendLog("\n");
+                            //sendLog(" / 1000\n");
                             break;
                         case CODE_VAR_D_SPEED_L:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidSpeedLeft.Kd = (double)value / 1000;
+                            pidSpeedLeft.Kd = (double)value / COEF_SCALE_PID;
                             sendLog("Changed D1 : speed left to ");
-                            sendLog(itoa((int)(pidSpeedLeft.Kd*1000)));
-                            //sendLog("\n");
-                            sendLog(" / 1000\n");
+                            //sendLog(itoa((int)(pidSpeedLeft.Kd*1000)));
+                            sendLog(dtoa(pidSpeedLeft.Kd));
+                            sendLog("\n");
+                            //sendLog(" / 1000\n");
                             break;
                         case CODE_VAR_P_SPEED_R:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidSpeedRight.Kp = (double)value / 1000;
+                            pidSpeedRight.Kp = (double)value / COEF_SCALE_PID;
+                            sendLog("Changed P2 : speed right to ");
+                            sendLog(dtoa(pidSpeedRight.Kp));
+                            sendLog("\n");
                             break;
                         case CODE_VAR_I_SPEED_R:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidSpeedRight.Ki = (double)value / 1000;
+                            pidSpeedRight.Ki = (double)value / COEF_SCALE_PID;
+                            sendLog("Changed I2 : speed right to ");
+                            sendLog(dtoa(pidSpeedRight.Ki));
+                            sendLog("\n");
                             break;
                         case CODE_VAR_D_SPEED_R:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidSpeedRight.Kd = (double)value / 1000;
+                            pidSpeedRight.Kd = (double)value / COEF_SCALE_PID;
+                            sendLog("Changed D2 : speed right to ");
+                            sendLog(dtoa(pidSpeedRight.Kd));
+                            sendLog("\n");
                             break;
                         case CODE_VAR_P_DISTANCE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidDistance.Kp = (double)value / 1000;
+                            pidDistance.Kp = (double)value / COEF_SCALE_PID;
                             break;
                         case CODE_VAR_I_DISTANCE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidDistance.Ki = (double)value / 1000;
+                            pidDistance.Ki = (double)value / COEF_SCALE_PID;
                             break;
                         case CODE_VAR_D_DISTANCE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidDistance.Kd = (double)value / 1000;
+                            pidDistance.Kd = (double)value / COEF_SCALE_PID;
                             break;
                         case CODE_VAR_P_ANGLE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidAngle.Kp = (double)value / 1000;
+                            pidAngle.Kp = (double)value / COEF_SCALE_PID;
                             break;
                         case CODE_VAR_I_ANGLE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidAngle.Ki = (double)value / 1000;
+                            pidAngle.Ki = (double)value / COEF_SCALE_PID;
                             break;
                         case CODE_VAR_D_ANGLE:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            pidAngle.Kd = (double)value / 1000;
+                            pidAngle.Kd = (double)value / COEF_SCALE_PID;
+                            break;
+                        case CODE_VAR_COEF_DISSYMETRY:
+                            value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
+                            coef_dissymmetry = (long double)value / COEF_SCALE_COEF_DISSYMETRY;
+                            sendLog("Coef Dissymetry changed to : ");
+                            sendLog(dtoa((double)coef_dissymmetry));
+                            sendLog("\n");
+                            break;
+                        case CODE_VAR_MM_PER_TICKS:
+                            value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
+                            mm_per_ticks = (long double)value / COEF_SCALE_MM_PER_TICKS;
+                            sendLog("mm per ticks changed to : ");
+                            sendLog(dtoa((double)mm_per_ticks));
+                            sendLog("\n");
+                            break;
+                        case CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS:
+                            value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
+                            distance_between_encoder_wheels = (long double)value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS;
+                            sendLog("Distance between encoder wheels changed to : ");
+                            sendLog(dtoa((double)distance_between_encoder_wheels));
+                            sendLog("\n");
                             break;
                     }
                 }
@@ -651,9 +730,9 @@ void sendUS(){
     }   
 }
 void send(uint8_t *str,uint16_t size){
-    IEC1bits.U2TXIE = 0;    //disable Tx interrupt
     if(verbose == 0)
         return;
+    IEC1bits.U2TXIE = 0;    //disable Tx interrupt
     uint16_t i = 0;
     //uint8_t saveTxOn2 = TxOn2;  //TxOn2 could change during an interrupt
     if(TxOn2 == 1)
@@ -706,21 +785,21 @@ void plot(uint8_t id,uint32_t value){
     send(buffer,TX_SIZE_PLOT + 1);
 }
 void sendAllPID(){
-    sendVar32(CODE_VAR_P_SPEED_L,(uint32_t)(pidSpeedLeft.Kp*1000));
-    sendVar32(CODE_VAR_I_SPEED_L,(uint32_t)(pidSpeedLeft.Ki*1000));
-    sendVar32(CODE_VAR_D_SPEED_L,(uint32_t)(pidSpeedLeft.Kd*1000));
+    sendVar32(CODE_VAR_P_SPEED_L,(uint32_t)(pidSpeedLeft.Kp*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_I_SPEED_L,(uint32_t)(pidSpeedLeft.Ki*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_D_SPEED_L,(uint32_t)(pidSpeedLeft.Kd*COEF_SCALE_PID));
     
-    sendVar32(CODE_VAR_P_SPEED_R,(uint32_t)(pidSpeedRight.Kp*1000));
-    sendVar32(CODE_VAR_I_SPEED_R,(uint32_t)(pidSpeedRight.Ki*1000));
-    sendVar32(CODE_VAR_D_SPEED_R,(uint32_t)(pidSpeedRight.Kd*1000));
+    sendVar32(CODE_VAR_P_SPEED_R,(uint32_t)(pidSpeedRight.Kp*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_I_SPEED_R,(uint32_t)(pidSpeedRight.Ki*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_D_SPEED_R,(uint32_t)(pidSpeedRight.Kd*COEF_SCALE_PID));
     
-    sendVar32(CODE_VAR_P_DISTANCE,(uint32_t)(pidDistance.Kp*1000));
-    sendVar32(CODE_VAR_I_DISTANCE,(uint32_t)(pidDistance.Ki*1000));
-    sendVar32(CODE_VAR_D_DISTANCE,(uint32_t)(pidDistance.Kd*1000));
+    sendVar32(CODE_VAR_P_DISTANCE,(uint32_t)(pidDistance.Kp*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_I_DISTANCE,(uint32_t)(pidDistance.Ki*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_D_DISTANCE,(uint32_t)(pidDistance.Kd*COEF_SCALE_PID));
     
-    sendVar32(CODE_VAR_P_ANGLE,(uint32_t)(pidAngle.Kp*1000));
-    sendVar32(CODE_VAR_I_ANGLE,(uint32_t)(pidAngle.Ki*1000));
-    sendVar32(CODE_VAR_D_ANGLE,(uint32_t)(pidAngle.Kd*1000));
+    sendVar32(CODE_VAR_P_ANGLE,(uint32_t)(pidAngle.Kp*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_I_ANGLE,(uint32_t)(pidAngle.Ki*COEF_SCALE_PID));
+    sendVar32(CODE_VAR_D_ANGLE,(uint32_t)(pidAngle.Kd*COEF_SCALE_PID));
 }
 void sendVar32(uint8_t varCode, uint32_t var){
     uint8_t  i;

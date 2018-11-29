@@ -1,3 +1,7 @@
+var COEF_SCALE_COEF_DISSYMETRY = 1000;
+var COEF_SCALE_MM_PER_TICKS = 1000;
+var COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS = 1000;
+
 window.onload = function () {
 		/*variables*/
 		var dps = [];   //dataPoints. 
@@ -1053,6 +1057,19 @@ window.onload = function () {
 				clearInterval(chartInterval);
 			}
 		});*/
+
+		$("#ButtonSendOdo1").click(function(event){
+			var cmd = "odo1=" + parseInt(document.getElementById("numberOdo1").value * COEF_SCALE_COEF_DISSYMETRY);
+			sendCmd(cmd);
+		});
+		$("#ButtonSendOdo2").click(function(event){
+			var cmd = "odo2=" + parseInt(document.getElementById("numberOdo2").value * COEF_SCALE_MM_PER_TICKS);
+			sendCmd(cmd);
+		});
+		$("#ButtonSendOdo3").click(function(event){
+			var cmd = "odo3=" + parseInt(document.getElementById("numberOdo3").value * COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS);
+			sendCmd(cmd);
+		});
 		
 		function sendData() {
 			var data = $("#inputText").val();
@@ -1603,9 +1620,11 @@ window.onload = function () {
 					
 					var r = this.responseText;
 					//if(r != "OK"){
-					if(!r.startWith("OK")){
-						alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
-					}
+					/*if( r != null){
+						if(!r.startsWith("OK")){
+							alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
+						}
+					}*/
 				}
 			}
 			//xhr.send("cmd=" + cmd);

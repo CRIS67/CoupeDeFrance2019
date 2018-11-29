@@ -421,6 +421,10 @@
 	</div>
 	<div id="onglet4" class="tab">
 		<br/>
+		Coef Dissymetry : <input type="number" min="0" max="2" step="0.001" value="1" id="numberOdo1" script=""/><input type="button" id="ButtonSendOdo1" value="Send"><br/>
+		micrometer per tick : <input type="number" min="0" max="100" step="0.001" value="18.86" id="numberOdo2"/><input type="button" id="ButtonSendOdo2" value="Send"><br/>
+		distance between encoder wheels (mm): <input type="number" min="0" max="1000" step="0.001" value="300" id="numberOdo3"/><input type="button" id="ButtonSendOdo3" value="Send"><br/>
+		<br/>
 		<input type="button" id="ButtonTestPID"value="Test chart"><br/>
 		<input type="button" id="ButtonLoadPID"value="Load PID"><br/>
 		<input type="button" id="ButtonSendPID"value="Save PID"><br/>

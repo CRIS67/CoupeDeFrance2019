@@ -168,11 +168,11 @@ void *print(void *ptr) {
 							case CODE_VAR_P_SPEED_L :
 								w->dspic->pidSpeedLeft.Kp = ((uint32_t)msg[4] << 24) + ((uint32_t)msg[5] << 16) + ((uint32_t)msg[6] << 8) + msg[7];
 								//w->dspic->isPIDUpdated = true;
-								printf("message from main.cpp l 120 : Kp set to %d\n",w->dspic->pidSpeedLeft.Kp);
+								/*printf("message from main.cpp l 120 : Dspic said that Kp is %d\n",w->dspic->pidSpeedLeft.Kp);
 
 								for(int i = 0; i <= 7; i++){
                                     printf("[%d] = %d |",i,(int)msg[i]);
-								}
+								}*/
 								break;
 							case CODE_VAR_I_SPEED_L :
 								w->dspic->pidSpeedLeft.Ki = ((uint32_t)msg[4] << 24) + ((uint32_t)msg[5] << 16) + ((uint32_t)msg[6] << 8) + msg[7];

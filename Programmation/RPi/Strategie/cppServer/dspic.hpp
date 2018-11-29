@@ -56,6 +56,10 @@
 #define CODE_VAR_I_ANGLE     22
 #define CODE_VAR_D_ANGLE     23
 
+#define CODE_VAR_COEF_DISSYMETRY                    30
+#define CODE_VAR_MM_PER_TICKS                       31
+#define CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS    32
+
 #define VAR_8b      0
 #define VAR_16b     1
 #define VAR_32b     2
