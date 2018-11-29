@@ -417,9 +417,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             }
             testSendToMotor(commandeR, commandeL);
             if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21)
-                while (1) {
+                /*while (1) {
                     testSendToMotor(0, 0);
-                }
+                }*/
+                testSendToMotor(0, 0);
         }
         //plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
         //plot(2,(uint32_t)((int32_t)(speedR*1000)));

@@ -17,6 +17,7 @@ void push(char c);
 void push2(char c);
 void plot(uint8_t id,uint32_t value);
 char *itoa(int value);
+char *dtoa(double value);
 void CheckMessages();
 void send(uint8_t *str,uint16_t size);
 void sendPos();
