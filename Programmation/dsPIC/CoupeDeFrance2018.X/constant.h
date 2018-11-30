@@ -60,7 +60,7 @@
 #define RX_DMA_SIZE 1000 //
 
 #define COEF_SCALE_PID  10000
-#define COEF_SCALE_COEF_DISSYMETRY                      1000
+#define COEF_SCALE_COEF_DISSYMETRY                      10000
 #define COEF_SCALE_MM_PER_TICKS                         1000000
 #define COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS      1000
 
@@ -156,7 +156,8 @@
 #define COEF_MOT_BO 0.65//0.428571    //  250*12/7000
 //#define VMIN        1//0.3   //arreter les moteurs si la commande trop faible
 
-#define ACC_MAX 0.5
+//#define ACC_MAX 0.5
+#define ACC_MAX 10000
 
 #define MAX_ERROR_D     8//1//10      //mm
 #define MAX_ERROR_A     0.05//0.02//0.01//0.01rad ~= 0.57°
@@ -227,8 +228,10 @@
 #define ENCODER_WHEEL_RADIUS                24.6                    //mm         
 #define DISTANCE_BETWEEN_ENCODER_WHEELS     293.83//300//295.8918449447346863    //mm
 
+#define COEF_DISSYMETRY                     1.010
 #define ENCODER_WHEEL_DIAMETER              43.56
 #define TICKS_PER_TURN                      4096
+
 
 #define MM_PER_TICKS                        PI * ENCODER_WHEEL_DIAMETER / TICKS_PER_TURN
 // </editor-fold>

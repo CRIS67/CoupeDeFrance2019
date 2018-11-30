@@ -69,7 +69,7 @@ double var_ACC_MAX = ACC_MAX;
 
 unsigned char timer2Overflow = 0;
 
-long double coef_dissymmetry = 1;
+long double coef_dissymmetry = COEF_DISSYMETRY;
 long double mm_per_ticks = MM_PER_TICKS;
 long double distance_between_encoder_wheels = DISTANCE_BETWEEN_ENCODER_WHEELS;
 
@@ -254,7 +254,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         long double speedR = speedRSum;
 
         speedL = speedL * mm_per_ticks * 1000 / N_ASSERV;
-        speedR = speedL * mm_per_ticks * 1000 / N_ASSERV;
+        speedR = speedR * mm_per_ticks * 1000 / N_ASSERV;
 
         speedLSum = 0;
         speedRSum = 0;
@@ -309,9 +309,12 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             rA = 0;
         }*/
 
-        setSetPoint(&pidSpeedLeft, rD - rA);
-        setSetPoint(&pidSpeedRight, rD + rA);
+        //setSetPoint(&pidSpeedLeft, rD - rA);
+        //setSetPoint(&pidSpeedRight, rD + rA);
 
+        setSetPoint(&pidSpeedLeft, xc);
+        setSetPoint(&pidSpeedRight, xc);
+        
         double commandeL = compute(&pidSpeedLeft, speedL);
         double commandeR = compute(&pidSpeedRight, speedR);
 
@@ -416,14 +419,15 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 }*/
             }
             testSendToMotor(commandeR, commandeL);
-            if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21)
+            if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
                 /*while (1) {
                     testSendToMotor(0, 0);
                 }*/
-                testSendToMotor(0, 0);
+                //testSendToMotor(0, 0);
+            }
         }
-        //plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
-        //plot(2,(uint32_t)((int32_t)(speedR*1000)));
+        plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
+        plot(2,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
         //print("=)\n");
         // <editor-fold defaultstate="collapsed" desc="Génération de trajectoire">
         /*Génération de trajectoire*/

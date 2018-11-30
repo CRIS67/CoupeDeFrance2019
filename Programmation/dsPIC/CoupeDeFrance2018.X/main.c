@@ -230,6 +230,22 @@ int main(){
     uint16_t iDelay,jDelay;
     //LATFbits.LATF7 = 1;
     
+    delay_ms(2000);
+    while(1){
+        xc = 500;
+        CheckMessages();
+        delay_ms(1000);
+        xc = 0;
+        CheckMessages();
+        delay_ms(1000);
+        xc = -500;
+        CheckMessages();
+        delay_ms(1000);
+        xc = 0;
+        CheckMessages();
+        delay_ms(1000);
+    }
+    
     while(1){
         sendLog("x = ");
         sendLog(dtoa(x));
