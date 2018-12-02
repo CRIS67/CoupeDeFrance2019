@@ -11,13 +11,13 @@
 #include "PID.h"
 
 void initAllPID(volatile PID *pidSpeedLeft, volatile PID *pidSpeedRight, volatile PID *pidDistance, volatile PID *pidAngle){
-    initPID(pidSpeedLeft,KP_SPEED_LEFT,KI_SPEED_LEFT,KD_SPEED_LEFT,BIAS_SPEED_LEFT,0,T_SPEED_LEFT,0,0);
-    initPID(pidSpeedRight,KP_SPEED_RIGHT,KI_SPEED_RIGHT,KD_SPEED_RIGHT,BIAS_SPEED_RIGHT,0,T_SPEED_RIGHT,0,0);
-    initPID(pidDistance,KP_DISTANCE,KI_DISTANCE,KD_DISTANCE,BIAS_DISTANCE,0,T_DISTANCE,0,0);
-    initPID(pidAngle,KP_ANGLE,KI_ANGLE,KD_ANGLE,BIAS_ANGLE,0,T_ANGLE,0,0);
+    initPID(pidSpeedLeft,KP_SPEED_LEFT,KI_SPEED_LEFT,KD_SPEED_LEFT,BIAS_SPEED_LEFT,0,T_SPEED_LEFT,0,0,SMOOTHING_FACTOR_SPEED_LEFT,SATURATION_SPEED_LEFT);
+    initPID(pidSpeedRight,KP_SPEED_RIGHT,KI_SPEED_RIGHT,KD_SPEED_RIGHT,BIAS_SPEED_RIGHT,0,T_SPEED_RIGHT,0,0,SMOOTHING_FACTOR_SPEED_RIGHT,SATURATION_SPEED_RIGHT);
+    initPID(pidDistance,KP_DISTANCE,KI_DISTANCE,KD_DISTANCE,BIAS_DISTANCE,0,T_DISTANCE,0,0,SMOOTHING_FACTOR_DISTANCE,SATURATION_DISTANCE);
+    initPID(pidAngle,KP_ANGLE,KI_ANGLE,KD_ANGLE,BIAS_ANGLE,0,T_ANGLE,0,0,SMOOTHING_FACTOR_ANGLE,SATURATION_ANGLE);
 }
 
-void initPID(volatile PID *pid, double Kp, double Ki, double Kd,double bias, double output, double period, double processVariable, double setPoint) {
+void initPID(volatile PID *pid, long double Kp, long double Ki, long double Kd,long double bias, long double output, long double period, long double processVariable, long double setPoint, long double smoothingFactor, long double saturation){
     pid->Kp = Kp;
     pid->Ki = Ki;
     pid->Kd = Kd;
@@ -30,50 +30,64 @@ void initPID(volatile PID *pid, double Kp, double Ki, double Kd,double bias, dou
     pid->sumI = 0;
     pid->prevError = 0;
     pid->prevSmoothError = 0;
+    pid->smoothingFactor = smoothingFactor;
+    pid->saturation = saturation;
     return;
 }
 
-void setSetPoint(volatile PID *pid, double setPoint){    //~useless
+void setSetPoint(volatile PID *pid, long double setPoint){    //~useless
     pid->setPoint = setPoint;
     //pid->sumI = 0;
 }
 
-void setProcessValue(volatile PID *pid, double processVariable){ //~useless
+void setProcessValue(volatile PID *pid, long double processVariable){ //~useless
     pid->processVariable = processVariable;
 }
 
-double compute(volatile PID *pid, double processVariable){
+long double compute(volatile PID *pid, long double processVariable){
     
-    int i;
-    double smoothError;
+    //int i;
+    long double smoothError;
     
     pid->processVariable = processVariable;
-    double error = pid->setPoint - pid->processVariable;
+    long double error = pid->setPoint - pid->processVariable;
     
-    //double deriv = ((error - pid->prevError)/pid->period);
-    for(i = 1; i < N_SMOOTHING; i++){
+    //long double deriv = ((error - pid->prevError)/pid->period);
+    /*for(i = 1; i < N_SMOOTHING; i++){
         smoothError = pid->prevSmoothError + SMOOTHING_FACTOR * (error - pid->prevSmoothError);
-    }
-    double deriv = ((smoothError - pid->prevSmoothError)/pid->period);
+    }*/
+    smoothError = pid->prevSmoothError + pid->smoothingFactor * (error - pid->prevSmoothError);
+    long double deriv = ((smoothError - pid->prevSmoothError)/pid->period);
     
     pid->sumI = pid->sumI + error * pid->period;
     
-    if(pid->sumI > MAX_I)
+    /*if(pid->sumI > MAX_I)
         pid->sumI = MAX_I;
     else if(pid->sumI < -MAX_I)
-        pid->sumI = -MAX_I;
+        pid->sumI = -MAX_I;*/
     
-    pid->output = pid->bias + pid->Kp * error + pid->Ki * pid->sumI + pid->Kd * deriv;
+    long double outputP = pid->Kp * error;
+    long double outputI = pid->Ki * pid->sumI;
+    long double outputD = pid->Kd * deriv;
+    
+    pid->output = pid->bias + outputP + outputI + outputD;
             
+    if(pid->output > pid->saturation)
+        pid->output = pid->saturation;
+    else if(pid->output < -pid->saturation)
+        pid->output = -pid->saturation;
+    
+    pid->sumI = (pid->output - pid->bias - outputP - outputD) / pid->Ki;    //Anti-Windup
+    
     pid->prevError = error;
     pid->prevSmoothError = smoothError;
     
     return pid->output;
 }
-double modulo2Pi(double t){
+/*long double modulo2Pi(long double t){
     while(t > PI)
         t-= PI;
     while(t < -PI)
         t+= PI;
     return t;            
-}
+}*/

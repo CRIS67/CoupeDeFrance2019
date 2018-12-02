@@ -7,34 +7,42 @@
 
 // <editor-fold defaultstate="collapsed" desc="PID">
 //PID speed left    units : rad/s -> V
-#define KP_SPEED_LEFT       0.05//1.5//1//0.38//0.57//0.576
-#define KI_SPEED_LEFT       0//2//0//0.00535//0.05
-#define KD_SPEED_LEFT       0//0.5//0//0.001675//0.0013375//0.005
-#define BIAS_SPEED_LEFT     0
-#define T_SPEED_LEFT        0.01    //s
+#define KP_SPEED_LEFT               0.05//1.5//1//0.38//0.57//0.576
+#define KI_SPEED_LEFT               0//2//0//0.00535//0.05
+#define KD_SPEED_LEFT               0//0.5//0//0.001675//0.0013375//0.005
+#define BIAS_SPEED_LEFT             0
+#define T_SPEED_LEFT                0.01    //s
+#define SMOOTHING_FACTOR_SPEED_LEFT 0.03
+#define SATURATION_SPEED_LEFT       VSAT    //unit : voltage
 
 //PID speed right   units : rad/s -> V
-#define KP_SPEED_RIGHT      0.05//1.5//1//0.38//0.57//0.576
-#define KI_SPEED_RIGHT      0//2//0//0.00535//0.05
-#define KD_SPEED_RIGHT      0//0.5//0//0.001675//0.0013375//0.005
-#define BIAS_SPEED_RIGHT    0
-#define T_SPEED_RIGHT       0.01
+#define KP_SPEED_RIGHT              0.05//1.5//1//0.38//0.57//0.576
+#define KI_SPEED_RIGHT              0//2//0//0.00535//0.05
+#define KD_SPEED_RIGHT              0//0.5//0//0.001675//0.0013375//0.005
+#define BIAS_SPEED_RIGHT            0
+#define T_SPEED_RIGHT               0.01
+#define SMOOTHING_FACTOR_SPEED_RIGHT 0.03
+#define SATURATION_SPEED_RIGHT      VSAT    //unit : voltage
 
 //PID distance      units : mm -> rad/s
-#define KP_DISTANCE         0.4//0.15//0.04
-#define KI_DISTANCE         0
-#define KD_DISTANCE         0.001//0//0.0065
-#define BIAS_DISTANCE       0
-#define T_DISTANCE          0.01
+#define KP_DISTANCE                 0.4//0.15//0.04
+#define KI_DISTANCE                 0
+#define KD_DISTANCE                 0.001//0//0.0065
+#define BIAS_DISTANCE               0
+#define T_DISTANCE                  0.01
+#define SMOOTHING_FACTOR_DISTANCE   1
+#define SATURATION_DISTANCE         1000000    //unit : mm/s
 
 //PID angle         units : rad -> rad/s
-#define KP_ANGLE        20//80//15//80//120//90//30//60
-#define KI_ANGLE        0
-#define KD_ANGLE        1//2//1//0//6.5
-#define BIAS_ANGLE      0
-#define T_ANGLE         0.01
+#define KP_ANGLE                    20//80//15//80//120//90//30//60
+#define KI_ANGLE                    0
+#define KD_ANGLE                    1//2//1//0//6.5
+#define BIAS_ANGLE                  0
+#define T_ANGLE                     0.01
+#define SMOOTHING_FACTOR_ANGLE      1
+#define SATURATION_ANGLE            1000000    //unit : mm/s
 
-#define MAX_I    100
+//#define MAX_I    100
 
 // </editor-fold>
 
@@ -165,8 +173,8 @@
 
 #define N_ASSERV        10  //nombre d'itérations entre 2 boucles d'asserv'
 #define DIST_AIM_POINT  50  //distance au dessus de laquelle le robot vise le point final
-#define SMOOTHING_FACTOR    0.2
-#define N_SMOOTHING     5
+//#define SMOOTHING_FACTOR    0.2
+//#define N_SMOOTHING     5
 
 // </editor-fold>
 

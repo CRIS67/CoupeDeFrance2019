@@ -258,6 +258,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
 
         speedLSum = 0;
         speedRSum = 0;
+        
+        //smoothSpeedL = smoothSpeedL + SMOOTHING_FACTOR * (speedL - smoothSpeedL);
+        //smoothSpeedR = smoothSpeedR + SMOOTHING_FACTOR * (speedR - smoothSpeedR);
         /*int i;
         for(i = 1; i < N_SMOOTHING; i++){
             smoothSpeedL = smoothSpeedL + SMOOTHING_FACTOR * (speedL - smoothSpeedL);
