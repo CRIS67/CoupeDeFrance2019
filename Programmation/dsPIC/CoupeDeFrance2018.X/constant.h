@@ -8,20 +8,20 @@
 // <editor-fold defaultstate="collapsed" desc="PID">
 //PID speed left    units : rad/s -> V
 #define KP_SPEED_LEFT               0.05//1.5//1//0.38//0.57//0.576
-#define KI_SPEED_LEFT               0//2//0//0.00535//0.05
+#define KI_SPEED_LEFT               0.35//2//0//0.00535//0.05
 #define KD_SPEED_LEFT               0//0.5//0//0.001675//0.0013375//0.005
 #define BIAS_SPEED_LEFT             0
 #define T_SPEED_LEFT                0.01    //s
-#define SMOOTHING_FACTOR_SPEED_LEFT 0.03
+#define SMOOTHING_FACTOR_SPEED_LEFT 0.8//0.03
 #define SATURATION_SPEED_LEFT       VSAT    //unit : voltage
 
 //PID speed right   units : rad/s -> V
 #define KP_SPEED_RIGHT              0.05//1.5//1//0.38//0.57//0.576
-#define KI_SPEED_RIGHT              0//2//0//0.00535//0.05
+#define KI_SPEED_RIGHT              0.35//2//0//0.00535//0.05
 #define KD_SPEED_RIGHT              0//0.5//0//0.001675//0.0013375//0.005
 #define BIAS_SPEED_RIGHT            0
 #define T_SPEED_RIGHT               0.01
-#define SMOOTHING_FACTOR_SPEED_RIGHT 0.03
+#define SMOOTHING_FACTOR_SPEED_RIGHT 0.8//0.03
 #define SATURATION_SPEED_RIGHT      VSAT    //unit : voltage
 
 //PID distance      units : mm -> rad/s
@@ -67,7 +67,7 @@
 #define RX_SIZE 100     //size of Rx buffer
 #define RX_DMA_SIZE 1000 //
 
-#define COEF_SCALE_PID  10000
+#define COEF_SCALE_PID  1000000
 #define COEF_SCALE_COEF_DISSYMETRY                      10000
 #define COEF_SCALE_MM_PER_TICKS                         1000000
 #define COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS      1000

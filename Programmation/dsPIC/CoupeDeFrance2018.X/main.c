@@ -231,19 +231,24 @@ int main(){
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
+        xc = 0;
     while(1){
-        xc = 500;
         CheckMessages();
-        delay_ms(1000);
+        delay_ms(3000);
+    }
+    while(1){
+        xc = 250;
+        CheckMessages();
+        delay_ms(3000);
         xc = 0;
         CheckMessages();
-        delay_ms(1000);
-        xc = -500;
+        delay_ms(3000);
+        xc = -250;
         CheckMessages();
-        delay_ms(1000);
+        delay_ms(3000);
         xc = 0;
         CheckMessages();
-        delay_ms(1000);
+        delay_ms(3000);
     }
     
     while(1){

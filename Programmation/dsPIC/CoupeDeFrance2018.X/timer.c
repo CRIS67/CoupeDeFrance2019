@@ -312,11 +312,11 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             rA = 0;
         }*/
 
-        //setSetPoint(&pidSpeedLeft, rD - rA);
-        //setSetPoint(&pidSpeedRight, rD + rA);
+        setSetPoint(&pidSpeedLeft, rD - rA);
+        setSetPoint(&pidSpeedRight, rD + rA);
 
-        setSetPoint(&pidSpeedLeft, xc);
-        setSetPoint(&pidSpeedRight, xc);
+        /*setSetPoint(&pidSpeedLeft, xc);
+        setSetPoint(&pidSpeedRight, xc);*/
         
         double commandeL = compute(&pidSpeedLeft, speedL);
         double commandeR = compute(&pidSpeedRight, speedR);
@@ -429,8 +429,20 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 //testSendToMotor(0, 0);
             }
         }
-        plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
+        /*plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
         plot(2,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
+        plot(5,(uint32_t)((int32_t)(pidSpeedLeft.debugCommande*10000)));
+        plot(6,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeP*10000)));
+        plot(7,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeI*10000)));
+        plot(8,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeD*10000)));*/
+        
+        plot(1,(uint32_t)((int32_t)(x))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
+        plot(2,(uint32_t)((int32_t)(xc)));
+        /*plot(5,(uint32_t)((int32_t)(pidDistance.debugCommande*10000)));
+        plot(6,(uint32_t)((int32_t)(pidDistance.debugCommandeP*10000)));
+        plot(7,(uint32_t)((int32_t)(pidDistance.debugCommandeI*10000)));
+        plot(8,(uint32_t)((int32_t)(pidDistance.debugCommandeD*10000)));*/
+        
         //print("=)\n");
         // <editor-fold defaultstate="collapsed" desc="Génération de trajectoire">
         /*Génération de trajectoire*/

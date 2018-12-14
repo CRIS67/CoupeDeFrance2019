@@ -45,6 +45,10 @@ struct PID
     long double period;               //intervalle asserv
     long double output;
     long double saturation;
+    long double debugCommande;
+    long double debugCommandeP;
+    long double debugCommandeI;
+    long double debugCommandeD;
 };
 
 void initAllPID(volatile PID *pidSpeedLeft, volatile PID *pidSpeedRight, volatile PID *pidDistance, volatile PID *pidAngle);

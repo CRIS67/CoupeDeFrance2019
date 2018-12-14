@@ -32,6 +32,11 @@ void initPID(volatile PID *pid, long double Kp, long double Ki, long double Kd,l
     pid->prevSmoothError = 0;
     pid->smoothingFactor = smoothingFactor;
     pid->saturation = saturation;
+    
+    pid->debugCommande = 0;
+    pid->debugCommandeP = 0;
+    pid->debugCommandeI = 0;
+    pid->debugCommandeD = 0;
     return;
 }
 
@@ -56,7 +61,8 @@ long double compute(volatile PID *pid, long double processVariable){
     /*for(i = 1; i < N_SMOOTHING; i++){
         smoothError = pid->prevSmoothError + SMOOTHING_FACTOR * (error - pid->prevSmoothError);
     }*/
-    smoothError = pid->prevSmoothError + pid->smoothingFactor * (error - pid->prevSmoothError);
+    //smoothError = pid->prevSmoothError + pid->smoothingFactor * (error - pid->prevSmoothError);
+    smoothError = pid->prevSmoothError + pid->smoothingFactor * (processVariable - pid->prevSmoothError);
     long double deriv = ((smoothError - pid->prevSmoothError)/pid->period);
     
     pid->sumI = pid->sumI + error * pid->period;
@@ -68,7 +74,7 @@ long double compute(volatile PID *pid, long double processVariable){
     
     long double outputP = pid->Kp * error;
     long double outputI = pid->Ki * pid->sumI;
-    long double outputD = pid->Kd * deriv;
+    long double outputD = - pid->Kd * deriv;
     
     pid->output = pid->bias + outputP + outputI + outputD;
             
@@ -77,10 +83,23 @@ long double compute(volatile PID *pid, long double processVariable){
     else if(pid->output < -pid->saturation)
         pid->output = -pid->saturation;
     
-    pid->sumI = (pid->output - pid->bias - outputP - outputD) / pid->Ki;    //Anti-Windup
+    if(pid->Ki != 0){
+        long double outputWithoutI = pid->bias + outputP + outputD;
+        if(outputWithoutI > pid->saturation)
+            outputWithoutI = pid->saturation;
+        else if(outputWithoutI < -pid->saturation)
+            outputWithoutI = -pid->saturation;
+        pid->sumI = (pid->output - outputWithoutI) / pid->Ki;    //Anti-Windup
+    }
+        
     
     pid->prevError = error;
     pid->prevSmoothError = smoothError;
+    
+    pid->debugCommande = pid->output;
+    pid->debugCommandeP = outputP;
+    pid->debugCommandeI = outputI;
+    pid->debugCommandeD = outputD;
     
     return pid->output;
 }
