@@ -137,7 +137,15 @@ extern uint16_t start;
 
 extern uint16_t iD2,iF2;
 
-volatile uint8_t verbose = 1;
+volatile uint8_t verbose = 0;
+
+volatile double funSpeed = 1000;
+volatile double funAcc = 100;
+
+volatile double funAngularSpeed = 10;
+volatile double funAngularAcc = 3;
+
+int sens = 0;
 
 int main(){
     initClock(); //Clock 140 MHz
@@ -205,13 +213,13 @@ int main(){
 
     int m,p = 0;
     p++;
-    /*x = 1000;
+    x = 1000;
     y = 1500;
-    theta = PI*/
+    theta = PI;
     
-    x = 0;
+    /*x = 0;
     y = 0;
-    theta = 0;
+    theta = 0;*/
     
     xc = x;
     yc = y;
@@ -231,27 +239,30 @@ int main(){
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
-        xc = 0;
-    while(1){
+    while(0){
         CheckMessages();
         delay_ms(3000);
     }
-    while(1){
+    while(0){
         xc = 250;
+        xf = 250;
         CheckMessages();
         delay_ms(3000);
         xc = 0;
+        xf = 0;
         CheckMessages();
         delay_ms(3000);
         xc = -250;
+        xf = -250;
         CheckMessages();
         delay_ms(3000);
         xc = 0;
+        xf = 0;
         CheckMessages();
         delay_ms(3000);
     }
     
-    while(1){
+    while(0){
         sendLog("x = ");
         sendLog(dtoa(x));
         sendLog(" | y = ");
@@ -264,7 +275,7 @@ int main(){
         CheckMessages();
         delay_ms(500);
     }
-    while(1){
+    while(0){
         //uint16_t dummy = SPI2BUF;
         sendLog("0x20 (debug) sent to ComeCard\n");
         SPI2BUF = 0x20; //debug
@@ -294,8 +305,8 @@ int main(){
             delay_ms(10);
             //plot(1,micros());
             sendPos();
-            sendRupt();
-            sendUS();
+            //sendRupt();
+            //sendUS();
             /*plot(1,iF2);
             plot(2,iD2);*/
             m++;
@@ -305,20 +316,69 @@ int main(){
             }
             //send("timing\n",strlen("timing\n"));
             if(newPosReceived){
-                statePathGeneration = 42;
-                delay_ms(100);
-                newPosReceived = 0;
-                if(newPosBackReceived)
-                {
-                    newPosBackReceived = 0;
-                    //printRpi(("DEBUG goBack main 1\n"));
-                    goBack(receivedX,receivedY,2000,200);
-                    //printRpi(("DEBUG goBack main 2\n"));
+                if(1){
+                    
+                    newPosReceived = 0;
+                    
+                    double angularVelocity = 0;
+                    double maxAngularVelocity = funAngularSpeed;
+                    double AngularAcceleration = funAngularAcc;
+                    double angle = 0;
+                    theta0 = theta;
+                    double prevAngularVelocity = 0;
+                    double phi = 20*PI;
+                    double sign = 1;
+                    if(sens == 0){
+                        sign = -1;
+                        sens = 1;
+                    }
+                    else{
+                        sign = 1;
+                        sens = 0;
+                    }
+                    finalPoint = 0; 
+                            while(angularVelocity < maxAngularVelocity && angle < phi/2){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            double angle1 = angle;
+                            while(angle < phi - angle1){
+                                angle += TE * angularVelocity;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            AngularAcceleration = -AngularAcceleration;
+                            while(angularVelocity > 0 && angle < phi){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                    finalPoint = 1;
+                    
                 }
                 else{
-                    //go(receivedX,receivedY,2000,200);
-                    //go(receivedX,receivedY,1000,100);
-                    modif_straightPath(receivedX,receivedY,0,1000,100);
+                    statePathGeneration = 42;
+                    delay_ms(100);
+                    newPosReceived = 0;
+                    if(newPosBackReceived)
+                    {
+                        newPosBackReceived = 0;
+                        //printRpi(("DEBUG goBack main 1\n"));
+                        goBack(receivedX,receivedY,2000,200);
+                        //printRpi(("DEBUG goBack main 2\n"));
+                    }
+                    else{
+                        //go(receivedX,receivedY,2000,200);
+                        //go(receivedX,receivedY,1000,100);
+                        modif_straightPath(receivedX,receivedY,0,funSpeed,funAcc);
+                        //modif_straightPath(receivedX,receivedY,0,1000,100);
+                    }
                 }
             }
             if(newAngleReceived){
@@ -902,8 +962,10 @@ void modif_straightPath(double arg_cx, double arg_cy, double arg_ct, double arg_
     tf = theta;
     finalPoint = 0;
     theta0 = theta;
-    AngularAcceleration = 1;
-    maxAngularVelocity = 10;
+    AngularAcceleration = funAngularAcc;
+    maxAngularVelocity = funAngularSpeed;
+    /*AngularAcceleration = 1;
+    maxAngularVelocity = 10;*/
     angularVelocity = 0;
     prevAngularVelocity = 0;
     angle = 0;

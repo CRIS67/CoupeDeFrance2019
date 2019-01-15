@@ -1,4 +1,4 @@
-var COEF_SCALE_COEF_DISSYMETRY = 1000;
+var COEF_SCALE_COEF_DISSYMETRY = 10000;
 var COEF_SCALE_MM_PER_TICKS = 1000;
 var COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS = 1000;
 
@@ -671,25 +671,8 @@ window.onload = function () {
 		    }
 		});
 		
-		$("#testButton2").click(function(event){
+		$("#Button_ClearChart").click(function(event){
 			clearChart();
-		});
-		$("#testButton3").click(function(event){
-			clearChart();
-			data = "";
-			for (var i = 0; i <= 150; i++) {
-				data += "#";
-				data += i;
-				data += " ";
-				var b = Math.sin(i/20);
-				data += b
-				data += "\n";
-				var a = 1;
-				if(b < 0){
-					a = -1;
-				}
-				dps2.push({x: i,y: a});
-			}
 		});
 		$("#button_go").click(function(event){
 			var xDest = Number(document.getElementById("inputText_destX").value);

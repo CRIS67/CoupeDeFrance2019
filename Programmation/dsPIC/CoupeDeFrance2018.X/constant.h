@@ -25,16 +25,16 @@
 #define SATURATION_SPEED_RIGHT      VSAT    //unit : voltage
 
 //PID distance      units : mm -> rad/s
-#define KP_DISTANCE                 0.4//0.15//0.04
+#define KP_DISTANCE                 2//0.15//0.04
 #define KI_DISTANCE                 0
-#define KD_DISTANCE                 0.001//0//0.0065
+#define KD_DISTANCE                 0//0.001//0//0.0065
 #define BIAS_DISTANCE               0
 #define T_DISTANCE                  0.01
 #define SMOOTHING_FACTOR_DISTANCE   1
 #define SATURATION_DISTANCE         1000000    //unit : mm/s
 
 //PID angle         units : rad -> rad/s
-#define KP_ANGLE                    20//80//15//80//120//90//30//60
+#define KP_ANGLE                    1000//20//80//15//80//120//90//30//60
 #define KI_ANGLE                    0
 #define KD_ANGLE                    1//2//1//0//6.5
 #define BIAS_ANGLE                  0
@@ -169,6 +169,12 @@
 
 #define MAX_ERROR_D     8//1//10      //mm
 #define MAX_ERROR_A     0.05//0.02//0.01//0.01rad ~= 0.57°
+
+#define MAX_ERROR_D_INF     5//1//10      //mm
+#define MAX_ERROR_D_SUP     10//1//10      //mm
+#define MAX_ERROR_A_INF     0.05//0.02//0.01//0.01rad ~= 0.57°
+#define MAX_ERROR_A_SUP     0.1//0.02//0.01//0.01rad ~= 1.04°
+
 #define MAX_SPEED_STOP  5 // ENCODER_WHEEL_RADIUS    //rad/s -> 5mm/s
 
 #define N_ASSERV        10  //nombre d'itérations entre 2 boucles d'asserv'
@@ -253,7 +259,7 @@
 #define LINEAR_SPEED        0.1     //mm
 #define DELAY_SPEED         1       //ms
 
-#define ACCELERATION_MAX    1000000     //mm.s^-2
+#define ACCELERATION_MAX    3500     //mm.s^-2
 #define SPEED_MAX           1000000    //mm.s^-1
 #define TE                  0.01    //s
 // </editor-fold>

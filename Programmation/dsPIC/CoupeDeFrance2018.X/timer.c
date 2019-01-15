@@ -73,6 +73,11 @@ long double coef_dissymmetry = COEF_DISSYMETRY;
 long double mm_per_ticks = MM_PER_TICKS;
 long double distance_between_encoder_wheels = DISTANCE_BETWEEN_ENCODER_WHEELS;
 
+volatile uint8_t nearPointDistance = 0;
+volatile uint8_t nearPointAngle = 0;
+
+volatile uint16_t nplot = 0;
+
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
 unsigned char statePathGeneration;
 unsigned char stateTrap;
@@ -305,9 +310,31 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         double rD = compute(&pidDistance, errorD);
         double rA = compute(&pidAngle, theta);
 
-        if (pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && distFinal < MAX_ERROR_D && (finalPoint == 1)) {
+        /*if (pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && distFinal < MAX_ERROR_D && (finalPoint == 1)) {
             rD = 0;
+        }*/
+        
+        // "hystheresis"
+        if(distFinal < MAX_ERROR_D_INF){
+            nearPointDistance = 1;
         }
+        else if(distFinal > MAX_ERROR_D_SUP){
+            nearPointDistance = 0;
+        }
+        if(pidAngle.prevError < MAX_ERROR_A_INF && pidAngle.prevError > -MAX_ERROR_A_INF){
+            nearPointAngle = 1;
+        }
+        else if(pidAngle.prevError > MAX_ERROR_A_SUP && pidAngle.prevError < -MAX_ERROR_A_SUP){
+            nearPointAngle = 0;
+        }
+        if(nearPointDistance && finalPoint){
+            rD = 0;
+            if(nearPointAngle){
+                rA = 0;
+            }
+        }
+        
+        
         /*if(pidAngle.prevError < MAX_ERROR_A && pidAngle.prevError > -MAX_ERROR_A){
             rA = 0;
         }*/
@@ -429,6 +456,26 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 //testSendToMotor(0, 0);
             }
         }
+        if(nplot == 4){
+            nplot = 0;
+            plot(11,(uint32_t)((int32_t)(speedL*1000)));
+            plot(12,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
+
+            plot(21,(uint32_t)((int32_t)(speedR*1000)));
+            plot(22,(uint32_t)((int32_t)(pidSpeedRight.setPoint*1000)));
+
+            plot(31,(uint32_t)((int32_t)(x*1000)));
+            plot(32,(uint32_t)((int32_t)(xc*1000)));
+            plot(33,(uint32_t)((int32_t)(y*1000)));
+            plot(34,(uint32_t)((int32_t)(yc*1000)));
+
+            plot(41,(uint32_t)((int32_t)(theta*1000*180/PI)));
+            plot(42,(uint32_t)((int32_t)(thetac*1000*180/PI)));
+        }
+        else{
+            nplot++;
+        }
+        
         /*plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
         plot(2,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
         plot(5,(uint32_t)((int32_t)(pidSpeedLeft.debugCommande*10000)));
@@ -436,8 +483,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         plot(7,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeI*10000)));
         plot(8,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeD*10000)));*/
         
-        plot(1,(uint32_t)((int32_t)(x))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
-        plot(2,(uint32_t)((int32_t)(xc)));
+        //plot(1,(uint32_t)((int32_t)(x))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
+        //plot(2,(uint32_t)((int32_t)(xc)));
+        
         /*plot(5,(uint32_t)((int32_t)(pidDistance.debugCommande*10000)));
         plot(6,(uint32_t)((int32_t)(pidDistance.debugCommandeP*10000)));
         plot(7,(uint32_t)((int32_t)(pidDistance.debugCommandeI*10000)));
@@ -448,10 +496,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         /*Génération de trajectoire*/
         if (statePathGeneration != 0) {
             // <editor-fold defaultstate="collapsed" desc="Plots">
-            plot(1, (uint32_t) (int32_t) (pidDistance.prevError * 100));
+            /*plot(1, (uint32_t) (int32_t) (pidDistance.prevError * 100));
             plot(2, (uint32_t) (int32_t) (pidAngle.prevError * 10000));
             plot(3, (uint32_t) (int32_t) (pidSpeedLeft.prevError * 1000));
-            plot(4, (uint32_t) (int32_t) (pidSpeedRight.prevError * 1000));
+            plot(4, (uint32_t) (int32_t) (pidSpeedRight.prevError * 1000));*/
 
             //plot(1,(uint32_t)(int32_t)(thetac*1000));
             //plot(2,(uint32_t)(int32_t)(angularVelocity*1000));

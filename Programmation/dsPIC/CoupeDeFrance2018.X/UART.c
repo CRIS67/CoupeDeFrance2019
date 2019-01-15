@@ -51,6 +51,11 @@ extern long double coef_dissymmetry;
 extern long double mm_per_ticks;
 extern long double distance_between_encoder_wheels;// </editor-fold>
 
+extern volatile double funSpeed;
+extern volatile double funAcc;
+
+extern volatile double funAngularSpeed;
+extern volatile double funAngularAcc;
 
 // <editor-fold defaultstate="collapsed" desc="Init">
 
@@ -446,16 +451,24 @@ void CheckMessages(){
                             break;
                         case CODE_VAR_MM_PER_TICKS:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            mm_per_ticks = (long double)value / COEF_SCALE_MM_PER_TICKS;
+                            /*mm_per_ticks = (long double)value / COEF_SCALE_MM_PER_TICKS;
                             sendLog("mm per ticks changed to : ");
                             sendLog(dtoa((double)mm_per_ticks));
+                            sendLog("\n");*/
+                            funAngularSpeed = (double)(value/1000);
+                            sendLog("funSpeed changed to : ");
+                            sendLog(dtoa(funAngularSpeed));
                             sendLog("\n");
                             break;
                         case CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            distance_between_encoder_wheels = (long double)value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS;
+                            /*distance_between_encoder_wheels = (long double)value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS;
                             sendLog("Distance between encoder wheels changed to : ");
                             sendLog(dtoa((double)distance_between_encoder_wheels));
+                            sendLog("\n");*/
+                            funAngularAcc = (double)(value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS);
+                            sendLog("funAcc changed to : ");
+                            sendLog(dtoa(funAngularAcc));
                             sendLog("\n");
                             break;
                     }
