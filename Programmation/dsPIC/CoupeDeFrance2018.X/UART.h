@@ -25,6 +25,8 @@ void sendRupt();
 void sendUS();
 void sendLog(char *str);
 void sendVar32(uint8_t varCode, uint32_t var);
+void sendDouble(uint8_t varCode, double *ptrVar);
+void sendLongDouble(uint8_t varCode, long double *ptrVar);
 
 void sendAllPID();
 /*typedef enum Cmd Cmd;

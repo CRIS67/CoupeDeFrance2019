@@ -155,11 +155,11 @@ void DsPIC::setVar8(uint8_t varCode, uint8_t var){
         serialPutchar (fd, buffer[i]);
     }
 }
-void DsPIC::loadPID(){
+void DsPIC::getVar(uint8_t varCode){
     uint8_t buffer[RX_SIZE_GET + 1];
     buffer[0] = RX_SIZE_GET;
     buffer[1] = RX_CODE_GET;
-    buffer[2] = CODE_VAR_ALLPID;
+    buffer[2] = varCode;
     buffer[3] = 0;
     for(int i = 0; i < RX_SIZE_GET; i++){
         buffer[3] += buffer[i]; //checksum
@@ -167,6 +167,9 @@ void DsPIC::loadPID(){
     for(int i = 0; i < RX_SIZE_GET + 1; i++){
         serialPutchar (fd, buffer[i]);
     }
+}
+void DsPIC::loadPID(){
+    getVar(CODE_VAR_ALLPID);
 }
 std::string DsPIC::async_read(){
     std::string s("");

@@ -99,7 +99,10 @@
 #define TX_SIZE_VAR      //ça dépend
 #define TX_SIZE_VAR_8B   // ?
 #define TX_SIZE_VAR_16B 5
-#define TX_SIZE_VAR_32B 8
+#define TX_SIZE_VAR_32B 7
+#define TX_SIZE_VAR_DOUBLE 7
+#define TX_SIZE_VAR_LONG_DOUBLE 11
+
 #define TX_SIZE_PLOT    11   
 
 #define MASK_OPTION_RELATIVE    0x2
