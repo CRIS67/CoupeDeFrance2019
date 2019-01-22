@@ -140,12 +140,14 @@ extern uint16_t iD2,iF2;
 volatile uint8_t verbose = 0;
 
 volatile double funSpeed = 1000;
-volatile double funAcc = 100;
+volatile double funAcc = 3000;
 
-volatile double funAngularSpeed = 10;
-volatile double funAngularAcc = 3;
+volatile double funAngularSpeed = 50;
+volatile double funAngularAcc = 20;
+/*volatile double funAngularSpeed = 5;
+volatile double funAngularAcc = 2;*/
 
-int sens = 0;
+int sens = 1;
 
 int main(){
     initClock(); //Clock 140 MHz
@@ -239,6 +241,11 @@ int main(){
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
+    /*while(1){
+        CheckMessages();
+        sendPos();
+        delay_ms(50);
+    }*/
     while(0){
         CheckMessages();
         delay_ms(3000);
@@ -316,7 +323,7 @@ int main(){
             }
             //send("timing\n",strlen("timing\n"));
             if(newPosReceived){
-                if(1){
+                if(0){
                     
                     newPosReceived = 0;
                     
@@ -326,7 +333,7 @@ int main(){
                     double angle = 0;
                     theta0 = theta;
                     double prevAngularVelocity = 0;
-                    double phi = 20*PI;
+                    double phi = 40*PI;
                     double sign = 1;
                     if(sens == 0){
                         sign = -1;
