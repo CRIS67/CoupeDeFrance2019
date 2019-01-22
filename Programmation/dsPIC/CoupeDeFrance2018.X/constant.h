@@ -240,7 +240,7 @@
 // <editor-fold defaultstate="collapsed" desc="Odometry">
 #define PI                                  3.14159265358979323846
 #define ENCODER_WHEEL_RADIUS                24.6                    //mm         
-#define DISTANCE_BETWEEN_ENCODER_WHEELS     291//290.1411442//292.255082//291.3814//300//295.8918449447346863    //mm
+#define DISTANCE_BETWEEN_ENCODER_WHEELS     293.83//300//295.8918449447346863    //mm
 
 #define COEF_DISSYMETRY                     1.010
 #define ENCODER_WHEEL_DIAMETER              43.56
