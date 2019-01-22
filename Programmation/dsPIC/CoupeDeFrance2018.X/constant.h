@@ -263,7 +263,7 @@
 
 
 #define MM_PER_TICKS                        PI * ENCODER_WHEEL_DIAMETER / TICKS_PER_TURN
-#define RAD_PER_TICKS                       0.000112
+#define RAD_PER_TICKS                       0.0001405
 //#define TICKS_PER_RAD                       15572.957676416326850467129424503
 // </editor-fold>
 
