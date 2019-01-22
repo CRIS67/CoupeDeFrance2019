@@ -249,7 +249,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     speedLSum += ticksL;
     speedRSum += ticksR;
     
-    long double deltaDL = ticksL * coef_dissymmetry;;
+    long double deltaDL = ticksL * coef_dissymmetry;
     long double deltaDR = ticksR;
     
     /*deltaDL = deltaDL * mm_per_ticks * coef_dissymmetry;   //Ticks -> mm
@@ -259,12 +259,15 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     //long double deltaT = (deltaDR - deltaDL) / distance_between_encoder_wheels;
     long double deltaT = (deltaDR - deltaDL) * rad_per_ticks;
 
+    theta += deltaT;
+    x += deltaD * cosl(theta);
+    y += deltaD * sinl(theta);
     /*test Kahan*/
     //deltaD = 1;
     //deltaT = 0.002;
     
     // <editor-fold defaultstate="collapsed" desc="Kahan summation algorithm">
-    long double yT = deltaT - kahanT;
+    /*long double yT = deltaT - kahanT;
     long double tT = theta + yT;
     kahanT = (tT - theta) - yT;
     theta = tT;
@@ -281,7 +284,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     long double yY = deltaY - kahanY;
     long double tY = y + yY;
     kahanY = (tY - y) - yY;
-    y = tY;
+    y = tY;*/
     
     /*long double absError = kahanX;
     if(absError < 0)

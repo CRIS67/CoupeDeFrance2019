@@ -140,10 +140,10 @@ extern uint16_t iD2,iF2;
 volatile uint8_t verbose = 0;
 
 volatile double funSpeed = 1000;
-volatile double funAcc = 100;
+volatile double funAcc = 1000;
 
 volatile double funAngularSpeed = 10;
-volatile double funAngularAcc = 3;
+volatile double funAngularAcc = 1;
 
 int sens = 0;
 
@@ -259,9 +259,10 @@ int main(){
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
-    while(1){
-        delay_ms(100);
+    while(0){
+        delay_ms(500);
         CheckMessages();
+        sendPosLongDouble();
         //long double *ptr = &d;
         //char *ptrCx = (char*)ptrKx = &kahanErrorX;
         //char *ptrCy = (char*)ptrKy = &kahanErrorY;
@@ -289,7 +290,7 @@ int main(){
         sendLog(dtoa((double)(kahanErrorT*1000000)));
         sendLog("\n");*/
     }
-    while(1){
+    while(0){
         CheckMessages();
         delay_ms(100);
     }
@@ -352,9 +353,10 @@ int main(){
         plot(5,(uint32_t)(int32_t)(pidAngle.setPoint*1000));*/
         CheckMessages();
         //if(!stop){
-            delay_ms(10);
+            delay_ms(500);
             //plot(1,micros());
             sendPos();
+            sendPosLongDouble();
             //sendRupt();
             //sendUS();
             /*plot(1,iF2);
@@ -366,7 +368,7 @@ int main(){
             }
             //send("timing\n",strlen("timing\n"));
             if(newPosReceived){
-                if(1){
+                if(0){
                     
                     newPosReceived = 0;
                     
@@ -432,8 +434,55 @@ int main(){
                 }
             }
             if(newAngleReceived){
-                newAngleReceived = 0;
-                turn(receivedTheta);
+                if(0){
+                    newAngleReceived = 0;
+                    turn(receivedTheta);
+                }
+                else{
+                    newAngleReceived = 0;
+                    
+                    double angularVelocity = 0;
+                    double maxAngularVelocity = funAngularSpeed;
+                    double AngularAcceleration = funAngularAcc;
+                    double angle = 0;
+                    theta0 = theta;
+                    double prevAngularVelocity = 0;
+                    double phi = 20*PI;
+                    double sign = 1;
+                    if(sens == 0){
+                        sign = -1;
+                        sens = 1;
+                    }
+                    else{
+                        sign = 1;
+                        sens = 0;
+                    }
+                    finalPoint = 0; 
+                            while(angularVelocity < maxAngularVelocity && angle < phi/2){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            double angle1 = angle;
+                            while(angle < phi - angle1){
+                                angle += TE * angularVelocity;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            AngularAcceleration = -AngularAcceleration;
+                            while(angularVelocity > 0 && angle < phi){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                    finalPoint = 1;
+                }
+                
             }
             /*if(statePathGeneration){
                 plot(1,(uint32)(int32)(((thetac*3600)/(2*PI))));

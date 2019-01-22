@@ -530,10 +530,13 @@ void* thread_HandleConnnection(void *threadid){
 					puts("Error : COEF_DISSYMETRY token = NULL\n");
 					break;
 				}
-				int32_t longVal = atol(val);
+				/*int32_t longVal = atol(val);
 				uint32_t value = (uint32_t)longVal;
 				w->dspic->setVar32(CODE_VAR_COEF_DISSYMETRY,value);
-				printf("COEF_DISSYMETRY set to %u\n", value);
+				printf("COEF_DISSYMETRY set to %u\n", value);*/
+				double doubleVal = atof(val);
+				w->dspic->setVarDouble64b(CODE_VAR_COEF_DISSYMETRY_LD,doubleVal);
+				printf("COEF_DISSYMETRY set to %f\n", doubleVal);
 			}
 			else if(!strcmp(cmd,"odo2")){
 				if(val == NULL){
@@ -542,22 +545,28 @@ void* thread_HandleConnnection(void *threadid){
 					puts("Error : MM_PER_TICKS token = NULL\n");
 					break;
 				}
-				int32_t longVal = atol(val);
+				/*int32_t longVal = atol(val);
 				uint32_t value = (uint32_t)longVal;
 				w->dspic->setVar32(CODE_VAR_MM_PER_TICKS,value);
-				printf("MM_PER_TICKS set to %u\n", value);
+				printf("MM_PER_TICKS set to %u\n", value);*/
+				double doubleVal = atof(val);
+				w->dspic->setVarDouble64b(CODE_VAR_MM_PER_TICKS_LD,doubleVal);
+				printf("MM_PER_TICKS set to %f\n", doubleVal);
 			}
 			else if(!strcmp(cmd,"odo3")){
 				if(val == NULL){
-					errorStr += "Error : DISTANCE_BETWEEN_ENCODER_WHEELS value token = NULL\n";
+					errorStr += "Error : RAD_PER_TICKS value token = NULL\n";
 					error = true;
-					puts("Error : DISTANCE_BETWEEN_ENCODER_WHEELS token = NULL\n");
+					puts("Error : RAD_PER_TICKS token = NULL\n");
 					break;
 				}
-				int32_t longVal = atol(val);
+				/*int32_t longVal = atol(val);
 				uint32_t value = (uint32_t)longVal;
 				w->dspic->setVar32(CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS,value);
-				printf("DISTANCE_BETWEEN_ENCODER_WHEELS set to %u\n", value);
+				printf("DISTANCE_BETWEEN_ENCODER_WHEELS set to %u\n", value);*/
+				double doubleVal = atof(val);
+				w->dspic->setVarDouble64b(CODE_VAR_RAD_PER_TICKS_LD,doubleVal);
+				printf("RAD_PER_TICKS set to %f\n", doubleVal);
 			}
 			else{
 				errorStr += "Received command is not valid : " + str + "\n";

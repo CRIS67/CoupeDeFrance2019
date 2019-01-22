@@ -159,6 +159,7 @@
 #define VAR_8b      0
 #define VAR_16b     1
 #define VAR_32b     2
+#define VAR_64b     3
 
 
 // </editor-fold>
@@ -262,7 +263,7 @@
 
 
 #define MM_PER_TICKS                        PI * ENCODER_WHEEL_DIAMETER / TICKS_PER_TURN
-#define RAD_PER_TICKS                       0.000064213877721789426285717855054797
+#define RAD_PER_TICKS                       0.000112
 //#define TICKS_PER_RAD                       15572.957676416326850467129424503
 // </editor-fold>
 

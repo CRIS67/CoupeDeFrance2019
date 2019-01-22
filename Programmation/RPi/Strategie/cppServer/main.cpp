@@ -6,13 +6,6 @@
 #include "web.hpp"
 #include "dspic.hpp"
 
-#define TX_CODE_VAR     1
-#define TX_CODE_LOG     2
-#define TX_CODE_PLOT    3
-#define CODE_VAR_X      1
-#define CODE_VAR_Y      2
-#define CODE_VAR_T      3
-#define CODE_VAR_RUPT   4
 
 void *print(void *ptr);
 
@@ -51,6 +44,8 @@ int main()
 	dspic.setVar8(CODE_VAR_VERBOSE,1);
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
+    //dspic.getVar(CODE_VAR_ODO);
+    dspic.initPos(1000,1500,0);
 	getchar();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	puts("verbose set to 0");
@@ -125,6 +120,47 @@ void *print(void *ptr) {
                                 if(msg.size() > 4){
                                     dspic->t = ((msg[3] << 8) + msg[4]);
                                     //std::cout << "received from DsPIC : t = " << dspic->t << " & H = " << (int)msg[3] << " & L = " << (int)msg[4] << std::endl;
+                                }
+                            case CODE_VAR_X_LD :
+                                if(msg.size() > 8){
+                                    double x_ld;
+                                    double *ptr = &x_ld;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout.precision(11);
+                                    std::cout << "received from DsPIC : x_ld = " << x_ld << std::endl;
+                                    std::cout.precision(6);
+                                    //dspic->bat = vbat;
+                                }
+                                break;
+                            case CODE_VAR_Y_LD :
+                                if(msg.size() > 8){
+                                    double y_ld;
+                                    double *ptr = &y_ld;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout.precision(11);
+                                    std::cout << "received from DsPIC : y_ld = " << y_ld << std::endl;
+                                    std::cout.precision(6);
+                                    //dspic->bat = vbat;
+                                }
+                                break;
+                            case CODE_VAR_T_LD :
+                                if(msg.size() > 8){
+                                    double t_ld;
+                                    double *ptr = &t_ld;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout.precision(11);
+                                    std::cout << "received from DsPIC : t_ld = " << t_ld << std::endl;
+                                    std::cout.precision(6);
+                                    //dspic->bat = vbat;
                                 }
                                 break;
                             case CODE_VAR_RUPT :
@@ -222,6 +258,39 @@ void *print(void *ptr) {
 								w->dspic->pidAngle.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								w->dspic->isPIDUpdated = true;
 								break;
+                            case CODE_VAR_COEF_DISSYMETRY_LD:
+                                if(msg.size() > 8){
+                                    double var;
+                                    double *ptr = &var;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout << "received from DsPIC : coef_Dissymetry_ld = " << var << std::endl;
+                                }
+                                break;
+                            case CODE_VAR_MM_PER_TICKS_LD:
+                                if(msg.size() > 8){
+                                    double var;
+                                    double *ptr = &var;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout << "received from DsPIC : mm_per_ticks_ld = " << var << std::endl;
+                                }
+                                break;
+                            case CODE_VAR_RAD_PER_TICKS_LD:
+                                if(msg.size() > 8){
+                                    double var;
+                                    double *ptr = &var;
+                                    uint8_t *ptrChar = (uint8_t*)ptr;
+                                    for(int i = 0; i < 8; i++){
+                                        ptrChar[i] = msg[3+i];
+                                    }
+                                    std::cout << "received from DsPIC : rad_per_ticks_ld = " << var << std::endl;
+                                }
+                                break;
                             default :
                                 std::cout << "Received wrong variable code from DsPIC : " << (int)msg[2] << std::endl;
                                 break;
