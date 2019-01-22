@@ -8,17 +8,25 @@
 #include "timer.h"
 
 // <editor-fold defaultstate="collapsed" desc="Variables">
-extern volatile double x;
-extern volatile double y;
-extern volatile double theta;
+extern volatile long double x;
+extern volatile long double y;
+extern volatile long double theta;
 
-extern double xc;
-extern double yc;
-extern double thetac;
+extern volatile long double xc;
+extern volatile long double yc;
+extern volatile long double thetac;
 
-extern double xf;
-extern double yf;
-extern double tf;
+extern volatile long double xf;
+extern volatile long double yf;
+extern volatile long double tf;
+
+volatile long double kahanX = 0;
+volatile long double kahanY = 0;
+volatile long double kahanT = 0;
+
+extern volatile long double kahanErrorX;
+extern volatile long double kahanErrorY;
+extern volatile long double kahanErrorT;
 
 extern uint8_t finalPoint;
 
@@ -71,6 +79,7 @@ unsigned char timer2Overflow = 0;
 
 long double coef_dissymmetry = COEF_DISSYMETRY;
 long double mm_per_ticks = MM_PER_TICKS;
+long double rad_per_ticks = RAD_PER_TICKS;
 long double distance_between_encoder_wheels = DISTANCE_BETWEEN_ENCODER_WHEELS;
 
 volatile uint8_t nearPointDistance = 0;
@@ -233,21 +242,65 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     POS1CNTL = 0x0000;
     POS2CNTL = 0x0000;
     
+    /*test Kahan*/
+    /*ticksL = 10;
+    ticksR = 10;*/
+    
     speedLSum += ticksL;
     speedRSum += ticksR;
     
-    long double deltaDL = ticksL;
+    long double deltaDL = ticksL * coef_dissymmetry;;
     long double deltaDR = ticksR;
     
-    deltaDL = deltaDL * mm_per_ticks * coef_dissymmetry;   //Ticks -> mm
-    deltaDR = deltaDR * mm_per_ticks;
+    /*deltaDL = deltaDL * mm_per_ticks * coef_dissymmetry;   //Ticks -> mm
+    deltaDR = deltaDR * mm_per_ticks;*/
     
-    long double deltaD = (deltaDL + deltaDR) / 2;
+    long double deltaD = (deltaDL + deltaDR) * mm_per_ticks / 2;
+    //long double deltaT = (deltaDR - deltaDL) / distance_between_encoder_wheels;
+    long double deltaT = (deltaDR - deltaDL) * rad_per_ticks;
+
+    /*test Kahan*/
+    //deltaD = 1;
+    //deltaT = 0.002;
     
-    theta += (deltaDR - deltaDL) / distance_between_encoder_wheels;
+    // <editor-fold defaultstate="collapsed" desc="Kahan summation algorithm">
+    long double yT = deltaT - kahanT;
+    long double tT = theta + yT;
+    kahanT = (tT - theta) - yT;
+    theta = tT;
+
+    //theta += deltaT;
+    long double deltaX = deltaD * cosl(theta);
+    long double deltaY = deltaD * sinl(theta);
     
-    x += deltaD * cos(theta);
-    y += deltaD * sin(theta);
+    long double yX = deltaX - kahanX;
+    long double tX = x + yX;
+    kahanX = (tX - x) - yX;
+    x = tX;
+    
+    long double yY = deltaY - kahanY;
+    long double tY = y + yY;
+    kahanY = (tY - y) - yY;
+    y = tY;
+    
+    /*long double absError = kahanX;
+    if(absError < 0)
+        absError = -absError;
+    kahanErrorX += absError;
+    
+    absError = kahanY;
+    if(absError < 0)
+        absError = -absError;
+    kahanErrorY += absError;
+    
+    absError = kahanT;
+    if(absError < 0)
+        absError = -absError;
+    kahanErrorT += absError;*/
+    
+    //x += deltaD * cos(theta);
+    //y += deltaD * sin(theta);
+    // </editor-fold>
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Asservissement">
@@ -276,20 +329,20 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         double thetaRobotPointFinal = atan2(yf - y, xf - x);
         if (back)
             thetaRobotPointFinal -= PI;
-        while (thetaRobotPointFinal - theta < -PI)
+        while (thetaRobotPointFinal - (double)theta < -PI)
             thetaRobotPointFinal += 2 * PI;
-        while (thetaRobotPointFinal - theta > PI)
+        while (thetaRobotPointFinal - (double)theta > PI)
             thetaRobotPointFinal -= 2 * PI;
-        if (thetaRobotPointFinal - theta < -PI / 2)
+        if (thetaRobotPointFinal - (double)theta < -PI / 2)
             thetaRobotPointFinal += PI;
-        if (thetaRobotPointFinal - theta > PI / 2)
+        if (thetaRobotPointFinal - (double)theta > PI / 2)
             thetaRobotPointFinal -= PI;
         double distFinal = sqrt((x - xf)*(x - xf) + (y - yf)*(y - yf));
 
         double errorD = sqrt((x - xc)*(x - xc) + (y - yc)*(y - yc));
 
         // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
-        double thetaDiff = theta - thetaRobotPoint;
+        double thetaDiff = (double)theta - thetaRobotPoint;
         while (thetaDiff > PI) {
             thetaDiff -= 2 * PI;
         }
@@ -308,7 +361,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         //setSetPoint(&pidAngle,thetac);
 
         double rD = compute(&pidDistance, errorD);
-        double rA = compute(&pidAngle, theta);
+        double rA = compute(&pidAngle, (double)theta);
 
         /*if (pidDistance.prevError < MAX_ERROR_D && pidDistance.prevError > -MAX_ERROR_D && distFinal < MAX_ERROR_D && (finalPoint == 1)) {
             rD = 0;
@@ -456,7 +509,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 //testSendToMotor(0, 0);
             }
         }
-        if(nplot == 4){
+        /*if(nplot == 4){
             nplot = 0;
             plot(11,(uint32_t)((int32_t)(speedL*1000)));
             plot(12,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
@@ -474,7 +527,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         }
         else{
             nplot++;
-        }
+        }*/
         
         /*plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
         plot(2,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));

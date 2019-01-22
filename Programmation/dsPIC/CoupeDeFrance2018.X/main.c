@@ -51,17 +51,17 @@ char RX[RX_SIZE];
 char unsigned TX_i;
 char unsigned RX_i;
 /*Current position*/
-volatile double x;
-volatile double y;
-volatile double theta;
+volatile long double x;
+volatile long double y;
+volatile long double theta;
 /*Current setpoint position*/
-double xc;
-double yc;
-double thetac;
+volatile long double xc;
+volatile long double yc;
+volatile long double thetac;
 /*Final setpoint position*/
-double xf;
-double yf;
-double tf;
+volatile long double xf;
+volatile long double yf;
+volatile long double tf;
 
 uint8_t finalPoint = 1;
 
@@ -147,7 +147,27 @@ volatile double funAngularAcc = 3;
 
 int sens = 0;
 
+
+volatile long double kahanErrorX;
+volatile long double kahanErrorY;
+volatile long double kahanErrorT;
+
 int main(){
+    int o;
+    TRISFbits.TRISF7 = 0;
+    LATFbits.LATF7 = 1;
+    for (o = 0; o < 10000; o++);
+    LATFbits.LATF7 = 0;
+    for (o = 0; o < 10000; o++);
+    LATFbits.LATF7 = 1;
+    for (o = 0; o < 10000; o++);
+    LATFbits.LATF7 = 0;
+    for (o = 0; o < 10000; o++);
+    LATFbits.LATF7 = 1;
+    for (o = 0; o < 10000; o++);
+    LATFbits.LATF7 = 0;
+    for (o = 0; o < 10000; o++);
+    
     initClock(); //Clock 140 MHz
     initGPIO();
     initPWM();
@@ -232,16 +252,46 @@ int main(){
         servoUs(p,0);
     verbose = 0;
     
-    uint32_t foo = 0;
+    //uint32_t foo = 0;
     
     //TRISFbits.TRISF7 = 0;
-    uint16_t iDelay,jDelay;
+    //uint16_t iDelay,jDelay;
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
-    while(0){
+    while(1){
+        delay_ms(100);
         CheckMessages();
-        delay_ms(3000);
+        //long double *ptr = &d;
+        //char *ptrCx = (char*)ptrKx = &kahanErrorX;
+        //char *ptrCy = (char*)ptrKy = &kahanErrorY;
+        //char *ptrCt = (char*)ptrKt = &kahanErrorT;
+        /*sendLog("d[0] = ");
+        sendLog(itoa(ptrC[0]));
+        sendLog("\n");
+        sendLog("d[1] = ");
+        sendLog(itoa(ptrC[01]));
+        sendLog("\n");
+        sendLog("d[20] = ");
+        sendLog(itoa(ptrC[2]));
+        sendLog("\n");
+        sendLog("d[3] = ");
+        sendLog(itoa(ptrC[3]));
+        sendLog("\n");*/
+        sendPos();
+        /*sendLog("errorX = ");
+        sendLog(dtoa((double)(kahanErrorX*1000000)));
+        sendLog("\n");
+        sendLog("errorY = ");
+        sendLog(dtoa((double)(kahanErrorY*1000000)));
+        sendLog("\n");
+        sendLog("errorT = ");
+        sendLog(dtoa((double)(kahanErrorT*1000000)));
+        sendLog("\n");*/
+    }
+    while(1){
+        CheckMessages();
+        delay_ms(100);
     }
     while(0){
         xc = 250;

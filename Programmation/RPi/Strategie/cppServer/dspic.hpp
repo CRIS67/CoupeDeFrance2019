@@ -111,6 +111,7 @@ class DsPIC
 		void setVar8(uint8_t varCode, uint8_t var);
 		void setVar32(uint8_t varCode, uint32_t var);
 		void loadPID();
+		void getVar(uint8_t varCode);
 		std::string async_read();
         std::vector<uint8_t> readMsg();
 		int16_t x = 1500,y = 1000, t = 45;
@@ -124,6 +125,7 @@ class DsPIC
 		pid pidAngle = {0,0,0};
 		//uint16_t nbUpdatePID = 0;
 		bool isPIDUpdated = false;
+		float bat = 0;
     protected:
 		int fd;
     private:

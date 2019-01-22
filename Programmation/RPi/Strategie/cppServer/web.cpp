@@ -139,6 +139,17 @@ void* thread_HandleConnnection(void *threadid){
 				sendStr = realResponse(w);
 				break;	//if update => no other cmd executed
 			}
+			else if(!strcmp(cmd,"stop")){
+				if(val == NULL){
+					errorStr += "Error : stop value token = NULL\n";
+					error = true;
+					break;
+				}
+				if(atoi(val) == 1){
+					w->dspic->stop();
+				}
+				
+			}
 			else if(!strcmp(cmd,"x")){
 				if(val == NULL){
 					errorStr += "Error : x value token = NULL\n";
@@ -598,6 +609,9 @@ std::string realResponse(Web *w){
 	myString << dspic->y;
 	myString << "&t=";
 	myString << dspic->t;
+	
+	myString << "&b=";
+	myString << dspic->bat;
 
 	myString << "&r1=";
 	myString << dspic->rupt.ass0;

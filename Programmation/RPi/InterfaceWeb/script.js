@@ -620,6 +620,15 @@ window.onload = function () {
 			]
 		});
 
+		document.addEventListener('keypress', (event) => {
+		  if(event.key == 32 || event.key === ' '){
+			  sendCmd('stop=1');
+			  alert('Emergency stop pressed');
+		  }
+		//alert('Évènement keypress\n\n' + 'touche : ' + nomTouche);
+
+		  
+		});
 		/*INIT ONGLET 1*/
 		if(document.getElementById("checkbox_canvas").checked){
 			var intervalCanvas = Number(document.getElementById("inputText_canvasRrefreshRate").value);
@@ -1332,6 +1341,12 @@ window.onload = function () {
 							tRobot1 = t;
 							updateChart = 1;
 						}
+						else if(subString[i].charAt(0) == 'b'){
+							vbat = Number(subString[i].slice(2));
+							vbat = Math.round(vbat*100)/100;
+							document.getElementById('outputText_BatteryVoltage').value = vbat;
+							document.getElementById('outputText_BatteryPercentage').value = voltageToPercentage(vbat);
+						}
 						
 						else if(subString[i].charAt(0) == 'c'){	//curve
 							
@@ -1623,5 +1638,49 @@ window.onload = function () {
 			document.getElementById("outputText_posY").value = yRobot1;
 			document.getElementById("outputText_posT").value = tRobot1;
 		}
-	
+		function voltageToPercentage(voltage){
+			var percentage = 0;
+			if(voltage < 12){
+				percentage = 0;
+			}
+			else if(voltage <= 13.2){
+				percentage = (voltage - 12) / 1.2 * 5;
+			}
+			else if(voltage <= 14.4){
+				percentage = 5 + (voltage - 13.2) / 1.2 * 5;					
+			}
+			else if(voltage <= 14.8){
+				percentage = 10 + (voltage - 14.4) / 0.4 * 10;					
+			}
+			else if(voltage <= 15){
+				percentage = 20 + (voltage - 14.8) / 0.2 * 10;					
+			}
+			else if(voltage <= 15.16){
+				percentage = 30 + (voltage - 15) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.32){
+				percentage = 40 + (voltage - 15.16) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.48){
+				percentage = 50 + (voltage - 15.32) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.68){
+				percentage = 60 + (voltage - 15.48) / 0.2 * 10;					
+			}
+			else if(voltage <= 15.88){
+				percentage = 70 + (voltage - 15.68) / 0.2 * 10;					
+			}
+			else if(voltage <= 16.4){
+				percentage = 80 + (voltage - 15.88) / 0.62 * 10;					
+			}
+			else if(voltage <= 16.8){
+				percentage = 90 + (voltage - 16.4) / 0.4 * 10;					
+			}
+			else{
+				percentage = 100;
+			}
+			
+			percentage = Math.round(percentage * 100)/100;
+			return percentage;
+		}
 }

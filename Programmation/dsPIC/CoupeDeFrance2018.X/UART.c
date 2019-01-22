@@ -11,14 +11,14 @@
 #include "PWM.h"
 
 // <editor-fold defaultstate="collapsed" desc="Variables">
-extern double xc;
+extern long double xc;
 extern int state;
 extern PID pidAngle, pidDistance, pidSpeedLeft, pidSpeedRight;
 extern int R, L;
 extern volatile double US[NB_US];
-extern volatile double x;
-extern volatile double y;
-extern volatile double theta;
+extern volatile long double x;
+extern volatile long double y;
+extern volatile long double theta;
 
 extern volatile unsigned char stop;
 
@@ -49,6 +49,7 @@ uint32_t testPID = 0;
 
 extern long double coef_dissymmetry;
 extern long double mm_per_ticks;
+extern long double rad_per_ticks;
 extern long double distance_between_encoder_wheels;// </editor-fold>
 
 extern volatile double funSpeed;
@@ -451,25 +452,25 @@ void CheckMessages(){
                             break;
                         case CODE_VAR_MM_PER_TICKS:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            /*mm_per_ticks = (long double)value / COEF_SCALE_MM_PER_TICKS;
+                            mm_per_ticks = (long double)value / COEF_SCALE_MM_PER_TICKS;
                             sendLog("mm per ticks changed to : ");
                             sendLog(dtoa((double)mm_per_ticks));
-                            sendLog("\n");*/
-                            funAngularSpeed = (double)(value/1000);
+                            sendLog("\n");
+                            /*funAngularSpeed = (double)(value/1000);
                             sendLog("funSpeed changed to : ");
                             sendLog(dtoa(funAngularSpeed));
-                            sendLog("\n");
+                            sendLog("\n");*/
                             break;
                         case CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS:
                             value = ((uint32_t)RxDMABuffer[iArg3] << 24) + ((uint32_t)RxDMABuffer[iArg4] << 16) + ((uint32_t)RxDMABuffer[iArg5] << 8) + RxDMABuffer[iArg6];
-                            /*distance_between_encoder_wheels = (long double)value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS;
+                            distance_between_encoder_wheels = (long double)value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS;
                             sendLog("Distance between encoder wheels changed to : ");
                             sendLog(dtoa((double)distance_between_encoder_wheels));
-                            sendLog("\n");*/
-                            funAngularAcc = (double)(value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS);
+                            sendLog("\n");
+                            /*funAngularAcc = (double)(value / COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS);
                             sendLog("funAcc changed to : ");
                             sendLog(dtoa(funAngularAcc));
-                            sendLog("\n");
+                            sendLog("\n");*/
                             break;
                     }
                 }
@@ -482,14 +483,24 @@ void CheckMessages(){
                 if (size != RX_SIZE_GET)
                     return;
 
-                unsigned char var = RxDMABuffer[iArg1];
+                unsigned char varCode = RxDMABuffer[iArg1];
 
-                switch (var) {
+                switch (varCode) {
                     case VAR_STATE:
                         //sendLog(itoa(state));
                         break;
+                    case CODE_VAR_BAT:{
+                        double vbat = VBAT;
+                        sendDouble(CODE_VAR_BAT, &vbat);
+                        break;
+                    }
                     case CODE_VAR_ALLPID:
                         sendAllPID();
+                        break;
+                    case CODE_VAR_ODO:
+                        sendLongDouble(CODE_VAR_COEF_DISSYMETRY_LD,(long double*)&coef_dissymmetry);
+                        sendLongDouble(CODE_VAR_MM_PER_TICKS_LD,(long double*)&mm_per_ticks);
+                        sendLongDouble(CODE_VAR_RAD_PER_TICKS_LD,(long double*)&rad_per_ticks);
                         break;
                     default:
                         break;
@@ -820,14 +831,56 @@ void sendVar32(uint8_t varCode, uint32_t var){
     buffer[0] = TX_SIZE_VAR_32B;
     buffer[1] = TX_CODE_VAR;
     buffer[2] = varCode;
-    buffer[3] = TX_SIZE_VAR_32B;
-    buffer[4] = (uint8_t)(var >> 24);
-    buffer[5] = (uint8_t)(var >> 16);
-    buffer[6] = (uint8_t)(var >> 8);
-    buffer[7] = (uint8_t)(var & 0xFF);
-    buffer[8] = 0;
+    buffer[3] = (uint8_t)(var >> 24);
+    buffer[4] = (uint8_t)(var >> 16);
+    buffer[5] = (uint8_t)(var >> 8);
+    buffer[6] = (uint8_t)(var & 0xFF);
+    buffer[7] = 0;
     for(i = 0; i < TX_SIZE_VAR_32B; i++){
-        buffer[8] += buffer[i];	//checksum
+        buffer[7] += buffer[i];	//checksum
     }
 	send(buffer,TX_SIZE_VAR_32B + 1);
+}
+void sendDouble(uint8_t varCode, double *ptrVar){
+    uint8_t *ptrChar = (uint8_t*)ptrVar;
+    uint8_t  i;
+	uint8_t buffer[TX_SIZE_VAR_DOUBLE + 1];
+    buffer[0] = TX_SIZE_VAR_DOUBLE;
+    buffer[1] = TX_CODE_VAR;
+    buffer[2] = varCode;
+    buffer[3] = ptrChar[0];
+    buffer[4] = ptrChar[1];
+    buffer[5] = ptrChar[2];
+    buffer[6] = ptrChar[3];
+    buffer[7] = 0;
+    for(i = 0; i < TX_SIZE_VAR_DOUBLE; i++){
+        buffer[7] += buffer[i];	//checksum
+    }
+	send(buffer,TX_SIZE_VAR_DOUBLE + 1);
+}
+void sendLongDouble(uint8_t varCode, long double *ptrVar){
+    uint8_t *ptrChar = (uint8_t*)ptrVar;
+    uint8_t  i;
+	uint8_t buffer[TX_SIZE_VAR_LONG_DOUBLE + 1];
+    buffer[0] = TX_SIZE_VAR_LONG_DOUBLE;
+    buffer[1] = TX_CODE_VAR;
+    buffer[2] = varCode;
+    buffer[3] = ptrChar[0];
+    buffer[4] = ptrChar[1];
+    buffer[5] = ptrChar[2];
+    buffer[6] = ptrChar[3];
+    buffer[7] = ptrChar[4];
+    buffer[8] = ptrChar[5];
+    buffer[9] = ptrChar[6];
+    buffer[10] = ptrChar[7];
+    buffer[11] = 0;
+    for(i = 0; i < TX_SIZE_VAR_LONG_DOUBLE; i++){
+        buffer[11] += buffer[i];	//checksum
+    }
+	send(buffer,TX_SIZE_VAR_LONG_DOUBLE + 1);
+}
+void sendPosLongDouble(){
+    sendLongDouble(CODE_VAR_X_LD,(long double*)&x);
+    sendLongDouble(CODE_VAR_Y_LD,(long double*)&y);
+    sendLongDouble(CODE_VAR_T_LD,(long double*)&theta);
 }
