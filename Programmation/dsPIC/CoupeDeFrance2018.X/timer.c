@@ -79,6 +79,7 @@ unsigned char timer2Overflow = 0;
 
 long double coef_dissymmetry = COEF_DISSYMETRY;
 long double mm_per_ticks = MM_PER_TICKS;
+long double rad_per_ticks = RAD_PER_TICKS;
 long double distance_between_encoder_wheels = DISTANCE_BETWEEN_ENCODER_WHEELS;
 
 volatile uint8_t nearPointDistance = 0;
@@ -248,14 +249,15 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     speedLSum += ticksL;
     speedRSum += ticksR;
     
-    long double deltaDL = ticksL;
+    long double deltaDL = ticksL * coef_dissymmetry;;
     long double deltaDR = ticksR;
     
-    deltaDL = deltaDL * mm_per_ticks * coef_dissymmetry;   //Ticks -> mm
-    deltaDR = deltaDR * mm_per_ticks;
+    /*deltaDL = deltaDL * mm_per_ticks * coef_dissymmetry;   //Ticks -> mm
+    deltaDR = deltaDR * mm_per_ticks;*/
     
-    long double deltaD = (deltaDL + deltaDR) / 2;
-    long double deltaT = (deltaDR - deltaDL) / distance_between_encoder_wheels;
+    long double deltaD = (deltaDL + deltaDR) * mm_per_ticks / 2;
+    //long double deltaT = (deltaDR - deltaDL) / distance_between_encoder_wheels;
+    long double deltaT = (deltaDR - deltaDL) * rad_per_ticks;
 
     /*test Kahan*/
     //deltaD = 1;

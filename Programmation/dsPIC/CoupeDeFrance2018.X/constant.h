@@ -118,6 +118,11 @@
 #define CODE_VAR_X          1
 #define CODE_VAR_Y          2
 #define CODE_VAR_T          3
+
+#define CODE_VAR_X_LD       6
+#define CODE_VAR_Y_LD       7
+#define CODE_VAR_T_LD       8
+
 #define CODE_VAR_RUPT       4
 #define CODE_VAR_VERBOSE    5
 
@@ -139,9 +144,15 @@
 #define CODE_VAR_I_ANGLE     22
 #define CODE_VAR_D_ANGLE     23
 
+#define CODE_VAR_ODO         29
+
 #define CODE_VAR_COEF_DISSYMETRY                    30
 #define CODE_VAR_MM_PER_TICKS                       31
 #define CODE_VAR_DISTANCE_BETWEEN_ENCODER_WHEELS    32
+
+#define CODE_VAR_COEF_DISSYMETRY_LD                 33
+#define CODE_VAR_MM_PER_TICKS_LD                    34
+#define CODE_VAR_RAD_PER_TICKS_LD                   35
 
 #define CODE_VAR_US     100 //attention range [100 ; 100 + NB_US - 1]
 
@@ -251,6 +262,8 @@
 
 
 #define MM_PER_TICKS                        PI * ENCODER_WHEEL_DIAMETER / TICKS_PER_TURN
+#define RAD_PER_TICKS                       0.000064213877721789426285717855054797
+//#define TICKS_PER_RAD                       15572.957676416326850467129424503
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="ADC">

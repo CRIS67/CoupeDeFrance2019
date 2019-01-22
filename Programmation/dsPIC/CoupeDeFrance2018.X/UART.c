@@ -49,6 +49,7 @@ uint32_t testPID = 0;
 
 extern long double coef_dissymmetry;
 extern long double mm_per_ticks;
+extern long double rad_per_ticks;
 extern long double distance_between_encoder_wheels;// </editor-fold>
 
 extern volatile double funSpeed;
@@ -496,6 +497,11 @@ void CheckMessages(){
                     case CODE_VAR_ALLPID:
                         sendAllPID();
                         break;
+                    case CODE_VAR_ODO:
+                        sendLongDouble(CODE_VAR_COEF_DISSYMETRY_LD,(long double*)&coef_dissymmetry);
+                        sendLongDouble(CODE_VAR_MM_PER_TICKS_LD,(long double*)&mm_per_ticks);
+                        sendLongDouble(CODE_VAR_RAD_PER_TICKS_LD,(long double*)&rad_per_ticks);
+                        break;
                     default:
                         break;
                 }
@@ -872,4 +878,9 @@ void sendLongDouble(uint8_t varCode, long double *ptrVar){
         buffer[11] += buffer[i];	//checksum
     }
 	send(buffer,TX_SIZE_VAR_LONG_DOUBLE + 1);
+}
+void sendPosLongDouble(){
+    sendLongDouble(CODE_VAR_X_LD,(long double*)&x);
+    sendLongDouble(CODE_VAR_Y_LD,(long double*)&y);
+    sendLongDouble(CODE_VAR_T_LD,(long double*)&theta);
 }

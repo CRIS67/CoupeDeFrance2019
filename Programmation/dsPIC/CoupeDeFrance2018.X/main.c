@@ -252,10 +252,10 @@ int main(){
         servoUs(p,0);
     verbose = 0;
     
-    uint32_t foo = 0;
+    //uint32_t foo = 0;
     
     //TRISFbits.TRISF7 = 0;
-    uint16_t iDelay,jDelay;
+    //uint16_t iDelay,jDelay;
     //LATFbits.LATF7 = 1;
     
     delay_ms(2000);
