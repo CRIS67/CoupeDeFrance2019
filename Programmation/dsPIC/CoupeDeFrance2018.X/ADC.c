@@ -42,9 +42,11 @@ void initADC1(){
     AD1CHS123 = 0;  
     //AD1CHS0 = 0;
     AD1CHS0bits.CH0NB = 0;
-    AD1CHS0bits.CH0SB = 0b011000;//AN24
+    //AD1CHS0bits.CH0SB = 0b011000;//AN24
+    AD1CHS0bits.CH0SB = 26;//AN26
     AD1CHS0bits.CH0NA = 0;
-    AD1CHS0bits.CH0SA = 0b011000;//AN24
+    //AD1CHS0bits.CH0SA = 0b011000;//AN24
+    AD1CHS0bits.CH0SA = 26;//AN26
     AD1CSSL = 0;
     AD1CSSH = 0;
     
@@ -52,6 +54,20 @@ void initADC1(){
 }
 
 int readADC1(){
+    if(!AUTO_SAMPLE){
+    AD1CSSLbits.CSS0 = 1;
+    AD1CON1bits.DONE = 0;
+    AD1CON1bits.SAMP = 1;
+    }
+    while(!AD1CON1bits.DONE);
+    return ADC1BUF0;
+}
+
+int readADC(uint16_t channel){
+    AD1CON1bits.ADON = 0;   //turn off ADC module
+    AD1CHS0bits.CH0SA = channel;//AN26
+    AD1CHS0bits.CH0SB = channel;
+    AD1CON1bits.ADON = 1;
     if(!AUTO_SAMPLE){
     AD1CSSLbits.CSS0 = 1;
     AD1CON1bits.DONE = 0;

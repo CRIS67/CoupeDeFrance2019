@@ -82,19 +82,22 @@
 #define RX_CODE_GO      8
 #define RX_CODE_TURN    9
 
-#define RX_SIZE_START   2
-#define RX_SIZE_STOP    2
-#define RX_SIZE_SET       // var,type,value
-#define RX_SIZE_GET     3 // var
-#define RX_SIZE_SERVO   5 // id,value_H,value_L
-#define RX_SIZE_MOTOR   4 // id,value
-#define RX_SIZE_AX12    5 // id,value_H,value_L
-#define RX_SIZE_GO      7 // option,x_H,x_L,y_H,y_L
-#define RX_SIZE_TURN    5 // option,t_H,t_L
+#define RX_CODE_MOTOR_VOLTAGE   10
 
-#define TX_CODE_VAR     1
-#define TX_CODE_LOG     2
-#define TX_CODE_PLOT    3
+#define RX_SIZE_START           2
+#define RX_SIZE_STOP            2
+#define RX_SIZE_SET               // var,type,value
+#define RX_SIZE_GET             3 // var
+#define RX_SIZE_SERVO           5 // id,value_H,value_L
+#define RX_SIZE_MOTOR           4 // id,value
+#define RX_SIZE_MOTOR_VOLTAGE   4 // id,value
+#define RX_SIZE_AX12            5 // id,value_H,value_L
+#define RX_SIZE_GO              7 // option,x_H,x_L,y_H,y_L
+#define RX_SIZE_TURN            5 // option,t_H,t_L
+
+#define TX_CODE_VAR             1
+#define TX_CODE_LOG             2
+#define TX_CODE_PLOT            3
 
 #define TX_SIZE_VAR      //ça dépend
 #define TX_SIZE_VAR_8B   // ?
@@ -154,6 +157,8 @@
 #define CODE_VAR_MM_PER_TICKS_LD                    34
 #define CODE_VAR_RAD_PER_TICKS_LD                   35
 
+#define CODE_VAR_I_PUMP                             40
+
 #define CODE_VAR_US     100 //attention range [100 ; 100 + NB_US - 1]
 
 #define VAR_8b      0
@@ -165,16 +170,31 @@
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Motor control">
+#define NB_MOTOR_ACT    2
+
+#define ID_PUMP         0
+#define ID_MOTOR_LINEAR 1
+
 #define FORWARD     1
 #define BACKWARD    0
 
-#define PWM_PR_L    PHASE3
-#define PWM_PR_R    SPHASE3
+#define PWM_R                   PDC3            //PWM5L pin7  RD2 PWM_ASS_1
+#define PWM_L                   SDC3            //PWM5H pin6  RD1 PWM_ASS_0
 
-#define VBAT        (((double)ADC1BUF0*5.7*3.3)/1024)//12  //à remplacer plus tard par lecture de la tension ?
+#define PWM_PUMP                PDC3            //PWM5L pin7  RD2 PWM_ASS_1
+#define PWM_MOTOR_LINEAR        SDC3            //PWM5H pin6  RD1 PWM_ASS_0
 
-#define VSAT        12  //saturation pour brider la vitesse
+#define PWM_PR_PUMP             SPHASE3
+#define PWM_PR_MOTOR_LINEAR     PHASE3
 
+#define PWM_PR_L                PHASE3
+#define PWM_PR_R                SPHASE3
+
+//#define VBAT        (((double)ADC1BUF0*5.7*3.3)/1024)//12  //à remplacer plus tard par lecture de la tension ?
+
+#define VSAT                12  //saturation pour brider la vitesse
+#define VSAT_PUMP           10  //saturation pour protéger la pompe à vide
+#define VSAT_MOTOR_LINEAR   15  //saturation moteur glissère
 #define DEAD_ZONE   1.3   //tension min qui fait tourner le moteur A MESURER
 #define COEF_MOT_BO 0.65//0.428571    //  250*12/7000
 //#define VMIN        1//0.3   //arreter les moteurs si la commande trop faible
@@ -204,8 +224,9 @@
 #define NB_US       6               //number of sensors
 #define N_US        20              //loop iterations
 
-#define PWM_R       PDC3            //PWM5L pin7  RD2 PWM_ASS_1
-#define PWM_L       SDC3            //PWM5H pin6  RD1 PWM_ASS_0
+#define SENS_PUMP               LATGbits.LATG1  //      pin18 RE8 SENS_ASS_0
+#define SENS_MOTOR_LINEAR       LATGbits.LATG0  //      pin19 RE9 SENS_ASS_1
+
 #define SENS_L      LATGbits.LATG1  //      pin18 RE8 SENS_ASS_0
 #define SENS_R      LATGbits.LATG0  //      pin19 RE9 SENS_ASS_1
 
@@ -241,9 +262,10 @@
 #define US_NUM_1    LATCbits.LATC0
 
 
-#define LED_0       LATGbits.LATG3
-#define LED_1       LATFbits.LATF4
-#define LED_2       LATFbits.LATF5
+#define LED_0           LATFbits.LATF5
+#define LED_1           LATFbits.LATF4
+#define LED_2           LATGbits.LATG3
+#define LED_PLATINE     LATFbits.LATF7
 
 #define SENS_ASS_0  LATGbits.LATG0
 #define SENS_ASS_1  LATGbits.LATG1
@@ -269,6 +291,12 @@
 
 // <editor-fold defaultstate="collapsed" desc="ADC">
 #define AUTO_SAMPLE 1   //0-Sampling begins when SAMP bit is set / 1-Sampling begins immediately after last conversion; SAMP bit is auto-set
+
+#define ADC_CHANNEL_BAT     30
+
+#define ADC_CHANNEL_I_ASS_0 26
+#define ADC_CHANNEL_I_PUMP 26
+#define ADC_CHANNEL_I_ASS_1 27
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Path generation">

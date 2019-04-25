@@ -6,4 +6,5 @@ PID.h  \
 AX12.h  \
  PWM.h  \
 timer.h  \
-GPIO.h 
+GPIO.h  \
+ADC.h 

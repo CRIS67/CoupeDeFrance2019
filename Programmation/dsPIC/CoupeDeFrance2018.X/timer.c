@@ -512,6 +512,15 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 //testSendToMotor(0, 0);
             }
         }
+        /*plot(11,(uint32_t)((int32_t)(speedL*1000)));
+        plot(12,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
+
+        plot(21,(uint32_t)((int32_t)(speedR*1000)));
+        plot(22,(uint32_t)((int32_t)(pidSpeedRight.setPoint*1000)));*/
+        plot(31,(uint32_t)((int32_t)(x*1000)));
+        plot(32,(uint32_t)((int32_t)(xc*1000)));
+        plot(33,(uint32_t)((int32_t)(y*1000)));
+        plot(34,(uint32_t)((int32_t)(yc*1000)));
         /*if(nplot == 4){
             nplot = 0;
             plot(11,(uint32_t)((int32_t)(speedL*1000)));

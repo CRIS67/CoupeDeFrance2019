@@ -224,6 +224,41 @@ int main(){
     POS2CNTL = 0x8000;*/
     POS1CNTL = 0x0000;
     POS2CNTL = 0x0000;
+    initTimer();
+    IEC0bits.T1IE = 0;  //stop asserv
+    sendToMotor(8,0);
+    double oldCurrent = 0;
+    double coefLP = 0.2;
+    while(1){
+        int mes = readADC1();
+        double current = mes;
+        current = oldCurrent + (current - oldCurrent)*coefLP;
+        oldCurrent = current;
+        if(current < 40){
+            LED_0 = 1;
+        }
+        else{
+            LED_0 = 0;
+        }
+        
+        if(current < 50){
+            LED_1 = 1;
+        }
+        else{
+            LED_1 = 0;
+        }
+        
+        if(current < 100){
+            LED_2 = 1;
+        }
+        else{
+            LED_2 = 0;
+        }
+        delay_ms(20);
+        LED_PLATINE = !LED_PLATINE;
+        CheckMessages();
+        plot(1,(uint32_t)((int32_t)(current)));
+    }
     
     initAllPID(&pidSpeedLeft, &pidSpeedRight, &pidDistance, &pidAngle);
     initTimer();
@@ -356,7 +391,7 @@ int main(){
             delay_ms(500);
             //plot(1,micros());
             sendPos();
-            sendPosLongDouble();
+            //sendPosLongDouble();
             //sendRupt();
             //sendUS();
             /*plot(1,iF2);

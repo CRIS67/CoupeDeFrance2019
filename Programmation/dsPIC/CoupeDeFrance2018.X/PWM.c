@@ -9,7 +9,7 @@
 #include <p33EP512GM310.h>
 
 #include "PWM.h"
-
+#include "ADC.h"
 extern uint8_t finalPoint;
 
 void initPWM(){
@@ -188,8 +188,8 @@ void testMotor(){
         }
     }
 }
-void sendToMotor(double valueR, double valueL)
-{
+void sendToMotor(double valueR, double valueL){
+    double vbat = (double)readADC(ADC_CHANNEL_BAT);
     if(valueL > 0){
         valueL += DEAD_ZONE;
     }
@@ -204,19 +204,19 @@ void sendToMotor(double valueR, double valueL)
     }
     if(valueL <= -VSAT){
         SENS_L = BACKWARD;
-        PWM_L = PWM_PR_L * (VSAT / VBAT);
+        PWM_L = PWM_PR_L * (VSAT / vbat);
     }
     else if(valueL >= VSAT){
         SENS_L = FORWARD;
-        PWM_L = PWM_PR_L * (VSAT / VBAT);
+        PWM_L = PWM_PR_L * (VSAT / vbat);
     }
     else if(valueL < -DEAD_ZONE){
         SENS_L = BACKWARD;
-        PWM_L = -(int)(valueL * PWM_PR_L / VBAT);
+        PWM_L = -(int)(valueL * PWM_PR_L / vbat);
     }
     else if(valueL > DEAD_ZONE){
         SENS_L = FORWARD;
-        PWM_L = (int)(valueL * PWM_PR_L / VBAT);
+        PWM_L = (int)(valueL * PWM_PR_L / vbat);
     }
     else{    //DEADZONE
         if(finalPoint == 1)
@@ -225,19 +225,19 @@ void sendToMotor(double valueR, double valueL)
     
     if(valueR <= -VSAT){
         SENS_R = BACKWARD;
-        PWM_R = PWM_PR_R * (VSAT / VBAT);
+        PWM_R = PWM_PR_R * (VSAT / vbat);
     }
     else if(valueR >= VSAT){
         SENS_R = FORWARD;
-        PWM_R = PWM_PR_R * (VSAT / VBAT);
+        PWM_R = PWM_PR_R * (VSAT / vbat);
     }
     else if(valueR < -DEAD_ZONE){
         SENS_R = BACKWARD;
-        PWM_R = -(int)(valueR * PWM_PR_R / VBAT);
+        PWM_R = -(int)(valueR * PWM_PR_R / vbat);
     }
     else if(valueR > DEAD_ZONE){
         SENS_R = FORWARD;
-        PWM_R = (int)(valueR * PWM_PR_R / VBAT);
+        PWM_R = (int)(valueR * PWM_PR_R / vbat);
     }
     else{    //DEADZONE
         if(finalPoint == 1)
@@ -245,37 +245,88 @@ void sendToMotor(double valueR, double valueL)
     }
 }
 void testSendToMotor(double valueR, double valueL){
+    double vbat = (double)readADC(ADC_CHANNEL_BAT);
     if(valueL <= -VSAT){
         SENS_L = BACKWARD;
-        PWM_L = PWM_PR_L * (VSAT / VBAT);
+        PWM_L = PWM_PR_L * (VSAT / vbat);
     }
     else if(valueL >= VSAT){
         SENS_L = FORWARD;
-        PWM_L = PWM_PR_L * (VSAT / VBAT);
+        PWM_L = PWM_PR_L * (VSAT / vbat);
     }
     else if(valueL < 0){
         SENS_L = BACKWARD;
-        PWM_L = -(int)(valueL * PWM_PR_L / VBAT);
+        PWM_L = -(int)(valueL * PWM_PR_L / vbat);
     }
     else{
         SENS_L = FORWARD;
-        PWM_L = (int)(valueL * PWM_PR_L / VBAT);
+        PWM_L = (int)(valueL * PWM_PR_L / vbat);
     }
     
     if(valueR <= -VSAT){
         SENS_R = BACKWARD;
-        PWM_R = PWM_PR_R * (VSAT / VBAT);
+        PWM_R = PWM_PR_R * (VSAT / vbat);
     }
     else if(valueR >= VSAT){
         SENS_R = FORWARD;
-        PWM_R = PWM_PR_R * (VSAT / VBAT);
+        PWM_R = PWM_PR_R * (VSAT / vbat);
     }
     else if(valueR < 0){
         SENS_R = BACKWARD;
-        PWM_R = -(int)(valueR * PWM_PR_R / VBAT);
+        PWM_R = -(int)(valueR * PWM_PR_R / vbat);
     }
     else{
         SENS_R = FORWARD;
-        PWM_R = (int)(valueR * PWM_PR_R / VBAT);
+        PWM_R = (int)(valueR * PWM_PR_R / vbat);
+    }
+}
+void motorVoltage(uint8_t id, double voltage){
+    double vbat = (double)readADC(ADC_CHANNEL_BAT);
+    
+    switch(id){
+        case ID_PUMP:
+            if(voltage <= -VSAT_PUMP){
+                SENS_PUMP = BACKWARD;
+                PWM_PUMP = PWM_PR_PUMP * (VSAT_PUMP / vbat);
+            }
+            else if(voltage >= VSAT_PUMP){
+                SENS_PUMP = FORWARD;
+                PWM_PUMP = PWM_PR_PUMP * (VSAT_PUMP / vbat);
+            }
+            else if(voltage < 0){
+                SENS_PUMP = BACKWARD;
+                PWM_PUMP = -(int)(voltage * PWM_PR_PUMP / vbat);
+            }
+            else{
+                SENS_PUMP = FORWARD;
+                PWM_PUMP = (int)(voltage * PWM_PR_PUMP / vbat);
+            }
+            break;
+        case ID_MOTOR_LINEAR:
+            if(voltage <= -VSAT_MOTOR_LINEAR){
+                SENS_MOTOR_LINEAR = BACKWARD;
+                PWM_MOTOR_LINEAR = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
+            }
+            else if(voltage >= VSAT_MOTOR_LINEAR){
+                SENS_MOTOR_LINEAR = FORWARD;
+                PWM_MOTOR_LINEAR = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
+            }
+            else if(voltage < 0){
+                SENS_MOTOR_LINEAR = BACKWARD;
+                PWM_MOTOR_LINEAR = -(int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
+            }
+            else{
+                SENS_MOTOR_LINEAR = FORWARD;
+                PWM_MOTOR_LINEAR = (int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
+            }
+            break;
+        /*case ID_MOTOR_LEFT:
+            
+            break;
+        case ID_MOTOR_RIGHT:
+            
+            break;*/
+        default:
+            break;  
     }
 }

@@ -9,6 +9,7 @@
 
 #include "UART.h"
 #include "PWM.h"
+#include "ADC.h"
 
 // <editor-fold defaultstate="collapsed" desc="Variables">
 //extern long double xc;
@@ -590,7 +591,7 @@ void CheckMessages(){
                         //sendLog(itoa(state));
                         break;
                     case CODE_VAR_BAT:{
-                        double vbat = VBAT;
+                        double vbat = (double)readADC(ADC_CHANNEL_BAT);
                         sendDouble(CODE_VAR_BAT, &vbat);
                         break;
                     }
@@ -602,6 +603,11 @@ void CheckMessages(){
                         sendLongDouble(CODE_VAR_MM_PER_TICKS_LD,mm_per_ticks);
                         sendLongDouble(CODE_VAR_RAD_PER_TICKS_LD,rad_per_ticks);
                         break;
+                    case CODE_VAR_I_PUMP:{
+                        int current = readADC(ADC_CHANNEL_I_PUMP);
+                        
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -647,7 +653,7 @@ void CheckMessages(){
 
                 unsigned char id = RxDMABuffer[iArg1];
                 char val = RxDMABuffer[iArg2];
-                if (id > ID_MAX_SERVO)
+                if (id > NB_MOTOR_ACT)
                     return;
                 if (val < -100 || val > 100)
                     return;
@@ -659,6 +665,32 @@ void CheckMessages(){
                 sendLog(itoa((int)val));
                 sendLog("\n");
                 //cout << "motor " << (int)id << " " << (int)val << endl;
+                break;
+            }// </editor-fold>
+            
+            // <editor-fold defaultstate="collapsed" desc="Motor voltage">
+            case RX_CODE_MOTOR_VOLTAGE:
+            {
+                if (size != RX_SIZE_MOTOR)
+                    return;
+
+                unsigned char id = RxDMABuffer[iArg1];
+                if (id > NB_MOTOR_ACT)
+                    return;
+                double voltage;
+                double *dptr = &voltage;
+                uint8_t *ptr = (uint8_t*)dptr;
+                ptr[0] = RxDMABuffer[iArg2];
+                ptr[1] = RxDMABuffer[iArg3];
+                ptr[2] = RxDMABuffer[iArg4];
+                ptr[3] = RxDMABuffer[iArg5];
+
+                motorVoltage(id,voltage);
+                sendLog("motor_voltage ");
+                sendLog(itoa((int)id));
+                sendLog(" ");
+                sendLog(itoa((int)voltage));
+                sendLog("\n");
                 break;
             }// </editor-fold>
 
