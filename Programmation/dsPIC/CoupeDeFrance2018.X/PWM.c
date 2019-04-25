@@ -26,13 +26,13 @@ void initPWM(){
     PTCON2bits.PCLKDIV = 0; //Divide-by-1, maximum PWMx timing resolution
     PTCONbits.PTEN = 1; //PWMx module is enabled
     
-    servoUs(0,1525);
+    /*servoUs(0,1525);
     servoUs(1,800);
     servoUs(2,2300);
     servoUs(3,1650);
     servoUs(4,1500);
     servoUs(5,1900);
-    servoUs(6,900);
+    servoUs(6,900);*/
 }
 
 void initPWM1(){           //50Hz for serovomotors

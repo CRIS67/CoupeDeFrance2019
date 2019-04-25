@@ -69,8 +69,8 @@ volatile PID pidSpeedLeft, pidSpeedRight, pidDistance, pidAngle;
 int state = 0;
 int R,L;
 
-volatile char arrived;
-volatile char arrived_2;
+//volatile char arrived;
+//volatile char arrived_2;
 
 extern volatile char   US_ON[NB_US];
 extern volatile char   US_R[NB_US];
@@ -151,6 +151,8 @@ int sens = 0;
 volatile long double kahanErrorX;
 volatile long double kahanErrorY;
 volatile long double kahanErrorT;
+
+volatile uint8_t arrived = 1;
 
 int main(){
     int o;
@@ -773,7 +775,7 @@ void straightPath(double cx, double cy, double ct, double speedMax, double accMa
 }
 
 void go(double cx, double cy, double speedMax, double accMax){
-    arrived_2 = 0;
+    //arrived_2 = 0;
     double thetaRobotPoint = atan2(cy-y,cx-x);
     double phi = thetaRobotPoint - theta;
     while(phi < -PI)
@@ -893,7 +895,7 @@ void go(double cx, double cy, double speedMax, double accMax){
 }
 
 void goBack(double cx, double cy, double speedMax, double accMax){
-    arrived_2 = 0;
+    //arrived_2 = 0;
     //printRpi("DEBUG begin of goBack()");
     back = 1;
     double thetaRobotPoint = atan2(cy-y,cx-x);

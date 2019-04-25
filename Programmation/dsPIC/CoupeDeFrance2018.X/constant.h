@@ -100,7 +100,7 @@
 #define TX_CODE_PLOT            3
 
 #define TX_SIZE_VAR      //ça dépend
-#define TX_SIZE_VAR_8B   // ?
+#define TX_SIZE_VAR_8B  4
 #define TX_SIZE_VAR_16B 5
 #define TX_SIZE_VAR_32B 7
 #define TX_SIZE_VAR_DOUBLE 7
@@ -122,12 +122,14 @@
 #define CODE_VAR_Y          2
 #define CODE_VAR_T          3
 
-#define CODE_VAR_X_LD       6
+/*#define CODE_VAR_X_LD       6
 #define CODE_VAR_Y_LD       7
-#define CODE_VAR_T_LD       8
+#define CODE_VAR_T_LD       8*/
 
 #define CODE_VAR_RUPT       4
 #define CODE_VAR_VERBOSE    5
+
+#define CODE_VAR_ARRIVED    6
 
 #define CODE_VAR_ALLPID     9
 
@@ -159,12 +161,53 @@
 
 #define CODE_VAR_I_PUMP                             40
 
+#define CODE_VAR_P_SPEED_L_LD   42
+#define CODE_VAR_I_SPEED_L_LD   43
+#define CODE_VAR_D_SPEED_L_LD   44
+
+#define CODE_VAR_P_SPEED_R_LD   45
+#define CODE_VAR_I_SPEED_R_LD   46
+#define CODE_VAR_D_SPEED_R_LD   47
+
+#define CODE_VAR_P_DISTANCE_LD  51
+#define CODE_VAR_I_DISTANCE_LD  52
+#define CODE_VAR_D_DISTANCE_LD  53
+
+#define CODE_VAR_P_ANGLE_LD     54
+#define CODE_VAR_I_ANGLE_LD     55
+#define CODE_VAR_D_ANGLE_LD     56
+
+#define CODE_VAR_TRAJ_LIN_SPEED_LD  60
+#define CODE_VAR_TRAJ_LIN_ACC_LD    61
+
+#define CODE_VAR_TRAJ_ROT_SPEED_LD  62
+#define CODE_VAR_TRAJ_ROT_ACC_LD    63
+
+#define CODE_VAR_DISTANCE_MAX_LD    64
+
+#define CODE_VAR_TICKS_PER_TURN_LD              70
+#define CODE_VAR_WHEEL_DIAMETER_LD              71
+#define CODE_VAR_DISTANCE_CENTER_TO_WHEEL_LD    72
+
+#define CODE_VAR_X_LD    80
+#define CODE_VAR_Y_LD    81
+#define CODE_VAR_T_LD    82
+
+#define CODE_VAR_XC_LD    83
+#define CODE_VAR_YC_LD    84
+#define CODE_VAR_TC_LD    85
+
+#define CODE_VAR_XF_LD    86
+#define CODE_VAR_YF_LD    87
+#define CODE_VAR_TF_LD    88
+
 #define CODE_VAR_US     100 //attention range [100 ; 100 + NB_US - 1]
 
 #define VAR_8b      0
 #define VAR_16b     1
 #define VAR_32b     2
 #define VAR_64b     3
+#define VAR_LD_64b  4
 
 
 // </editor-fold>
@@ -178,25 +221,25 @@
 #define FORWARD     1
 #define BACKWARD    0
 
-#define PWM_R                   PDC3            //PWM5L pin7  RD2 PWM_ASS_1
-#define PWM_L                   SDC3            //PWM5H pin6  RD1 PWM_ASS_0
+#define PWM_R                   PDC2
+#define PWM_L                   SDC2
 
-#define PWM_PUMP                PDC3            //PWM5L pin7  RD2 PWM_ASS_1
-#define PWM_MOTOR_LINEAR        SDC3            //PWM5H pin6  RD1 PWM_ASS_0
+#define PWM_PUMP                PDC3
+#define PWM_MOTOR_LINEAR        SDC3
 
 #define PWM_PR_PUMP             SPHASE3
 #define PWM_PR_MOTOR_LINEAR     PHASE3
 
-#define PWM_PR_L                PHASE3
-#define PWM_PR_R                SPHASE3
+#define PWM_PR_L                PHASE2
+#define PWM_PR_R                SPHASE2
 
 //#define VBAT        (((double)ADC1BUF0*5.7*3.3)/1024)//12  //à remplacer plus tard par lecture de la tension ?
 
 #define VSAT                12  //saturation pour brider la vitesse
 #define VSAT_PUMP           10  //saturation pour protéger la pompe à vide
 #define VSAT_MOTOR_LINEAR   15  //saturation moteur glissère
-#define DEAD_ZONE   1.3   //tension min qui fait tourner le moteur A MESURER
-#define COEF_MOT_BO 0.65//0.428571    //  250*12/7000
+#define DEAD_ZONE           1.3   //tension min qui fait tourner le moteur A MESURER
+#define COEF_MOT_BO         0.65//0.428571    //  250*12/7000
 //#define VMIN        1//0.3   //arreter les moteurs si la commande trop faible
 
 //#define ACC_MAX 0.5
@@ -224,11 +267,11 @@
 #define NB_US       6               //number of sensors
 #define N_US        20              //loop iterations
 
-#define SENS_PUMP               LATGbits.LATG1  //      pin18 RE8 SENS_ASS_0
-#define SENS_MOTOR_LINEAR       LATGbits.LATG0  //      pin19 RE9 SENS_ASS_1
+#define SENS_PUMP               LATGbits.LATG1
+#define SENS_MOTOR_LINEAR       LATGbits.LATG0
 
-#define SENS_L      LATGbits.LATG1  //      pin18 RE8 SENS_ASS_0
-#define SENS_R      LATGbits.LATG0  //      pin19 RE9 SENS_ASS_1
+#define SENS_L      LATGbits.LATG12
+#define SENS_R      LATGbits.LATG13
 
 #define RUPT_ASS_0  PORTEbits.RE8
 #define RUPT_ASS_1  PORTGbits.RG10

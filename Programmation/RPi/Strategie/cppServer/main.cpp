@@ -1,3 +1,5 @@
+#define CHANNEL 0
+
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
@@ -5,12 +7,20 @@
 #include <queue>
 #include "web.hpp"
 #include "dspic.hpp"
+#include "actuators.hpp"
 
+#include <wiringPi.h>
+#include <wiringPiSPI.h>
 
 void *print(void *ptr);
 
 int main()
 {
+	int fd = wiringPiSPISetup(CHANNEL, 500000);
+	/*A AJOUTER : FLUSH tous les slaves*/
+	Actuators actFront(fd), actBack(fd);
+	
+	actFront.Launchtest();
 	DsPIC dspic;
     pthread_t thread_print;
 

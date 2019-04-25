@@ -53,8 +53,8 @@ int16_t volatile speedRSum;
 double volatile smoothSpeedL;
 double volatile smoothSpeedR;
 
-extern volatile char arrived;
-extern volatile char arrived_2;
+//extern volatile char arrived;
+//extern volatile char arrived_2;
 
 volatile double d;
 
@@ -87,6 +87,9 @@ volatile uint8_t nearPointAngle = 0;
 
 volatile uint16_t nplot = 0;
 
+extern volatile uint8_t arrived;
+
+volatile long double distanceMax = 10;  //The robot is arrived at its destination if its distance to the destination point is less than this value
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
 unsigned char statePathGeneration;
 unsigned char stateTrap;

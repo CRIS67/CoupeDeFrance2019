@@ -24,6 +24,7 @@ void sendPos();
 void sendRupt();
 void sendUS();
 void sendLog(char *str);
+void sendVar8(uint8_t varCode, uint8_t var);
 void sendVar32(uint8_t varCode, uint32_t var);
 void sendDouble(uint8_t varCode, double *ptrVar);
 void sendLongDouble(uint8_t varCode, long double ptrVar);
