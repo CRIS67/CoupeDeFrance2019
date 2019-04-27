@@ -203,11 +203,11 @@ section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200              0x2478          0x36b4  (14004)
 .const                      0x2678               0x1a2           0x273  (627)
-.text                       0x281a              0x5116          0x79a1  (31137)
-.dinit                      0x7930                0x8e            0xd5  (213)
-.text                       0x79be               0x19e           0x26d  (621)
+.text                       0x281a              0x5166          0x7a19  (31257)
+.dinit                      0x7980                0x8e            0xd5  (213)
+.text                       0x7a0e               0x19e           0x26d  (621)
 
-                 Total program memory used (bytes):         0xb60a  (46602) 8%
+                 Total program memory used (bytes):         0xb682  (46722) 8%
 
 
 Ivt Memory  [Origin = 0x4, Length = 0x1fc]
@@ -237,7 +237,7 @@ section                    address      alignment gaps    total length  (dec)
 .ndata                      0x1168                   0            0x14  (20)
 .nbss                       0x117c                   0            0x1a  (26)
 .bss                        0x1196                   0          0x10ee  (4334)
-_04394F605cc213de           0xce00                   0            0x10  (16)
+_04440F605cc454c5           0xce00                   0            0x10  (16)
 
                  Total data memory used (bytes):         0x1294  (4756) 9%
 
@@ -536,8 +536,8 @@ External Symbols in Program Memory (by address):
 
                   0x000200                  __resetPRI
                   0x00023c                  __psv_init
-                  0x000248                  __data_init
                   0x000248                  __data_init_extended
+                  0x000248                  __data_init
                   0x0002fa                  __SPI1Interrupt
                   0x000380                  __SPI2Interrupt
                   0x0003aa                  __CNInterrupt
@@ -558,11 +558,11 @@ External Symbols in Program Memory (by address):
                   0x001a44                  _cosl
                   0x001a44                  _cos
                   0x001a48                  _cosf
-                  0x001a4c                  ___eqdf2
                   0x001a4c                  ___ledf2
+                  0x001a4c                  ___eqdf2
                   0x001a4c                  ___ltdf2
-                  0x001a56                  ___gtdf2
                   0x001a56                  ___gedf2
+                  0x001a56                  ___gtdf2
                   0x001a60                  ___divdf3
                   0x001b14                  ___divsf3
                   0x001b98                  ___nedf2
@@ -572,8 +572,8 @@ External Symbols in Program Memory (by address):
                   0x001c22                  __dunpack2exit
                   0x001c2c                  ___extendsfdf2
                   0x001c6a                  ___lesf2
-                  0x001c6a                  ___eqsf2
                   0x001c6a                  ___ltsf2
+                  0x001c6a                  ___eqsf2
                   0x001c6e                  ___gesf2
                   0x001c6e                  ___gtsf2
                   0x001c72                  ___fixdfsi
@@ -592,8 +592,8 @@ External Symbols in Program Memory (by address):
                   0x001e42                  __fbopReturnNaN
                   0x001e48                  ___muldf3
                   0x001f34                  ___mulsf3
-                  0x001f9c                  _sinl
                   0x001f9c                  _sin
+                  0x001f9c                  _sinl
                   0x001fa0                  __sincos
                   0x0020fa                  __sincosf
                   0x0021cc                  _sinf
@@ -638,72 +638,73 @@ External Symbols in Program Memory (by address):
                   0x0047ce                  _itoa
                   0x004836                  _dtoa
                   0x004970                  _CheckMessages
-                  0x005c58                  _sendPos
-                  0x005d54                  _sendRupt
-                  0x005e3a                  _sendUS
-                  0x005eb0                  _send
-                  0x005f02                  _sendLog
-                  0x005f60                  _plot
-                  0x005ff6                  _sendAllPID
-                  0x006134                  _sendAllPIDLongDouble
-                  0x006212                  _sendVar8
-                  0x006250                  _sendVar32
-                  0x0062b6                  _sendDouble
-                  0x006312                  _sendLongDouble
-                  0x006398                  _sendPosLongDouble
-                  0x0063d4                  _initPWM
-                  0x0063fa                  _initPWM1
-                  0x006420                  _initPWM2
-                  0x00644e                  _initPWM3
-                  0x006474                  _initPWM4
-                  0x00649a                  _initPWM5
-                  0x0064c0                  _initPWM6
-                  0x0064e6                  _servoUs
-                  0x0065be                  _testServo
-                  0x006696                  _testMotor
-                  0x00672a                  _sendToMotor
-                  0x00698e                  _testSendToMotor
-                  0x006b22                  _motorVoltage
-                  0x006cc6                  _initAllPID
-                  0x006e56                  _initPID
-                  0x006f78                  _setSetPoint
-                  0x006f9a                  _setProcessValue
-                  0x006fbc                  _compute
-                  0x007328                  _initTimer
-                  0x00735c                  _initTimer1
-                  0x007380                  _initTimer2
-                  0x0073ae                  _initTimer3
-                  0x0073b4                  _initTimer4
-                  0x0073d8                  _initTimer5
-                  0x0073fa                  _micros
-                  0x00745a                  _millis
-                  0x0074b8                  _delay_us
-                  0x0074d8                  _delay_ms
-                  0x0074f8                  _initAX12
-                  0x00755a                  _pushAX12
-                  0x00757e                  _popAX12
-                  0x0075a2                  _turnLedAX12
-                  0x0075bc                  _blockAnswerAX12
-                  0x0075d4                  _rotateToAX12
-                  0x0075f4                  _writeDataAX12
-                  0x00767a                  _initGPIO
-                  0x0077a0                  _initADC
-                  0x0077a8                  _initADC1
-                  0x00782a                  _readADC1
-                  0x00783c                  _readADC
-                  0x007882                  _initSPI
-                  0x00788a                  _initSPI1
-                  0x0078c8                  _initSPI2
-                  0x0079be                  _initDMA
-                  0x0079c8                  _initDMA0
-                  0x0079ce                  _initDMA1
-                  0x0079f0                  _sendDMA
-                  0x007a48                  _initClock
-                  0x007aa6                  _initQEI
-                  0x007ab0                  _initQEI1
-                  0x007ad8                  _initQEI2
-                  0x007b00                  _initUS
-                  0x007b30                  _initInt
+                  0x005c60                  _sendPos
+                  0x005d5c                  _sendRupt
+                  0x005e42                  _sendUS
+                  0x005eb8                  _send
+                  0x005f0a                  _sendLog
+                  0x005f68                  _plot
+                  0x005ffe                  _sendAllPID
+                  0x00613c                  _sendAllPIDLongDouble
+                  0x00621a                  _sendVar8
+                  0x006258                  _sendVar16
+                  0x0062a0                  _sendVar32
+                  0x006306                  _sendDouble
+                  0x006362                  _sendLongDouble
+                  0x0063e8                  _sendPosLongDouble
+                  0x006424                  _initPWM
+                  0x00644a                  _initPWM1
+                  0x006470                  _initPWM2
+                  0x00649e                  _initPWM3
+                  0x0064c4                  _initPWM4
+                  0x0064ea                  _initPWM5
+                  0x006510                  _initPWM6
+                  0x006536                  _servoUs
+                  0x00660e                  _testServo
+                  0x0066e6                  _testMotor
+                  0x00677a                  _sendToMotor
+                  0x0069de                  _testSendToMotor
+                  0x006b72                  _motorVoltage
+                  0x006d16                  _initAllPID
+                  0x006ea6                  _initPID
+                  0x006fc8                  _setSetPoint
+                  0x006fea                  _setProcessValue
+                  0x00700c                  _compute
+                  0x007378                  _initTimer
+                  0x0073ac                  _initTimer1
+                  0x0073d0                  _initTimer2
+                  0x0073fe                  _initTimer3
+                  0x007404                  _initTimer4
+                  0x007428                  _initTimer5
+                  0x00744a                  _micros
+                  0x0074aa                  _millis
+                  0x007508                  _delay_us
+                  0x007528                  _delay_ms
+                  0x007548                  _initAX12
+                  0x0075aa                  _pushAX12
+                  0x0075ce                  _popAX12
+                  0x0075f2                  _turnLedAX12
+                  0x00760c                  _blockAnswerAX12
+                  0x007624                  _rotateToAX12
+                  0x007644                  _writeDataAX12
+                  0x0076ca                  _initGPIO
+                  0x0077f0                  _initADC
+                  0x0077f8                  _initADC1
+                  0x00787a                  _readADC1
+                  0x00788c                  _readADC
+                  0x0078d2                  _initSPI
+                  0x0078da                  _initSPI1
+                  0x007918                  _initSPI2
+                  0x007a0e                  _initDMA
+                  0x007a18                  _initDMA0
+                  0x007a1e                  _initDMA1
+                  0x007a40                  _sendDMA
+                  0x007a98                  _initClock
+                  0x007af6                  _initQEI
+                  0x007b00                  _initQEI1
+                  0x007b28                  _initQEI2
+                  0x007b50                  _initUS
+                  0x007b80                  _initInt
                   0x0557fa                  __FGS.sec
 
 External Symbols in Program Memory (by name):
@@ -781,88 +782,89 @@ External Symbols in Program Memory (by name):
                   0x0020fa                  __sincosf
                   0x001940                  _atan2f
                   0x00197a                  _atanf
-                  0x0075bc                  _blockAnswerAX12
-                  0x006fbc                  _compute
+                  0x00760c                  _blockAnswerAX12
+                  0x00700c                  _compute
                   0x001a44                  _cos
                   0x001a48                  _cosf
                   0x001a44                  _cosl
-                  0x0074d8                  _delay_ms
-                  0x0074b8                  _delay_us
+                  0x007528                  _delay_ms
+                  0x007508                  _delay_us
                   0x004836                  _dtoa
                   0x0024c0                  _fmod
                   0x0024c8                  _fmodf
                   0x0024c0                  _fmodl
                   0x00322c                  _go
                   0x00385a                  _goBack
-                  0x0077a0                  _initADC
-                  0x0077a8                  _initADC1
-                  0x0074f8                  _initAX12
-                  0x006cc6                  _initAllPID
-                  0x007a48                  _initClock
-                  0x0079be                  _initDMA
-                  0x0079c8                  _initDMA0
-                  0x0079ce                  _initDMA1
-                  0x00767a                  _initGPIO
-                  0x007b30                  _initInt
-                  0x006e56                  _initPID
-                  0x0063d4                  _initPWM
-                  0x0063fa                  _initPWM1
-                  0x006420                  _initPWM2
-                  0x00644e                  _initPWM3
-                  0x006474                  _initPWM4
-                  0x00649a                  _initPWM5
-                  0x0064c0                  _initPWM6
-                  0x007aa6                  _initQEI
-                  0x007ab0                  _initQEI1
-                  0x007ad8                  _initQEI2
-                  0x007882                  _initSPI
-                  0x00788a                  _initSPI1
-                  0x0078c8                  _initSPI2
-                  0x007328                  _initTimer
-                  0x00735c                  _initTimer1
-                  0x007380                  _initTimer2
-                  0x0073ae                  _initTimer3
-                  0x0073b4                  _initTimer4
-                  0x0073d8                  _initTimer5
+                  0x0077f0                  _initADC
+                  0x0077f8                  _initADC1
+                  0x007548                  _initAX12
+                  0x006d16                  _initAllPID
+                  0x007a98                  _initClock
+                  0x007a0e                  _initDMA
+                  0x007a18                  _initDMA0
+                  0x007a1e                  _initDMA1
+                  0x0076ca                  _initGPIO
+                  0x007b80                  _initInt
+                  0x006ea6                  _initPID
+                  0x006424                  _initPWM
+                  0x00644a                  _initPWM1
+                  0x006470                  _initPWM2
+                  0x00649e                  _initPWM3
+                  0x0064c4                  _initPWM4
+                  0x0064ea                  _initPWM5
+                  0x006510                  _initPWM6
+                  0x007af6                  _initQEI
+                  0x007b00                  _initQEI1
+                  0x007b28                  _initQEI2
+                  0x0078d2                  _initSPI
+                  0x0078da                  _initSPI1
+                  0x007918                  _initSPI2
+                  0x007378                  _initTimer
+                  0x0073ac                  _initTimer1
+                  0x0073d0                  _initTimer2
+                  0x0073fe                  _initTimer3
+                  0x007404                  _initTimer4
+                  0x007428                  _initTimer5
                   0x00467a                  _initUART
                   0x004682                  _initUART1
                   0x0046ea                  _initUART2
-                  0x007b00                  _initUS
+                  0x007b50                  _initUS
                   0x0047ce                  _itoa
                   0x00281a                  _main
                   0x002640                  _memcpy
-                  0x0073fa                  _micros
-                  0x00745a                  _millis
+                  0x00744a                  _micros
+                  0x0074aa                  _millis
                   0x00414a                  _modif_straightPath
-                  0x006b22                  _motorVoltage
-                  0x005f60                  _plot
+                  0x006b72                  _motorVoltage
+                  0x005f68                  _plot
                   0x00478e                  _pop
                   0x0047ae                  _pop2
-                  0x00757e                  _popAX12
+                  0x0075ce                  _popAX12
                   0x00474e                  _push
                   0x00476e                  _push2
-                  0x00755a                  _pushAX12
-                  0x00783c                  _readADC
-                  0x00782a                  _readADC1
+                  0x0075aa                  _pushAX12
+                  0x00788c                  _readADC
+                  0x00787a                  _readADC1
                   0x002a70                  _reglageDiametre
-                  0x0075d4                  _rotateToAX12
-                  0x005eb0                  _send
-                  0x005ff6                  _sendAllPID
-                  0x006134                  _sendAllPIDLongDouble
-                  0x0079f0                  _sendDMA
-                  0x0062b6                  _sendDouble
-                  0x005f02                  _sendLog
-                  0x006312                  _sendLongDouble
-                  0x005c58                  _sendPos
-                  0x006398                  _sendPosLongDouble
-                  0x005d54                  _sendRupt
-                  0x00672a                  _sendToMotor
-                  0x005e3a                  _sendUS
-                  0x006250                  _sendVar32
-                  0x006212                  _sendVar8
-                  0x0064e6                  _servoUs
-                  0x006f9a                  _setProcessValue
-                  0x006f78                  _setSetPoint
+                  0x007624                  _rotateToAX12
+                  0x005eb8                  _send
+                  0x005ffe                  _sendAllPID
+                  0x00613c                  _sendAllPIDLongDouble
+                  0x007a40                  _sendDMA
+                  0x006306                  _sendDouble
+                  0x005f0a                  _sendLog
+                  0x006362                  _sendLongDouble
+                  0x005c60                  _sendPos
+                  0x0063e8                  _sendPosLongDouble
+                  0x005d5c                  _sendRupt
+                  0x00677a                  _sendToMotor
+                  0x005e42                  _sendUS
+                  0x006258                  _sendVar16
+                  0x0062a0                  _sendVar32
+                  0x00621a                  _sendVar8
+                  0x006536                  _servoUs
+                  0x006fea                  _setProcessValue
+                  0x006fc8                  _setSetPoint
                   0x001f9c                  _sin
                   0x0021cc                  _sinf
                   0x001f9c                  _sinl
@@ -871,14 +873,14 @@ External Symbols in Program Memory (by name):
                   0x00264e                  _strlen
                   0x00265a                  _strncat
                   0x0029da                  _testAccMax
-                  0x006696                  _testMotor
+                  0x0066e6                  _testMotor
                   0x0045d8                  _testPIDs
-                  0x00698e                  _testSendToMotor
-                  0x0065be                  _testServo
+                  0x0069de                  _testSendToMotor
+                  0x00660e                  _testServo
                   0x003e98                  _turn
-                  0x0075a2                  _turnLedAX12
+                  0x0075f2                  _turnLedAX12
                   0x00436e                  _turnNOLIMIT
-                  0x0075f4                  _writeDataAX12
+                  0x007644                  _writeDataAX12
 
 Memory Configuration
 
@@ -1166,7 +1168,7 @@ __FUID3
 .comment
  *(.comment)
 
-.debug_info       0x000000      0x10907
+.debug_info       0x000000      0x10960
  *(.debug_info)
  .debug_info      0x000000        0xb81 build/default/production/ADC.o
  .debug_info      0x000b81       0x2094 build/default/production/GPIO.o
@@ -1178,10 +1180,10 @@ __FUID3
  .debug_info      0x007b8f        0xf64 build/default/production/interrupt.o
  .debug_info      0x008af3       0x177c build/default/production/main.o
  .debug_info      0x00a26f       0x212f build/default/production/timer.o
- .debug_info      0x00c39e       0x2c9d build/default/production/UART.o
- .debug_info      0x00f03b        0x18e build/default/production/US.o
- .debug_info      0x00f1c9        0xb99 build/default/production/AX12.o
- .debug_info      0x00fd62        0xba5 build/default/production/DMA.o
+ .debug_info      0x00c39e       0x2cf6 build/default/production/UART.o
+ .debug_info      0x00f094        0x18e build/default/production/US.o
+ .debug_info      0x00f222        0xb99 build/default/production/AX12.o
+ .debug_info      0x00fdbb        0xba5 build/default/production/DMA.o
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev     0x000000       0x10c0
@@ -1202,7 +1204,7 @@ __FUID3
  .debug_abbrev    0x000ddd        0x176 build/default/production/AX12.o
  .debug_abbrev    0x000f53        0x16d build/default/production/DMA.o
 
-.debug_line       0x000000       0x1691
+.debug_line       0x000000       0x169e
  *(.debug_line)
  .debug_line      0x000000        0x118 build/default/production/ADC.o
  .debug_line      0x000118        0x117 build/default/production/GPIO.o
@@ -1215,12 +1217,12 @@ __FUID3
  .debug_line      0x0007c8         0xfe build/default/production/interrupt.o
  .debug_line      0x0008c6        0x3e0 build/default/production/main.o
  .debug_line      0x000ca6        0x2e5 build/default/production/timer.o
- .debug_line      0x000f8b        0x4b0 build/default/production/UART.o
- .debug_line      0x00143b         0x37 build/default/production/US.o
- .debug_line      0x001472         0xfa build/default/production/AX12.o
- .debug_line      0x00156c        0x125 build/default/production/DMA.o
+ .debug_line      0x000f8b        0x4bd build/default/production/UART.o
+ .debug_line      0x001448         0x37 build/default/production/US.o
+ .debug_line      0x00147f         0xfa build/default/production/AX12.o
+ .debug_line      0x001579        0x125 build/default/production/DMA.o
 
-.debug_frame      0x000000        0xd2c
+.debug_frame      0x000000        0xd48
  *(.debug_frame)
  .debug_frame     0x000000         0x84 build/default/production/ADC.o
  .debug_frame     0x000084         0x30 build/default/production/GPIO.o
@@ -1232,10 +1234,10 @@ __FUID3
  .debug_frame     0x00046c         0x7e build/default/production/interrupt.o
  .debug_frame     0x0004ea        0x176 build/default/production/main.o
  .debug_frame     0x000660        0x1c6 build/default/production/timer.o
- .debug_frame     0x000826        0x2e6 build/default/production/UART.o
- .debug_frame     0x000b0c         0x30 build/default/production/US.o
- .debug_frame     0x000b3c        0x134 build/default/production/AX12.o
- .debug_frame     0x000c70         0xbc build/default/production/DMA.o
+ .debug_frame     0x000826        0x302 build/default/production/UART.o
+ .debug_frame     0x000b28         0x30 build/default/production/US.o
+ .debug_frame     0x000b58        0x134 build/default/production/AX12.o
+ .debug_frame     0x000c8c         0xbc build/default/production/DMA.o
 
 .debug_str        0x000000        0xb3d
  *(.debug_str)
@@ -1260,7 +1262,7 @@ __FUID3
  *(.debug_macinfo)
 
 .debug_pubnames
-                  0x000000        0xd2c
+                  0x000000        0xd3a
  *(.debug_pubnames)
  .debug_pubnames
                   0x000000         0x44 build/default/production/ADC.o
@@ -1283,13 +1285,13 @@ __FUID3
  .debug_pubnames
                   0x0004e1        0x3c6 build/default/production/timer.o
  .debug_pubnames
-                  0x0008a7        0x28c build/default/production/UART.o
+                  0x0008a7        0x29a build/default/production/UART.o
  .debug_pubnames
-                  0x000b33         0x37 build/default/production/US.o
+                  0x000b41         0x37 build/default/production/US.o
  .debug_pubnames
-                  0x000b6a         0xfa build/default/production/AX12.o
+                  0x000b78         0xfa build/default/production/AX12.o
  .debug_pubnames
-                  0x000c64         0xc8 build/default/production/DMA.o
+                  0x000c72         0xc8 build/default/production/DMA.o
 
 .debug_ranges
  *(.debug_ranges)
@@ -3505,9 +3507,9 @@ __c30_signature
                     0x2266                  _US_R
                     0x226c                  _US
 
-_04394F605cc213de
+_04440F605cc454c5
                     0xce00         0x10
- _04394F605cc213de
+ _04440F605cc454c5
                     0xce00         0x10 build/default/production/DMA.o
                     0xce00                  _BufferC
 
@@ -3588,7 +3590,7 @@ _04394F605cc213de
  .const             0xa678        0x190 build/default/production/UART.o
  .const             0xa808         0x12 build/default/production/SPI.o
 
-.text             0x00281a       0x5116
+.text             0x00281a       0x5166
  .text            0x00281a       0x1e60 build/default/production/main.o
                   0x00281a                  _main
                   0x0029da                  _testAccMax
@@ -3600,7 +3602,7 @@ _04394F605cc213de
                   0x00414a                  _modif_straightPath
                   0x00436e                  _turnNOLIMIT
                   0x0045d8                  _testPIDs
- .text            0x00467a       0x1d5a build/default/production/UART.o
+ .text            0x00467a       0x1daa build/default/production/UART.o
                   0x00467a                  _initUART
                   0x004682                  _initUART1
                   0x0046ea                  _initUART2
@@ -3611,86 +3613,87 @@ _04394F605cc213de
                   0x0047ce                  _itoa
                   0x004836                  _dtoa
                   0x004970                  _CheckMessages
-                  0x005c58                  _sendPos
-                  0x005d54                  _sendRupt
-                  0x005e3a                  _sendUS
-                  0x005eb0                  _send
-                  0x005f02                  _sendLog
-                  0x005f60                  _plot
-                  0x005ff6                  _sendAllPID
-                  0x006134                  _sendAllPIDLongDouble
-                  0x006212                  _sendVar8
-                  0x006250                  _sendVar32
-                  0x0062b6                  _sendDouble
-                  0x006312                  _sendLongDouble
-                  0x006398                  _sendPosLongDouble
- .text            0x0063d4        0x8f2 build/default/production/PWM.o
-                  0x0063d4                  _initPWM
-                  0x0063fa                  _initPWM1
-                  0x006420                  _initPWM2
-                  0x00644e                  _initPWM3
-                  0x006474                  _initPWM4
-                  0x00649a                  _initPWM5
-                  0x0064c0                  _initPWM6
-                  0x0064e6                  _servoUs
-                  0x0065be                  _testServo
-                  0x006696                  _testMotor
-                  0x00672a                  _sendToMotor
-                  0x00698e                  _testSendToMotor
-                  0x006b22                  _motorVoltage
- .text            0x006cc6        0x662 build/default/production/PID.o
-                  0x006cc6                  _initAllPID
-                  0x006e56                  _initPID
-                  0x006f78                  _setSetPoint
-                  0x006f9a                  _setProcessValue
-                  0x006fbc                  _compute
- .text            0x007328        0x1d0 build/default/production/timer.o
-                  0x007328                  _initTimer
-                  0x00735c                  _initTimer1
-                  0x007380                  _initTimer2
-                  0x0073ae                  _initTimer3
-                  0x0073b4                  _initTimer4
-                  0x0073d8                  _initTimer5
-                  0x0073fa                  _micros
-                  0x00745a                  _millis
-                  0x0074b8                  _delay_us
-                  0x0074d8                  _delay_ms
- .text            0x0074f8        0x182 build/default/production/AX12.o
-                  0x0074f8                  _initAX12
-                  0x00755a                  _pushAX12
-                  0x00757e                  _popAX12
-                  0x0075a2                  _turnLedAX12
-                  0x0075bc                  _blockAnswerAX12
-                  0x0075d4                  _rotateToAX12
-                  0x0075f4                  _writeDataAX12
- .text            0x00767a        0x126 build/default/production/GPIO.o
-                  0x00767a                  _initGPIO
- .text            0x0077a0         0xe2 build/default/production/ADC.o
-                  0x0077a0                  _initADC
-                  0x0077a8                  _initADC1
-                  0x00782a                  _readADC1
-                  0x00783c                  _readADC
- .text            0x007882         0xae build/default/production/SPI.o
-                  0x007882                  _initSPI
-                  0x00788a                  _initSPI1
-                  0x0078c8                  _initSPI2
+                  0x005c60                  _sendPos
+                  0x005d5c                  _sendRupt
+                  0x005e42                  _sendUS
+                  0x005eb8                  _send
+                  0x005f0a                  _sendLog
+                  0x005f68                  _plot
+                  0x005ffe                  _sendAllPID
+                  0x00613c                  _sendAllPIDLongDouble
+                  0x00621a                  _sendVar8
+                  0x006258                  _sendVar16
+                  0x0062a0                  _sendVar32
+                  0x006306                  _sendDouble
+                  0x006362                  _sendLongDouble
+                  0x0063e8                  _sendPosLongDouble
+ .text            0x006424        0x8f2 build/default/production/PWM.o
+                  0x006424                  _initPWM
+                  0x00644a                  _initPWM1
+                  0x006470                  _initPWM2
+                  0x00649e                  _initPWM3
+                  0x0064c4                  _initPWM4
+                  0x0064ea                  _initPWM5
+                  0x006510                  _initPWM6
+                  0x006536                  _servoUs
+                  0x00660e                  _testServo
+                  0x0066e6                  _testMotor
+                  0x00677a                  _sendToMotor
+                  0x0069de                  _testSendToMotor
+                  0x006b72                  _motorVoltage
+ .text            0x006d16        0x662 build/default/production/PID.o
+                  0x006d16                  _initAllPID
+                  0x006ea6                  _initPID
+                  0x006fc8                  _setSetPoint
+                  0x006fea                  _setProcessValue
+                  0x00700c                  _compute
+ .text            0x007378        0x1d0 build/default/production/timer.o
+                  0x007378                  _initTimer
+                  0x0073ac                  _initTimer1
+                  0x0073d0                  _initTimer2
+                  0x0073fe                  _initTimer3
+                  0x007404                  _initTimer4
+                  0x007428                  _initTimer5
+                  0x00744a                  _micros
+                  0x0074aa                  _millis
+                  0x007508                  _delay_us
+                  0x007528                  _delay_ms
+ .text            0x007548        0x182 build/default/production/AX12.o
+                  0x007548                  _initAX12
+                  0x0075aa                  _pushAX12
+                  0x0075ce                  _popAX12
+                  0x0075f2                  _turnLedAX12
+                  0x00760c                  _blockAnswerAX12
+                  0x007624                  _rotateToAX12
+                  0x007644                  _writeDataAX12
+ .text            0x0076ca        0x126 build/default/production/GPIO.o
+                  0x0076ca                  _initGPIO
+ .text            0x0077f0         0xe2 build/default/production/ADC.o
+                  0x0077f0                  _initADC
+                  0x0077f8                  _initADC1
+                  0x00787a                  _readADC1
+                  0x00788c                  _readADC
+ .text            0x0078d2         0xae build/default/production/SPI.o
+                  0x0078d2                  _initSPI
+                  0x0078da                  _initSPI1
+                  0x007918                  _initSPI2
 
-.dinit            0x007930         0x8e
- .dinit           0x007930         0x8e data_init
+.dinit            0x007980         0x8e
+ .dinit           0x007980         0x8e data_init
 
-.text             0x0079be        0x19e
- .text            0x0079be         0x8a build/default/production/DMA.o
-                  0x0079be                  _initDMA
-                  0x0079c8                  _initDMA0
-                  0x0079ce                  _initDMA1
-                  0x0079f0                  _sendDMA
- .text            0x007a48         0x5e build/default/production/clock.o
-                  0x007a48                  _initClock
- .text            0x007aa6         0x5a build/default/production/QEI.o
-                  0x007aa6                  _initQEI
-                  0x007ab0                  _initQEI1
-                  0x007ad8                  _initQEI2
- .text            0x007b00         0x30 build/default/production/US.o
-                  0x007b00                  _initUS
- .text            0x007b30         0x2c build/default/production/interrupt.o
-                  0x007b30                  _initInt
+.text             0x007a0e        0x19e
+ .text            0x007a0e         0x8a build/default/production/DMA.o
+                  0x007a0e                  _initDMA
+                  0x007a18                  _initDMA0
+                  0x007a1e                  _initDMA1
+                  0x007a40                  _sendDMA
+ .text            0x007a98         0x5e build/default/production/clock.o
+                  0x007a98                  _initClock
+ .text            0x007af6         0x5a build/default/production/QEI.o
+                  0x007af6                  _initQEI
+                  0x007b00                  _initQEI1
+                  0x007b28                  _initQEI2
+ .text            0x007b50         0x30 build/default/production/US.o
+                  0x007b50                  _initUS
+ .text            0x007b80         0x2c build/default/production/interrupt.o
+                  0x007b80                  _initInt

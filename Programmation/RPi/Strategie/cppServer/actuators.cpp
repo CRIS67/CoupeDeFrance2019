@@ -1,10 +1,9 @@
 #include "actuators.hpp"
-int Send(int in) {
-	std::cout << "entree = " << in << std::endl;
-	unsigned char buffer[100];
+int Send(int in){
+	unsigned char buffer[1];
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(CHANNEL, buffer, 1);
-	std::cout << "reponse = " << (int)buffer[0] << std::endl;
+	std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
 	delayMicroseconds(SPI_DELAY);
 	return (int)buffer[0];
 }
@@ -178,4 +177,42 @@ void Actuators::Launchtest() {
 		std::cout << "fail" << std::endl;
 	}
 	MoveServoExtr(i, 0);
+}
+/************************************
+* nom de la fonction : flush
+*
+* tâche effectée : envoie "nb" octets 0 à la carte
+*
+************************************/
+void flush(uint16_t nb){
+	for(uint16_t i = 0; i < nb; i++){
+		Send(0);
+	}
+}
+int Actuators::DebugGetCurrent(int nb_bras){
+	int ret = -1;
+	if(nb_bras < 0 || nb_bras > 2) {
+		std::cout << "erreur nb_bras" << std::endl;
+	} else {
+		nb_bras += 13;
+		Send(2);
+		Send(nb_bras);
+		Send(2+nb_bras);
+		unsigned char buffer[4];
+		buffer[0] = Send(0);
+		buffer[1] = Send(0);
+		buffer[2] = Send(0);
+		buffer[3] = Send(0);
+		if(buffer[0] != 3){
+			std::cout << "erreur fonction DebugGetCurrent : taille du message != 3" << std::endl;
+		}
+		if(buffer[1] != (nb_bras)){
+			std::cout << "erreur fonction DebugGetCurrent : nb du bras" << std::endl;
+		}
+		if(buffer[3] != (buffer[0] + buffer[1] + buffer[2])){
+			std::cout << "erreur fonction DebugGetCurrent : Checksum" << std::endl;
+		}
+		ret = buffer[2];
+	}
+	return ret;
 }

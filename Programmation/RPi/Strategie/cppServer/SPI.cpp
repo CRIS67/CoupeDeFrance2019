@@ -1,6 +1,7 @@
 #include "SPI.hpp"
 
 SPI::SPI(int channel, int speed){
+	wiringPiSetup();
 	m_channel = channel;
     m_fd = wiringPiSPISetup(channel, speed);
 	pinMode(PIN_MUX_A, OUTPUT);
@@ -11,8 +12,10 @@ SPI::~SPI(){
 }
 /*Change slave select line*/
 void SPI::changeSlave(uint8_t id){
-	digitalWrite(PIN_MUX_A,(id & 0x1));			//bit0 of id -> MUX_A
-	digitalWrite(PIN_MUX_B,((id >> 1) & 0x1));	//bit1 of id -> MUX_B
+	if(id < 4){
+		digitalWrite(PIN_MUX_A,(id & 0x1));			//bit0 of id -> MUX_A
+		digitalWrite(PIN_MUX_B,((id >> 1) & 0x1));	//bit1 of id -> MUX_B
+	}
 }
 /*Lock the SPI bus from preventing multiple acces from other threads*/
 void SPI::lock(){
@@ -22,9 +25,9 @@ void SPI::lock(){
 void SPI::unlock(){
 	m_mutex.unlock();
 }
-int SPI::getFd const(){
+int SPI::getFd(){
 	return m_fd;
 }
-int SPI::getChannel const(){
+int SPI::getChannel(){
 	return m_channel;
 }

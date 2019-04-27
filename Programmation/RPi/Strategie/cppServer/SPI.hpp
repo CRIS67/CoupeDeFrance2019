@@ -14,13 +14,13 @@
 class SPI
 {
     public:
-        SPI();
+        SPI(int channel, int speed);
         virtual ~SPI();
 		void changeSlave(uint8_t id);
 		void lock();
 		void unlock();
-		int getFd const();
-		int getChannel const();
+		int getFd();
+		int getChannel();
     protected:
     private:
 		int m_fd;			//SPI file descriptor

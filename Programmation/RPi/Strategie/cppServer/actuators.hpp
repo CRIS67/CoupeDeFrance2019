@@ -32,6 +32,8 @@ class Actuators
 		void SetPos(void);
 		void SetTxt(void);*/
 		void Launchtest();
+		void flush(uint16_t nb);
+		int DebugGetCurrent(int nb_bras);
     protected:
     private:
 		int m_fd;	//SPI file descriptor
