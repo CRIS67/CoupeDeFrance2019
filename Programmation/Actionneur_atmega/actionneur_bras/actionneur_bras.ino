@@ -928,20 +928,6 @@ ISR(SPI_STC_vect) {
             CptSpiSend++;
           break;
           case CURENT_SPI_FULL_0:
-            SendNbSpi = (Cur_full_0%256);
-          break;
-          case CURENT_SPI_FULL_1:
-            SendNbSpi = (Cur_full_1%256);
-          break;
-          case CURENT_SPI_FULL_2:
-            SendNbSpi = (Cur_full_2%256);
-          break;
-        }
-        SPDR = SendNbSpi;
-      break;
-      case 4:
-        switch(TabPileSend[CptReadPile]) {
-          case CURENT_SPI_FULL_0:
             SendNbSpi = (unsigned char)(Cur_full_0/256);
           break;
           case CURENT_SPI_FULL_1:
@@ -949,6 +935,20 @@ ISR(SPI_STC_vect) {
           break;
           case CURENT_SPI_FULL_2:
             SendNbSpi = (unsigned char)(Cur_full_2/256);
+          break;
+        }
+        SPDR = SendNbSpi;
+      break;
+      case 4:
+        switch(TabPileSend[CptReadPile]) {
+          case CURENT_SPI_FULL_0:
+            SendNbSpi = (Cur_full_0%256);
+          break;
+          case CURENT_SPI_FULL_1:
+            SendNbSpi = (Cur_full_1%256);
+          break;
+          case CURENT_SPI_FULL_2:
+            SendNbSpi = (Cur_full_2%256);
           break;
         }
       break;
