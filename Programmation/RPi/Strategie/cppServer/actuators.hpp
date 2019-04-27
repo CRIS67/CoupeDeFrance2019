@@ -28,6 +28,7 @@ class Actuators
 		void SetPump(int nb_bras, int state);
 		void GetColor(int nb_bras);
 		void GetCurrent(int nb_bras);
+		void GetCurrentFull(int nb_bras);
 		/*void SetPrgm(void);
 		void SetPos(void);
 		void SetTxt(void);*/
