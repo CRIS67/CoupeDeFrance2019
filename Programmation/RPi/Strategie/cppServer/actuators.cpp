@@ -129,6 +129,24 @@ void Actuators::GetCurrent(int nb_bras){
 	}
 }
 /************************************
+* nom de la fonction : GetCurrent
+*
+* entrée : nb_bras, numéro du bras de 0 à 2
+*
+* tâche effectée : demande une mesure de courant de la valeur
+*
+************************************/
+void Actuators::GetCurrentFull(int nb_bras){
+	if(nb_bras < 0 || nb_bras > 2) {
+		std::cout << "erreur nb_bras" << std::endl;
+	} else {
+		nb_bras += 16;
+		Send(2);
+		Send(nb_bras);
+		Send(2+nb_bras);
+	}
+}
+/************************************
 * nom de la fonction : Launchtest
 *
 * tâche effectée : teste un bras
