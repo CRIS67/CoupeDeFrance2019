@@ -17,16 +17,13 @@ void *print(void *ptr);
 
 int main()
 {
-	//int fd = wiringPiSPISetup(CHANNEL, 500000);
-	SPI spi(SPI_CHANNEL,SPI_SPEED);
-	//int fd = spi.getFd();
+	SPI spi(SPI_CHANNEL,SPI_SPEED);	//initialise SPI
 	/*A AJOUTER : FLUSH tous les slaves*/
 	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	
-	//actFront.Launchtest();
-	actFront.SetPump(1,1);
+	/*actFront.SetPump(1,1);
 	delay(1000);
-	actFront.SetPump(1,0);
+	actFront.SetPump(1,0);*/
 	DsPIC dspic;
     pthread_t thread_print;
 
