@@ -47,10 +47,12 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "SPI.hpp"
+
 class Lidar
 {
     public:
-        Lidar();
+        Lidar(SPI *pSpi,uint8_t id);
         virtual ~Lidar();
 		
 		void start();
@@ -76,7 +78,9 @@ class Lidar
 		uint32_t nbBytesReceivedTotal = 0;
 		uint8_t nbMsgReceived = 0;
     protected:
-		int fd;
+		uint8_t m_id;	//id of this SPI slave
+		//int fd;
+		SPI *m_pSpi;	//pointer to SPI instance
     private:
 };
 

@@ -7,8 +7,9 @@ int Send(int in){
 	delayMicroseconds(SPI_DELAY);
 	return (int)buffer[0];
 }
-Actuators::Actuators(int fd_SPI){
-    m_fd = fd_SPI;
+Actuators::Actuators(SPI *pSpi,uint8_t id){
+    m_pSpi = pSpi;
+	m_id = id;
 }
 Actuators::~Actuators(){
 
@@ -25,6 +26,10 @@ Actuators::~Actuators(){
 *
 ************************************/
 void Actuators::MoveServoExtr(int nb_bras, int pos){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -38,6 +43,7 @@ void Actuators::MoveServoExtr(int nb_bras, int pos){
 			Send(3+nb_bras+pos);
 		}
 	}
+	m_pSpi->unlock();
 }
 /************************************
 *
@@ -51,6 +57,10 @@ void Actuators::MoveServoExtr(int nb_bras, int pos){
 *
 ************************************/
 void Actuators::MoveServo(int nb_bras, int pos){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -66,6 +76,7 @@ void Actuators::MoveServo(int nb_bras, int pos){
 			Send(4+nb_bras+lsb+msb);
 		}
 	}
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : SetPump
@@ -78,6 +89,10 @@ void Actuators::MoveServo(int nb_bras, int pos){
 *
 ************************************/
 void Actuators::SetPump(int nb_bras, int state){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -91,6 +106,7 @@ void Actuators::SetPump(int nb_bras, int state){
 			Send(3+nb_bras+state);
 		}
 	}
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : GetColor
@@ -101,6 +117,10 @@ void Actuators::SetPump(int nb_bras, int state){
 *
 ************************************/
 void Actuators::GetColor(int nb_bras){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -109,6 +129,7 @@ void Actuators::GetColor(int nb_bras){
 		Send(nb_bras);
 		Send(2+nb_bras);
 	}
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : GetCurrent
@@ -119,6 +140,10 @@ void Actuators::GetColor(int nb_bras){
 *
 ************************************/
 void Actuators::GetCurrent(int nb_bras){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -127,6 +152,7 @@ void Actuators::GetCurrent(int nb_bras){
 		Send(nb_bras);
 		Send(2+nb_bras);
 	}
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : GetCurrent
@@ -137,6 +163,10 @@ void Actuators::GetCurrent(int nb_bras){
 *
 ************************************/
 void Actuators::GetCurrentFull(int nb_bras){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
@@ -145,6 +175,7 @@ void Actuators::GetCurrentFull(int nb_bras){
 		Send(nb_bras);
 		Send(2+nb_bras);
 	}
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : Launchtest
@@ -153,7 +184,10 @@ void Actuators::GetCurrentFull(int nb_bras){
 *
 ************************************/
 void Actuators::Launchtest() {
-	//InitSpi();
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	int i = -1, res = 0;
 	char in = 'a';
 	std::cout << "numero du bras ? (0/1/2)" << std::endl;
@@ -195,6 +229,7 @@ void Actuators::Launchtest() {
 		std::cout << "fail" << std::endl;
 	}
 	MoveServoExtr(i, 0);
+	m_pSpi->unlock();
 }
 /************************************
 * nom de la fonction : flush
@@ -202,12 +237,21 @@ void Actuators::Launchtest() {
 * tâche effectée : envoie "nb" octets 0 à la carte
 *
 ************************************/
-void flush(uint16_t nb){
+void Actuators::flush(uint16_t nb){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	for(uint16_t i = 0; i < nb; i++){
 		Send(0);
 	}
+	m_pSpi->unlock();
 }
 int Actuators::DebugGetCurrent(int nb_bras){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	int ret = -1;
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
@@ -232,9 +276,14 @@ int Actuators::DebugGetCurrent(int nb_bras){
 		}
 		ret = buffer[2];
 	}
+	m_pSpi->unlock();
 	return ret;
 }
 int Actuators::debugGetCurrentFull(int nb_bras){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	int ret = -1;
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
@@ -261,5 +310,6 @@ int Actuators::debugGetCurrentFull(int nb_bras){
 		}
 		ret = (buffer[2] << 8) + buffer[3];
 	}
+	m_pSpi->unlock();
 	return ret;
 }

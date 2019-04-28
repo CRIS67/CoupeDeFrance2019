@@ -11,11 +11,15 @@ SPI::~SPI(){
 
 }
 /*Change slave select line*/
-void SPI::changeSlave(uint8_t id){
+void SPI::setSlave(uint8_t id){
 	if(id < 4){
+		m_slaveId = id;
 		digitalWrite(PIN_MUX_A,(id & 0x1));			//bit0 of id -> MUX_A
 		digitalWrite(PIN_MUX_B,((id >> 1) & 0x1));	//bit1 of id -> MUX_B
 	}
+}
+int SPI::getSlaveId(){
+	return m_slaveId;
 }
 /*Lock the SPI bus from preventing multiple acces from other threads*/
 void SPI::lock(){

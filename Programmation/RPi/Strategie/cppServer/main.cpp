@@ -1,5 +1,3 @@
-#define CHANNEL 0
-
 #include <iostream>
 #include <cstdlib>
 #include <pthread.h>
@@ -7,6 +5,9 @@
 #include <queue>
 #include "web.hpp"
 #include "dspic.hpp"
+#include "actuators.hpp"
+#include "SPI.hpp"
+#include "lidar.hpp"
 #include "actuators.hpp"
 
 #include <wiringPi.h>
@@ -16,11 +17,16 @@ void *print(void *ptr);
 
 int main()
 {
-	int fd = wiringPiSPISetup(CHANNEL, 500000);
+	//int fd = wiringPiSPISetup(CHANNEL, 500000);
+	SPI spi(SPI_CHANNEL,SPI_SPEED);
+	//int fd = spi.getFd();
 	/*A AJOUTER : FLUSH tous les slaves*/
-	Actuators actFront(fd), actBack(fd);
+	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	
-	actFront.Launchtest();
+	//actFront.Launchtest();
+	actFront.SetPump(1,1);
+	delay(1000);
+	actFront.SetPump(1,0);
 	DsPIC dspic;
     pthread_t thread_print;
 
@@ -37,6 +43,7 @@ int main()
     std::cout << "Error:unable to create thread," << rc << std::endl;
     exit(-1);
     }
+	exit(-1);
 	/*dspic.start();
 	dspic.stop();
 	dspic.servo(1,1500);

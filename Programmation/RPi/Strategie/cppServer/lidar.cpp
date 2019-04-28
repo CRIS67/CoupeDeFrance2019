@@ -1,7 +1,9 @@
 #include "lidar.hpp"
 
-Lidar::Lidar(){
-	fd = wiringPiSPISetup(CHANNEL, SPI_FREQUENCY);
+Lidar::Lidar(SPI *pSpi,uint8_t id){
+	//fd = wiringPiSPISetup(CHANNEL, SPI_FREQUENCY);
+	m_pSpi = pSpi;
+	m_id = id;
 }
 Lidar::~Lidar(){
 	
@@ -44,23 +46,25 @@ void Lidar::getSpeed(){	//change rotation speed
 }
 
 void Lidar::sendSPI(uint8_t *buf, uint8_t bufSize){	//add size & checksum
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	uint8_t b[1];
 	b[0] = bufSize + 1;
 	uint8_t checksum = b[0];
-	//wiringPiSPIDataRW(CHANNEL, b, 1);
 	sendReceiveSPI(b[0]);
 	delayMicroseconds(SPI_DELAY);
 	for(int i = 0; i < bufSize; i++){
 		b[0] = buf[i];
 		checksum += buf[i];
-		//wiringPiSPIDataRW(CHANNEL, b, 1);
 		sendReceiveSPI(b[0]);
 		delayMicroseconds(SPI_DELAY);
 	}
 	b[0] = checksum;
-	//wiringPiSPIDataRW(CHANNEL, b, 1);
 	sendReceiveSPI(b[0]);
 	delayMicroseconds(SPI_DELAY);
+	m_pSpi->unlock();
 }
 void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 	//std::cout << "sent : " << (int)data << std::endl;		//for debug
@@ -96,12 +100,17 @@ void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 	}
 }
 void Lidar::flush(){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	uint8_t buffer[1];
 	for(int i = 0; i < 100; i++){
 		buffer[0] = 0;
 		sendReceiveSPI(buffer[0]);
 		delayMicroseconds(SPI_DELAY);
 	}
+	m_pSpi->unlock();
 }
 void Lidar::checkMessages(){
 	while(nbMsgReceived > 0){

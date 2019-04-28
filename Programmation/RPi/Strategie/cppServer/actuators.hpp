@@ -8,20 +8,14 @@
 #include <wiringPiSPI.h>
 #include <stdint.h>
 #include <unistd.h>
-
 #include <iostream>
-/*#include <iostream>
-#include <errno.h>
-#include <wiringPi.h>
-#include <wiringPiSPI.h>
-#include <wiringPi.h>
-#include <unistd.h>
-#include <math.h>
-#include <string.h>*/
+
+#include "SPI.hpp"
+
 class Actuators
 {
     public:
-        Actuators(int fd_SPI);
+        Actuators(SPI *pSpi,uint8_t id);
         virtual ~Actuators();
 		void MoveServoExtr(int nb_bras, int pos);
 		void MoveServo(int nb_bras, int pos);
@@ -38,7 +32,9 @@ class Actuators
 		int debugGetCurrentFull(int nb_bras);
     protected:
     private:
-		int m_fd;	//SPI file descriptor
+		uint8_t m_id;	//id of this SPI slave
+		//int m_fd;		//SPI file descriptor
+		SPI *m_pSpi;	//pointer to SPI instance
 };
 
 #endif // ACTUATORS_H
