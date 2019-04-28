@@ -234,3 +234,32 @@ int Actuators::DebugGetCurrent(int nb_bras){
 	}
 	return ret;
 }
+int Actuators::debugGetCurrentFull(int nb_bras){
+	int ret = -1;
+	if(nb_bras < 0 || nb_bras > 2) {
+		std::cout << "erreur nb_bras" << std::endl;
+	} else {
+		nb_bras += 16;
+		Send(2);
+		Send(nb_bras);
+		Send(2+nb_bras);
+		
+		unsigned char buffer[5];
+		buffer[0] = Send(0);
+		buffer[1] = Send(0);
+		buffer[2] = Send(0);
+		buffer[3] = Send(0);
+		buffer[4] = Send(0);
+		if(buffer[0] != 4){
+			std::cout << "erreur fonction DebugGetCurrent : taille du message != 3" << std::endl;
+		}
+		if(buffer[1] != (nb_bras)){
+			std::cout << "erreur fonction DebugGetCurrent : nb du bras" << std::endl;
+		}
+		if(buffer[4] != (buffer[0] + buffer[1] + buffer[2] + buffer[3])){
+			std::cout << "erreur fonction DebugGetCurrent : Checksum" << std::endl;
+		}
+		ret = (buffer[2] << 8) + buffer[3];
+	}
+	return ret;
+}
