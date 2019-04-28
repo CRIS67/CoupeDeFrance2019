@@ -146,7 +146,6 @@
 
 void Affiche(String txt, unsigned char state);
 unsigned char MesureCourant(unsigned char nb_pump);
-unsigned char MesureCourantState(unsigned char nb_pump);
 char GetColor(unsigned char nb_bras);
 void StatePump(unsigned char nb_pump, boolean state);
 void MoveServo(unsigned char nb_servo, int temps);
@@ -167,6 +166,7 @@ unsigned char CptSpi = 0;             //compteur de d'octets recu
 unsigned char TypeVarSpi = AUCUNE;    //type de variable recu
 unsigned char TextSpi[TAILLE_SPI];    //message recu
 unsigned char SendNbSpi = 0;          //message envoyer
+unsigned char SendNbSpi_1 = 0;        //message envoyer 1
 boolean FlagReceiveSpi = 0;           //drapeau de récéption d'un message spi
 char TabPileSend[TAILLE_SEND];        //pile de récéption pour stocker les réponse à donner
 int CptPile = 0;                      //compteur de la pile de remplissage
@@ -241,12 +241,9 @@ void loop() {
   Affiche("Color1 = "+String(Color1), DEBUG_NORM_NB);
   Color2 = RatioErr(PUMP_LAUNCH_2, 0, 10);
   Affiche("Color2 = "+String(Color2), DEBUG_NORM_NB);
-  Cur0 = MesureCourantState(PUMP_LAUNCH_0);
-  Cur1 = MesureCourantState(PUMP_LAUNCH_1);
-  Cur2 = MesureCourantState(PUMP_LAUNCH_2);
-  Cur_full_0 = MesureCourant(PUMP_LAUNCH_0);
-  Cur_full_1 = MesureCourant(PUMP_LAUNCH_1);
-  Cur_full_2 = MesureCourant(PUMP_LAUNCH_2);
+  Cur0 = MesureCourant(PUMP_LAUNCH_0);
+  Cur1 = MesureCourant(PUMP_LAUNCH_1);
+  Cur2 = MesureCourant(PUMP_LAUNCH_2);
   /*Rupt0 = GetRuptState(PUMP_LAUNCH_0);
   Rupt1 = GetRuptState(PUMP_LAUNCH_1);
   Rupt2 = GetRuptState(PUMP_LAUNCH_2);*/
@@ -518,7 +515,7 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 }
 
 /*******************************************************************/
-// Nom de la fonction: MesureCourantState
+// Nom de la fonction: MesureCourant
 //                    
 // Description: Fonction qui renvoi l'état du courant dans la pompe
 //
@@ -527,18 +524,21 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 // Sorties: unsigned char res : nombre renvoyé PUMP_EN_CHARGE => courant > 512, PUMP_A_VIDE => courant > 100, sinon PUMP_ERREUR
 //                              
 /*******************************************************************/
-unsigned char MesureCourantState(unsigned char nb_pump) {
+unsigned char MesureCourant(unsigned char nb_pump) {
   int courant;
   unsigned char res;
   switch(nb_pump) {
     case 0:
       courant = analogRead(I_ARM_0);
+      Cur_full_0 = courant;
     break;
     case 1:
        courant = analogRead(I_ARM_1);
+      Cur_full_1 = courant;
     break;
     case 2:
        courant = analogRead(I_ARM_2);
+      Cur_full_2 = courant;
     break;
     default:
       Affiche("current error", DEBUG_ERR_NB);
@@ -560,37 +560,6 @@ unsigned char MesureCourantState(unsigned char nb_pump) {
   Affiche("PUMP = "+String(nb_pump), DEBUG_ACT_NB);
   Affiche("COURANT = "+String(courant), DEBUG_ACT_NB);
   return res;
-}
-
-/*******************************************************************/
-// Nom de la fonction: MesureCourant
-//                    
-// Description: Fonction qui renvoi l'état du courant dans la pompe
-//
-// Entrées: unsigned char nb_pump : numéro du bras
-//
-// Sorties: int res : valeur du courant
-//                              
-/*******************************************************************/
-unsigned char MesureCourant(unsigned char nb_pump) {
-  int courant;
-  switch(nb_pump) {
-    case 0:
-      courant = analogRead(I_ARM_0);
-    break;
-    case 1:
-       courant = analogRead(I_ARM_1);
-    break;
-    case 2:
-       courant = analogRead(I_ARM_2);
-    break;
-    default:
-      Affiche("current error", DEBUG_ERR_NB);
-      return WRONG_CHANNEL;
-    break;
-  }
-  Affiche("COURANT = "+String(courant), DEBUG_ACT_NB);
-  return courant;
 }
 
 /*******************************************************************/
@@ -942,19 +911,20 @@ ISR(SPI_STC_vect) {
       case 4:
         switch(TabPileSend[CptReadPile]) {
           case CURENT_SPI_FULL_0:
-            SendNbSpi = (Cur_full_0%256);
+            SendNbSpi_1 = (Cur_full_0%256);
           break;
           case CURENT_SPI_FULL_1:
-            SendNbSpi = (Cur_full_1%256);
+            SendNbSpi_1 = (Cur_full_1%256);
           break;
           case CURENT_SPI_FULL_2:
-            SendNbSpi = (Cur_full_2%256);
+            SendNbSpi_1 = (Cur_full_2%256);
           break;
         }
+        SPDR = SendNbSpi_1;
       break;
       case 5:
         if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile]) {
-          SPDR = (0x04 + TabPileSend[CptReadPile] + SendNbSpi)%256;
+          SPDR = (0x04 + TabPileSend[CptReadPile] + SendNbSpi + SendNbSpi_1)%256;
         } else {
           SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
         }
@@ -962,6 +932,8 @@ ISR(SPI_STC_vect) {
         CptReadPile++;
         CptReadPile %= TAILLE_SEND;
         CptSpiSend = 0;
+        SendNbSpi = 0;
+        SendNbSpi_1 = 0;
       break;
     }
   } else {
