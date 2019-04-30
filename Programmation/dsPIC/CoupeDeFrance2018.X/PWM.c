@@ -52,20 +52,14 @@ void initPWM2(){           //20kHz
     SPHASE2 = 7000;        //Period of PWM2L
     PDC2 = 0;               //Duty cycle of PWM2H
     SDC2 = 0;               //Duty cycle of PWM2L
-    //IOCON2bits.PENH = 1;    //PWMx module controls the PWMxH pin
-    //IOCON2bits.PENL = 1;    //PWMx module controls the PWMxL pin
-    IOCON2bits.PENH = 0;    //PWMx module controls the PWMxH pin
-    IOCON2bits.PENL = 0;    //PWMx module controls the PWMxL pin
+    IOCON2bits.PENH = 1;    //PWMx module controls the PWMxH pin
+    IOCON2bits.PENL = 1;    //PWMx module controls the PWMxL pin
     IOCON2bits.PMOD = 0b11; //PWMx I/O pin pair is in the True Independent Output mode
     PWMCON2bits.ITB = 1;    //PHASEx register provides the time base period for this PWMx generator
     PWMCON2bits.MTBS = 0;   //PWMx generator uses the primary master time base  (1/1)
     FCLCON2 = 0x0003;       //Fault input is disabled
-    SENS_ACT_0 = 1;
-    SENS_ACT_1 = 1;
-    LATBbits.LATB12 = 0;
-    LATBbits.LATB13 = 0;
 }
-void initPWM3(){           //20kHz
+void initPWM3(){           //312.5Hz
     PHASE3 = 7000;         //Period of PWM3H     Fosc / (F_PWM*PWM_Input_Clock_Prescaler) ex : 140Mhz / 64*(50Hz * 1) = 43750
     SPHASE3 = 7000;        //Period of PWM3L
     PDC3 = 0;               //Duty cycle of PWM3H
@@ -74,7 +68,8 @@ void initPWM3(){           //20kHz
     IOCON3bits.PENL = 1;    //PWMx module controls the PWMxL pin
     IOCON3bits.PMOD = 0b11; //PWMx I/O pin pair is in the True Independent Output mode
     PWMCON3bits.ITB = 1;    //PHASEx register provides the time base period for this PWMx generator
-    PWMCON3bits.MTBS = 0;   //PWMx generator uses the primary master time base  (1/1)
+    PWMCON4bits.MTBS = 1;   //PWMx generator uses the secondary master time base (1/64)
+    //PWMCON2bits.MTBS = 0;   //PWMx generator uses the primary master time base  (1/1)
     FCLCON3 = 0x0003;       //Fault input is disabled
 }
 void initPWM4(){           //50Hz for serovomotors
@@ -189,7 +184,7 @@ void testMotor(){
     }
 }
 void sendToMotor(double valueR, double valueL){
-    double vbat = (double)readADC(ADC_CHANNEL_BAT);
+    double vbat = readBattery();
     if(valueL > 0){
         valueL += DEAD_ZONE;
     }
@@ -245,7 +240,7 @@ void sendToMotor(double valueR, double valueL){
     }
 }
 void testSendToMotor(double valueR, double valueL){
-    double vbat = (double)readADC(ADC_CHANNEL_BAT);
+    double vbat = readBattery();
     if(valueL <= -VSAT){
         SENS_L = BACKWARD;
         PWM_L = PWM_PR_L * (VSAT / vbat);
@@ -281,7 +276,7 @@ void testSendToMotor(double valueR, double valueL){
     }
 }
 void motorVoltage(uint8_t id, double voltage){
-    double vbat = (double)readADC(ADC_CHANNEL_BAT);
+    double vbat = readBattery();
     
     switch(id){
         case ID_PUMP:

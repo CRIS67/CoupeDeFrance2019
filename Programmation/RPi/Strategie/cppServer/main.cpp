@@ -33,13 +33,26 @@ int main()
     web.startThread();
 
     int rc;
-    std::cout << "main() : creating thread, " << std::endl;
+    //std::cout << "main() : creating thread, " << std::endl;
     rc = pthread_create(&thread_print, NULL, print, &web);
 
     if (rc) {
-    std::cout << "Error:unable to create thread," << rc << std::endl;
-    exit(-1);
+		std::cout << "Error:unable to create thread," << rc << std::endl;
+		exit(-1);
     }
+	getchar();
+	dspic.setVar8(CODE_VAR_VERBOSE,1);
+	dspic.start();
+	dspic.getVar(CODE_VAR_BAT);
+	getchar();
+	dspic.motorVoltage(0,10);
+	dspic.getVar(CODE_VAR_RUPT);
+	getchar();
+	dspic.motorVoltage(0,8);
+	getchar();
+	dspic.motorVoltage(0,0);
+	dspic.stop();
+	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	exit(-1);
 	/*dspic.start();
 	dspic.stop();
@@ -59,7 +72,7 @@ int main()
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
     //dspic.getVar(CODE_VAR_ODO);
-    dspic.initPos(1000,1500,0);
+    //dspic.initPos(1000,1500,0);
 	getchar();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	puts("verbose set to 0");
@@ -73,10 +86,7 @@ int main()
     return 0;
 }
 void *print(void *ptr) {
-   /*long tid;
-   tid = (long)threadid;*/
    Web *w = (Web*)ptr;
-   //DsPIC *dspic = (DsPIC*)ptr;
    DsPIC *dspic = w->dspic;
    while(1){
         std::vector<uint8_t> msg = dspic->readMsg();

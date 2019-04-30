@@ -25,7 +25,6 @@ void initGPIO() {
     
     TRISAbits.TRISA0 = 1;   //RUPT_ACT_4
     TRISAbits.TRISA1 = 1;   //RUPT_ACT_3
-    TRISAbits.TRISA4 = 1;   //MESURE_BAT
     TRISAbits.TRISA7 = 0;   //PWM_SERVO_0
     TRISAbits.TRISA8 = 1;   //ECHO US0
     TRISAbits.TRISA10 = 0;  //PWM_MOT_CANON
@@ -48,6 +47,7 @@ void initGPIO() {
     
     TRISCbits.TRISC0 = 1;   //US_NUM_1
     TRISCbits.TRISC1 = 1;   //US_NUM_0
+    TRISCbits.TRISC4 = 1;   //MES_BAT
     TRISCbits.TRISC8 = 0;   //SPI_SS_MOD1
     TRISCbits.TRISC9 = 0;   //SPI_CLOCK
     TRISCbits.TRISC11 = 1;  //ECHO_US_5
@@ -103,7 +103,7 @@ void initGPIO() {
     ANSELF = 0x0000;
     ANSELG = 0x0000;
      
-    ANSELAbits.ANSA4 = 1;   //MESURE_BAT
+    ANSELCbits.ANSC4 = 1;   //MESURE_BAT
     ANSELBbits.ANSB8 = 1;   //COURANT_ASS_ 0
     ANSELBbits.ANSB9 = 1;   //COURANT_ASS_ 1
 

@@ -33,7 +33,9 @@ void initADC1(){
     AD1CON2bits.VCFG = 0b000;   //AVdd and Avss
     
     AD1CON3bits.ADCS = 0b01110111;  //TP ? (ADCS<7:0> + 1) = TP ? 120 = TAD
+    //AD1CON3bits.ADCS = 0xFF;    //TAD = 256*Tp
     AD1CON3bits.SAMC = 0b00100; //Auto-Sample Time bits = 5 TAD
+    //AD1CON3bits.SAMC = 0b11111; //Auto-Sample Time bits = 31 TAD
     AD1CON3bits.ADRC = 0;       //Clock derived from system clock
     
     AD1CON4bits.DMABL = 0b000;  //Allocates 1 word of buffer to each analog input
@@ -64,15 +66,32 @@ int readADC1(){
 }
 
 int readADC(uint16_t channel){
+    if(AD1CHS0bits.CH0SA != channel){
+        AD1CON1bits.ADON = 0;   //turn off ADC module
+        AD1CHS0bits.CH0SA = channel;//AN26
+        AD1CHS0bits.CH0SB = channel;
+        AD1CON1bits.ADON = 1;
+    }
+    if(!AUTO_SAMPLE){
+    AD1CSSLbits.CSS0 = 1;
+    AD1CON1bits.SAMP = 1;
+    }
+    AD1CON1bits.DONE = 0;
+    while(!AD1CON1bits.DONE);
+    return ADC1BUF0;
+}
+
+double readBattery(){
     AD1CON1bits.ADON = 0;   //turn off ADC module
-    AD1CHS0bits.CH0SA = channel;//AN26
-    AD1CHS0bits.CH0SB = channel;
+    AD1CHS0bits.CH0SA = ADC_CHANNEL_BAT;//AN26
+    AD1CHS0bits.CH0SB = ADC_CHANNEL_BAT;
     AD1CON1bits.ADON = 1;
     if(!AUTO_SAMPLE){
     AD1CSSLbits.CSS0 = 1;
-    AD1CON1bits.DONE = 0;
     AD1CON1bits.SAMP = 1;
     }
+    AD1CON1bits.DONE = 0;
     while(!AD1CON1bits.DONE);
-    return ADC1BUF0;
+    double mes = ADC1BUF0;
+    return mes*5.7*3.3/1024;
 }

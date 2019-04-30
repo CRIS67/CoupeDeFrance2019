@@ -507,7 +507,18 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                     while(1);
                 }*/
             }
-            testSendToMotor(commandeR, commandeL);
+            
+            if(!stop){
+                testSendToMotor(commandeR, commandeL);
+            }
+            else{
+                testSendToMotor(0, 0);
+            }
+            if(arrived){
+                testSendToMotor(0, 0);
+            }
+            
+            
             if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
                 /*while (1) {
                     testSendToMotor(0, 0);

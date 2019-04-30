@@ -16,6 +16,7 @@ void initADC();
 void initADC1();
 int readADC1();
 int readADC(uint16_t channel);
+double readBattery();
 
 
 #endif	/* ADC_H */

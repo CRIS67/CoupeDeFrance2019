@@ -734,7 +734,7 @@ void CheckMessages(){
                         sendVar8(CODE_VAR_ARRIVED,arrived);
                         break;
                     case CODE_VAR_BAT:{
-                        double vbat = (double)readADC(ADC_CHANNEL_BAT);
+                        double vbat = readBattery();
                         sendDouble(CODE_VAR_BAT, &vbat);
                         break;
                     }
@@ -833,11 +833,11 @@ void CheckMessages(){
                 ptr[3] = RxDMABuffer[iArg5];
 
                 motorVoltage(id,voltage);
-                sendLog("motor_voltage ");
+                /*sendLog("motor_voltage ");
                 sendLog(itoa((int)id));
                 sendLog(" ");
                 sendLog(itoa((int)voltage));
-                sendLog("\n");
+                sendLog("\n");*/
                 break;
             }// </editor-fold>
 

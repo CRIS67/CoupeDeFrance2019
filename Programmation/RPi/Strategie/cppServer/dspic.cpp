@@ -50,6 +50,24 @@ void DsPIC::motor(uint8_t id, int8_t value){
         serialPutchar (fd, buffer[i]);
     }
 }
+void DsPIC::motorVoltage(uint8_t id, float value){
+	uint8_t *ptr = (uint8_t*)&value;
+    uint8_t buffer[RX_SIZE_MOTOR_VOLTAGE + 1];
+    buffer[0] = RX_SIZE_MOTOR_VOLTAGE;
+    buffer[1] = RX_CODE_MOTOR_VOLTAGE;
+    buffer[2] = id;
+    buffer[3] = ptr[0];
+    buffer[4] = ptr[1];
+    buffer[5] = ptr[2];
+    buffer[6] = ptr[3];
+    buffer[7] = 0;
+    for(int i = 0; i < RX_SIZE_MOTOR_VOLTAGE; i++){
+        buffer[7] += buffer[i]; //checksum
+    }
+    for(int i = 0; i < RX_SIZE_MOTOR_VOLTAGE + 1; i++){
+        serialPutchar (fd, buffer[i]);
+    }
+}
 void DsPIC::start(){
     uint8_t buffer[RX_SIZE_START + 1];
     buffer[0] = RX_SIZE_START;

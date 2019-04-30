@@ -44,6 +44,7 @@ void testSPI();
 void testADC();
 void testInterrupt();
 void testDelay();
+void setMotLin(uint8_t state);
 
 //Global variables
 //char TX[TX_SIZE];
@@ -230,12 +231,19 @@ int main(){
     IEC0bits.T1IE = 0;  //stop asserv
     sendToMotor(8,0);
     double oldCurrent = 0;
-    double coefLP = 0.2;
+    double coefLP = 0.01;
+    testSendToMotor(0, 0);
     while(1){
-        int mes = readADC1();
-        double current = mes;
-        current = oldCurrent + (current - oldCurrent)*coefLP;
-        oldCurrent = current;
+        double current;
+        uint16_t cnt;
+        for(cnt = 0; cnt < 1000;cnt++){
+            int mes = readADC(ADC_CHANNEL_I_PUMP);
+            current = mes;
+            current = oldCurrent + (current - oldCurrent)*coefLP;
+            oldCurrent = current;
+            //delay_us(100);
+        }
+        
         if(current < 40){
             LED_0 = 1;
         }
@@ -256,7 +264,7 @@ int main(){
         else{
             LED_2 = 0;
         }
-        delay_ms(20);
+        //delay_ms(10);
         LED_PLATINE = !LED_PLATINE;
         CheckMessages();
         plot(1,(uint32_t)((int32_t)(current)));
@@ -1201,4 +1209,38 @@ void testPIDs(){
         modif_straightPath(300,300,0,1000,100);
         
     }
+}
+void setMotLin(uint8_t state){
+    double acc = 1;     //v/s^1
+    double speed = 8;   //v
+    double dt = 0.01;   //s
+    
+    double voltage = 0;
+    
+    unsigned long t1 = millis();
+    if(state == 1){ //out
+        while(!RUPT_ACT_0){ //wait for rupt
+            if( ( (millis() - t1) > (dt*1000) ) && (voltage < speed) ){
+                voltage += acc*dt;
+                if(voltage > speed){
+                    voltage = speed;
+                }
+            }
+            motorVoltage(ID_MOTOR_LINEAR,voltage);
+        }
+        motorVoltage(ID_MOTOR_LINEAR,0);
+    }
+    else if(state ==0){ //in
+        while(!RUPT_ACT_1){ //wait for rupt
+            if( ( (millis() - t1) > (dt*1000) ) && (voltage < speed) ){
+                voltage -= acc*dt;
+                if(voltage > speed){
+                    voltage = speed;
+                }
+            }
+            motorVoltage(ID_MOTOR_LINEAR,voltage);
+        }
+        motorVoltage(ID_MOTOR_LINEAR,0);
+    }
+    
 }
