@@ -45,6 +45,7 @@ void testADC();
 void testInterrupt();
 void testDelay();
 void setMotLin(uint8_t state);
+double readAdcLowPass(uint8_t channel, uint16_t nbSamples, double coefLP);
 
 //Global variables
 //char TX[TX_SIZE];
@@ -1243,4 +1244,16 @@ void setMotLin(uint8_t state){
         motorVoltage(ID_MOTOR_LINEAR,0);
     }
     
+}
+double readAdcLowPass(uint8_t channel, uint16_t nbSamples, double coefLP){
+	double oldCurrent = 0;
+    double current;
+	uint16_t cnt;
+	for(cnt = 0; cnt < nbSamples;cnt++){
+		int mes = readADC(channel);
+		current = mes;
+		current = oldCurrent + (current - oldCurrent)*coefLP;
+		oldCurrent = current;
+	}
+	return current;
 }

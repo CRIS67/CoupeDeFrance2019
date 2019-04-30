@@ -68,6 +68,19 @@ void DsPIC::motorVoltage(uint8_t id, float value){
         serialPutchar (fd, buffer[i]);
     }
 }
+void DsPIC::setMotLin(uint8_t state){
+    uint8_t buffer[RX_SIZE_SET_MOT_LIN + 1];
+    buffer[0] = RX_SIZE_SET_MOT_LIN;
+    buffer[1] = RX_CODE_SET_MOT_LIN;
+    buffer[2] = state;
+    buffer[3] = 0;
+    for(int i = 0; i < RX_SIZE_SET_MOT_LIN; i++){
+        buffer[3] += buffer[i]; //checksum
+    }
+    for(int i = 0; i < RX_SIZE_SET_MOT_LIN + 1; i++){
+        serialPutchar (fd, buffer[i]);
+    }
+}
 void DsPIC::start(){
     uint8_t buffer[RX_SIZE_START + 1];
     buffer[0] = RX_SIZE_START;

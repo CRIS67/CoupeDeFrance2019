@@ -83,6 +83,8 @@
 #define RX_CODE_TURN    9
 
 #define RX_CODE_MOTOR_VOLTAGE   10
+#define RX_CODE_SET_MOT_LIN   	11
+#define RX_CODE_GET_ADC_LP		12
 
 #define RX_SIZE_START           2
 #define RX_SIZE_STOP            2
@@ -91,6 +93,8 @@
 #define RX_SIZE_SERVO           5 // id,value_H,value_L
 #define RX_SIZE_MOTOR           4 // id,value
 #define RX_SIZE_MOTOR_VOLTAGE   7 // id,val_double[4]
+#define RX_SIZE_SET_MOT_LIN   	3 // state
+#define RX_SIZE_GET_I_PUMP_LP	9 // channel, nbSamples[2], coefLP[4]
 #define RX_SIZE_AX12            5 // id,value_H,value_L
 #define RX_SIZE_GO              7 // option,x_H,x_L,y_H,y_L
 #define RX_SIZE_TURN            5 // option,t_H,t_L
@@ -202,6 +206,8 @@
 #define CODE_VAR_TF_LD    88
 
 #define CODE_VAR_US     100 //attention range [100 ; 100 + NB_US - 1]
+
+#define CODE_VAR_ADC_LP		110
 
 #define VAR_8b      0
 #define VAR_16b     1

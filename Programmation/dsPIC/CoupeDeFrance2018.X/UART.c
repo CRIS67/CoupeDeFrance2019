@@ -840,6 +840,43 @@ void CheckMessages(){
                 sendLog("\n");*/
                 break;
             }// </editor-fold>
+            
+                // <editor-fold defaultstate="collapsed" desc="Set Motor linear">
+            case RX_CODE_SET_MOT_LIN:
+            {
+                if (size != RX_SIZE_SET_MOT_LIN)
+                    return;
+
+				uint8_t state = RxDMABuffer[iArg1];
+				
+				/*
+				if(state == 0 || state ==1){
+					flagSetMotLin = state+1;	//0-> do nothing / 1->in / 2->out
+				}*/
+				if(state == 0 || state == 1){
+					setMotLin(state);
+				}
+                break;
+            }// </editor-fold>
+            
+                // <editor-fold defaultstate="collapsed" desc="Filtered ADC">
+            case RX_CODE_GET_ADC_LP:
+            {
+                if (size != RX_SIZE_GET_I_PUMP_LP)
+                    return;
+
+				uint8_t channel = RxDMABuffer[iArg1];
+				uint16_t nbSamples = (RxDMABuffer[iArg2] << 8) + RxDMABuffer[iArg3];
+                double coefLP;
+                uint8_t *ptr = (uint8_t*)&coefLP;
+                ptr[0] = RxDMABuffer[iArg4];
+                ptr[1] = RxDMABuffer[iArg5];
+                ptr[2] = RxDMABuffer[iArg6];
+                ptr[3] = RxDMABuffer[iArg7];
+				double res = readAdcLowPass(channel, nbSamples,coefLP);
+				sendDouble(CODE_VAR_ADC_LP,&res);
+                break;
+            }// </editor-fold>
 
                 // <editor-fold defaultstate="collapsed" desc="AX12">
             case RX_CODE_AX12:
