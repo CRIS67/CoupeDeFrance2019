@@ -331,9 +331,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             smoothSpeedR = smoothSpeedR + SMOOTHING_FACTOR * (speedR - smoothSpeedR);
         }*/
 
-        double thetaRobotPoint = atan2(yc - y, xc - x);
-        double thetaRobotPointFinal = atan2(yf - y, xf - x);
-        if (back)
+        double thetaRobotPoint = atan2(yc - y, xc - x);         //angle (dans le repère absolu) que le robot doit avoir pour êter dirigé vers le point de consigne
+        double thetaRobotPointFinal = atan2(yf - y, xf - x);    //angle (dans le repère absolu) que le robot doit avoir pour êter dirigé vers le point final de la trajectoire
+        if (back)                                               //si la manoeuvre doit se faire en marche arrière
             thetaRobotPointFinal -= PI;
         while (thetaRobotPointFinal - (double)theta < -PI)
             thetaRobotPointFinal += 2 * PI;
@@ -347,6 +347,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
 
         double errorD = sqrt((x - xc)*(x - xc) + (y - yc)*(y - yc));
 
+        //projection de l'erreur
+        //errorD = errorD * cos(thetaRobotPoint - theta);
+        
         // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
         double thetaDiff = (double)theta - thetaRobotPoint;
         while (thetaDiff > PI) {
@@ -526,51 +529,11 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                 //testSendToMotor(0, 0);
             }
         }
-        /*plot(11,(uint32_t)((int32_t)(speedL*1000)));
-        plot(12,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
-
-        plot(21,(uint32_t)((int32_t)(speedR*1000)));
-        plot(22,(uint32_t)((int32_t)(pidSpeedRight.setPoint*1000)));*/
-        plot(31,(uint32_t)((int32_t)(x*1000)));
+        /*plot(31,(uint32_t)((int32_t)(x*1000)));
         plot(32,(uint32_t)((int32_t)(xc*1000)));
         plot(33,(uint32_t)((int32_t)(y*1000)));
-        plot(34,(uint32_t)((int32_t)(yc*1000)));
-        /*if(nplot == 4){
-            nplot = 0;
-            plot(11,(uint32_t)((int32_t)(speedL*1000)));
-            plot(12,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
-
-            plot(21,(uint32_t)((int32_t)(speedR*1000)));
-            plot(22,(uint32_t)((int32_t)(pidSpeedRight.setPoint*1000)));
-
-            plot(31,(uint32_t)((int32_t)(x*1000)));
-            plot(32,(uint32_t)((int32_t)(xc*1000)));
-            plot(33,(uint32_t)((int32_t)(y*1000)));
-            plot(34,(uint32_t)((int32_t)(yc*1000)));
-
-            plot(41,(uint32_t)((int32_t)(theta*1000*180/PI)));
-            plot(42,(uint32_t)((int32_t)(thetac*1000*180/PI)));
-        }
-        else{
-            nplot++;
-        }*/
-        
-        /*plot(1,(uint32_t)((int32_t)(speedL*1000))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
-        plot(2,(uint32_t)((int32_t)(pidSpeedLeft.setPoint*1000)));
-        plot(5,(uint32_t)((int32_t)(pidSpeedLeft.debugCommande*10000)));
-        plot(6,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeP*10000)));
-        plot(7,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeI*10000)));
-        plot(8,(uint32_t)((int32_t)(pidSpeedLeft.debugCommandeD*10000)));*/
-        
-        //plot(1,(uint32_t)((int32_t)(x))); //(uint32_t)(-10 = 0) != (uint32_t)(int32_t)(-10)
-        //plot(2,(uint32_t)((int32_t)(xc)));
-        
-        /*plot(5,(uint32_t)((int32_t)(pidDistance.debugCommande*10000)));
-        plot(6,(uint32_t)((int32_t)(pidDistance.debugCommandeP*10000)));
-        plot(7,(uint32_t)((int32_t)(pidDistance.debugCommandeI*10000)));
-        plot(8,(uint32_t)((int32_t)(pidDistance.debugCommandeD*10000)));*/
-        
-        //print("=)\n");
+        plot(34,(uint32_t)((int32_t)(yc*1000)));*/
+       
         // <editor-fold defaultstate="collapsed" desc="Génération de trajectoire">
         /*Génération de trajectoire*/
         if (statePathGeneration != 0) {
@@ -792,29 +755,34 @@ void __attribute__((interrupt, no_auto_psv)) _T5Interrupt(void) {// _T3Interrupt
 // </editor-fold>
 
 
-unsigned long micros(){
+uint32_t micros(){
+    IEC0bits.T3IE = 0;  //disable interrupt on timer 3 overflow
+    uint32_t saveTMR2 = TMR2;
     uint32_t ret = TMR3;
     ret = ret << 16;
-    ret = ret + TMR2;
+    ret = ret + saveTMR2;
     ret = ret / 70;
     uint32_t t2of = timer2Overflow;
     t2of = t2of * 60000000UL;
     ret = ret + t2of;
+    IEC0bits.T3IE = 1;  //enable interrupt on timer 3 overflow
     return ret;
 }
-unsigned long millis(){
+uint32_t millis(){
+    IEC0bits.T3IE = 0;  //disable interrupt on timer 3 overflow
+    uint32_t saveTMR2 = TMR2;
     uint32_t ret = TMR3;
     ret = ret << 16;
-    ret = ret + TMR2;
+    ret = ret + saveTMR2;
     ret = ret / 70000; //140MHz
     //ret = ret / 3684;   //7.3728Mhz
     uint32_t t2of = timer2Overflow;
     t2of = t2of * 60000UL;    //140Mhz
     //t2of = t2of * 3157;     //7.3728Mhz
     ret = ret + t2of;
+    IEC0bits.T3IE = 1;  //enable interrupt on timer 3 overflow
     return ret;
 }
-
 void delay_us(uint32_t delay){
    uint32_t tick = micros();
    while(micros() - tick < delay);

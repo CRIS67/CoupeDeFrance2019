@@ -4,6 +4,10 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/UART.h</file>
+            <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/GPIO.c</file>
+            <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/ADC.h</file>
+            <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/timer.c</file>
+            <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/main.c</file>
             <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/PWM.c</file>
             <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/UART.c</file>
             <file>file:/D:/git/CoupeDeFrance2019/Programmation/dsPIC/CoupeDeFrance2018.X/constant.h</file>
