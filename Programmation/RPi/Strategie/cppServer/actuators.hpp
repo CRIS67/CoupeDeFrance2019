@@ -1,9 +1,6 @@
 #ifndef ACTUATORS_H
 #define ACTUATORS_H
 
-#define SPI_DELAY	100		//100µs
-#define CHANNEL 0
-
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
 #include <stdint.h>

@@ -2,10 +2,11 @@
 int Send(int in){
 	unsigned char buffer[1];
 	buffer[0] = (unsigned char)in;
-	wiringPiSPIDataRW(CHANNEL, buffer, 1);
-	std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
+	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
+	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
 	delayMicroseconds(SPI_DELAY);
 	return (int)buffer[0];
+	
 }
 Actuators::Actuators(SPI *pSpi,uint8_t id){
     m_pSpi = pSpi;

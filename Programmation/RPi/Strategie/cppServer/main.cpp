@@ -14,16 +14,24 @@
 #include <wiringPiSPI.h>
 
 void *print(void *ptr);
-
+void debugAct();
+void debutTestAllDelay();
+void debutTestAllInstant();
+void debutBN();
 int main()
 {
-	SPI spi(SPI_CHANNEL,SPI_SPEED);	//initialise SPI
-	/*A AJOUTER : FLUSH tous les slaves*/
-	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+    /*debugAct();
+    exit(0);*/
+
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+    /*A AJOUTER : FLUSH tous les slaves*/
+    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	
-	/*actFront.SetPump(1,1);
-	delay(1000);
-	actFront.SetPump(1,0);*/
+	int valueH = 800;
+    int valueL = 1600;
+    int valueDrop = 1500;
+    int valueMiddle = 1000;
+
 	DsPIC dspic;
     pthread_t thread_print;
 
@@ -40,17 +48,18 @@ int main()
 		std::cout << "Error:unable to create thread," << rc << std::endl;
 		exit(-1);
     }
+    std::cout << "Press enter to continue"  << std::endl;
 	getchar();
 	dspic.setVar8(CODE_VAR_VERBOSE,1);
 	dspic.start();
 	dspic.getVar(CODE_VAR_BAT);
 	getchar();
-	dspic.motorVoltage(0,10);
-	dspic.getVar(CODE_VAR_RUPT);
+	dspic.motorVoltage(1,8);
+	//dspic.getVar(CODE_VAR_RUPT);
 	getchar();
-	dspic.motorVoltage(0,8);
+	dspic.motorVoltage(1,-8);
 	getchar();
-	dspic.motorVoltage(0,0);
+	dspic.motorVoltage(1,0);
 	dspic.stop();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	exit(-1);
@@ -353,4 +362,209 @@ void *print(void *ptr) {
    }
    std::cout << "Hello World!" << std::endl;
    pthread_exit(NULL);
+}
+void debugAct(){
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+    /*A AJOUTER : FLUSH tous les slaves*/
+    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+
+    char c = 0;
+    while(c != 'q'){
+        std::cout << "Select arm (0-5)" << std::endl;
+        std::cout << "Press q to exit" << std::endl;
+        std::cin >> c;
+        if(c >= '0' && c <= '5'){
+
+        }
+    }
+}
+void debutTestAllDelay(){
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+    /*A AJOUTER : FLUSH tous les slaves*/
+    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+    
+    int valueH = 800;
+    int valueL = 1600;
+    int valueDrop = 1500;
+    int valueMiddle = 1000;
+
+    actFront.SetPump(0,1);
+    actFront.MoveServo(0,valueL);
+    delay(250);
+    actFront.MoveServo(0,valueH);
+
+    actFront.SetPump(1,1);
+    actFront.MoveServo(1,valueL);
+    delay(250);
+    actFront.MoveServo(1,valueH);
+
+    actFront.SetPump(2,1);
+    actFront.MoveServo(2,valueL);
+    delay(250);
+    actFront.MoveServo(2,valueH);
+
+    actBack.SetPump(0,1);
+    actBack.MoveServo(0,valueL);
+    delay(250);
+    actBack.MoveServo(0,valueH);
+
+    actBack.SetPump(1,1);
+    actBack.MoveServo(1,valueL);
+    delay(250);
+    actBack.MoveServo(1,valueH);
+
+    actBack.SetPump(2,1);
+    actBack.MoveServo(2,valueL);
+    delay(250);
+    actBack.MoveServo(2,valueH);
+
+
+    getchar();
+
+    actFront.MoveServo(0,valueL);
+    delay(250);
+    actFront.SetPump(0,0);
+
+    actFront.MoveServo(1,valueL);
+    delay(250);
+    actFront.SetPump(1,0);
+
+    actFront.MoveServo(2,valueL);
+    delay(250);
+    actFront.SetPump(2,0);
+
+    actBack.MoveServo(0,valueL);
+    delay(250);
+    actBack.SetPump(0,0);
+
+    actBack.MoveServo(1,valueL);
+    delay(250);
+    actBack.SetPump(1,0);
+
+    actBack.MoveServo(2,valueL);
+    delay(250);
+    actBack.SetPump(2,0);
+
+    getchar();
+
+    actFront.MoveServo(0,valueDrop);
+    actFront.MoveServo(1,valueDrop);
+    actFront.MoveServo(2,valueDrop);
+
+    actBack.MoveServo(0,valueDrop);
+    actBack.MoveServo(1,valueDrop);
+    actBack.MoveServo(2,valueDrop);
+
+    getchar();
+
+    actFront.MoveServo(0,valueMiddle);
+    actFront.MoveServo(1,valueMiddle);
+    actFront.MoveServo(2,valueMiddle);
+
+    actBack.MoveServo(0,valueMiddle);
+    actBack.MoveServo(1,valueMiddle);
+    actBack.MoveServo(2,valueMiddle);
+}
+void debutTestAllInstant(){
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+    /*A AJOUTER : FLUSH tous les slaves*/
+    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+    
+    int valueH = 800;
+    int valueL = 1600;
+    int valueDrop = 1500;
+    int valueMiddle = 1000;
+
+    actFront.SetPump(0,1);
+    actFront.SetPump(1,1);
+    actFront.SetPump(2,1);
+
+    actBack.SetPump(0,1);
+    actBack.SetPump(1,1);
+    actBack.SetPump(2,1);
+
+    actFront.MoveServo(0,valueL);
+    actFront.MoveServo(1,valueL);
+    actFront.MoveServo(2,valueL);
+
+    actBack.MoveServo(0,valueL);
+    actBack.MoveServo(1,valueL);
+    actBack.MoveServo(2,valueL);
+
+    delay(250);
+
+
+    actFront.MoveServo(0,valueH);
+    actFront.MoveServo(1,valueH);
+    actFront.MoveServo(2,valueH);
+
+    actBack.MoveServo(0,valueH);
+    actBack.MoveServo(1,valueH);
+    actBack.MoveServo(2,valueH);
+
+    getchar();
+
+    actFront.MoveServo(0,valueL);
+    actFront.MoveServo(1,valueL);
+    actFront.MoveServo(2,valueL);
+
+    actBack.MoveServo(0,valueL);
+    actBack.MoveServo(1,valueL);
+    actBack.MoveServo(2,valueL);
+
+
+    delay(250);
+
+    actFront.SetPump(0,0);
+    actFront.SetPump(1,0);
+    actFront.SetPump(2,0);
+
+    actBack.SetPump(0,0);
+    actBack.SetPump(1,0);
+    actBack.SetPump(2,0);
+
+    getchar();
+
+    actFront.MoveServo(0,valueDrop);
+    actFront.MoveServo(1,valueDrop);
+    actFront.MoveServo(2,valueDrop);
+
+    actBack.MoveServo(0,valueDrop);
+    actBack.MoveServo(1,valueDrop);
+    actBack.MoveServo(2,valueDrop);
+
+    getchar();
+
+    actFront.MoveServo(0,valueMiddle);
+    actFront.MoveServo(1,valueMiddle);
+    actFront.MoveServo(2,valueMiddle);
+
+    actBack.MoveServo(0,valueMiddle);
+    actBack.MoveServo(1,valueMiddle);
+    actBack.MoveServo(2,valueMiddle);
+}
+void debutBN(){
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+    /*A AJOUTER : FLUSH tous les slaves*/
+    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+    
+    int valueH = 800;
+    int valueL = 1600;
+    int valueDrop = 1500;
+    int valueMiddle = 1000;
+
+    actBack.SetPump(2,1);
+    delay(10);
+    actBack.MoveServo(2,valueL);
+    getchar();
+    actBack.MoveServo(2,1000);
+
+    getchar();
+    actBack.MoveServo(2,valueL);
+    delay(250);
+    actBack.SetPump(2,0);
+    delay(250);
+    actBack.MoveServo(2,valueDrop);
+    delay(250);
+    actBack.MoveServo(2,valueMiddle);
 }

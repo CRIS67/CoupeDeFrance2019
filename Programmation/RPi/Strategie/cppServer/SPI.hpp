@@ -3,7 +3,8 @@
 
 #define SPI_CHANNEL 0		//Use Chip Select CE0
 #define SPI_SPEED	500000	//0.5MHz
-#define SPI_DELAY	100		//100µs
+#define SPI_DELAY	10000	//100µs
+
 #define PIN_MUX_A	28		//pin 38 / BCM 20 / WiringPi 28
 #define PIN_MUX_B	29		//pin 40 / BCM 21 / WiringPi 29
 

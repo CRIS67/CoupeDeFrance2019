@@ -833,11 +833,11 @@ void CheckMessages(){
                 ptr[3] = RxDMABuffer[iArg5];
 
                 motorVoltage(id,voltage);
-                /*sendLog("motor_voltage ");
+                sendLog("motor_voltage ");
                 sendLog(itoa((int)id));
                 sendLog(" ");
                 sendLog(itoa((int)voltage));
-                sendLog("\n");*/
+                sendLog("\n");
                 break;
             }// </editor-fold>
             

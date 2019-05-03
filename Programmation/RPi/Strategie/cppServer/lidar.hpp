@@ -1,11 +1,6 @@
 #ifndef LIDAR_H
 #define LIDAR_H
 
-#define SPI_FREQUENCY	500000
-#define CHANNEL 0
-
-#define SPI_DELAY		100
-
 #define SIZE_BUFFER_RX	1000
 
 #define CODE_VAR_DISTANCE   1

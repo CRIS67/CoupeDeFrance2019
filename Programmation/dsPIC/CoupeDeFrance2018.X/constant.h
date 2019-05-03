@@ -273,8 +273,8 @@
 #define NB_US       6               //number of sensors
 #define N_US        20              //loop iterations
 
-#define SENS_PUMP               LATGbits.LATG1
-#define SENS_MOTOR_LINEAR       LATGbits.LATG0
+#define SENS_PUMP               LATGbits.LATG0
+#define SENS_MOTOR_LINEAR       LATGbits.LATG1
 
 #define SENS_L      LATGbits.LATG12
 #define SENS_R      LATGbits.LATG13
