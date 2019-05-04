@@ -228,12 +228,13 @@ int main(){
     POS2CNTL = 0x8000;*/
     POS1CNTL = 0x0000;
     POS2CNTL = 0x0000;
+    initAllPID(&pidSpeedLeft, &pidSpeedRight, &pidDistance, &pidAngle);
     initTimer();
     IEC0bits.T1IE = 0;  //stop asserv
-    sendToMotor(8,0);
+    //sendToMotor(8,0);
     double oldCurrent = 0;
     double coefLP = 0.01;
-    testSendToMotor(0, 0);
+    testSendToMotor(2, 2);
     while(1){
         double current;
         uint16_t cnt;
@@ -1212,36 +1213,40 @@ void testPIDs(){
     }
 }
 void setMotLin(uint8_t state){
-    double acc = 1;     //v/s^1
-    double speed = 8;   //v
+    double acc = 5;     //v/s^1
+    double speed = 15;   //v
     double dt = 0.01;   //s
     
     double voltage = 0;
     
     unsigned long t1 = millis();
-    if(state == 1){ //out
+    if(state == 0){ //out
         while(!RUPT_ACT_0){ //wait for rupt
             if( ( (millis() - t1) > (dt*1000) ) && (voltage < speed) ){
                 voltage += acc*dt;
                 if(voltage > speed){
                     voltage = speed;
                 }
+                motorVoltage(ID_MOTOR_LINEAR,voltage);
             }
-            motorVoltage(ID_MOTOR_LINEAR,voltage);
         }
-        motorVoltage(ID_MOTOR_LINEAR,0);
+        motorVoltage(ID_MOTOR_LINEAR,-voltage); //brake
+        delay_ms(80);
+        motorVoltage(ID_MOTOR_LINEAR,0);    //stop
     }
-    else if(state ==0){ //in
+    else if(state == 1){ //in
         while(!RUPT_ACT_1){ //wait for rupt
-            if( ( (millis() - t1) > (dt*1000) ) && (voltage < speed) ){
+            if( ( (millis() - t1) > (dt*1000) ) && (voltage > -speed) ){
                 voltage -= acc*dt;
-                if(voltage > speed){
-                    voltage = speed;
+                if(voltage < -speed){
+                    voltage = -speed;
                 }
+                motorVoltage(ID_MOTOR_LINEAR,voltage);
             }
-            motorVoltage(ID_MOTOR_LINEAR,voltage);
         }
-        motorVoltage(ID_MOTOR_LINEAR,0);
+        motorVoltage(ID_MOTOR_LINEAR,-voltage); //brake
+        delay_ms(80);
+        motorVoltage(ID_MOTOR_LINEAR,0);    //stop
     }
     
 }

@@ -856,6 +856,9 @@ void CheckMessages(){
 				if(state == 0 || state == 1){
 					setMotLin(state);
 				}
+                sendLog("set_mot_lin ");
+                sendLog(itoa((int)state));
+                sendLog("\n");
                 break;
             }// </editor-fold>
             

@@ -131,7 +131,6 @@ double dist1;
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Init">
-
 void initTimer() {
     initTimer1();
     initTimer2();
@@ -151,7 +150,6 @@ void initTimer() {
     i_us = 0;
     n_us = 0;
 }
-
 void initTimer1() { //Timer 1 -> asserv' interrupt
     T1CONbits.TON = 0; //disable timer
     TMR1 = 0; // Clear timer register
@@ -164,7 +162,6 @@ void initTimer1() { //Timer 1 -> asserv' interrupt
     IEC0bits.T1IE = 1; //Enable interrupt
     T1CONbits.TON = 1; //enable Timer1
 }
-
 void initTimer2() { //Timer 2 -> timing (delay_ms,delay_us,millis,micros)
     /*32bits mode*/
     /*TMR2 = LSB & TMR3 = MSB*/
@@ -192,7 +189,6 @@ void initTimer2() { //Timer 2 -> timing (delay_ms,delay_us,millis,micros)
 
     T2CONbits.TON = 1; //enable Timer1
 }
-
 void initTimer3() { //Timer 3   -> 20µs delay
     /*T3CONbits.TON = 0;      //disable timer
     TMR3 = 0;               // Clear timer register
@@ -205,7 +201,6 @@ void initTimer3() { //Timer 3   -> 20µs delay
     IEC0bits.T3IE = 1;      //Enable interrupt
     T3CONbits.TON = 0;      //disable Timer3*/
 }
-
 void initTimer4() { //Timer 4   -> count US time
     T4CONbits.TON = 0; //disable timer
     TMR4 = 0; // Clear timer register
@@ -218,7 +213,6 @@ void initTimer4() { //Timer 4   -> count US time
     IEC1bits.T4IE = 0; //Enable interrupt
     T4CONbits.TON = 1; //enable Timer4
 }
-
 void initTimer5() { //Timer 5   -> 20µs delay
     T5CONbits.TON = 0; //disable timer
     TMR5 = 0; // Clear timer register
@@ -690,7 +684,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     }// </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="US">
-    n_us++;
+    /*n_us++;
     if (n_us >= N_US) {
         n_us = 0;
         if (!US_received)
@@ -726,10 +720,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         US_received = 0;
         US_ON[i_us] = 1;
         T5CONbits.TON = 1; //enable Timer3
-        /*print("toggle ");
-        print(itoa((int)i_us));
-        print("\n");*/
-    }
+        //print("toggle ");
+        //print(itoa((int)i_us));
+        //print("\n");
+    }*/
     // </editor-fold>
 }
 

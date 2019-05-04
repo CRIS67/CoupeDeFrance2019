@@ -15,9 +15,10 @@
 
 void *print(void *ptr);
 void debugAct();
-void debutTestAllDelay();
-void debutTestAllInstant();
-void debutBN();
+void debugTestAllDelay();
+void debugTestAllInstant();
+void debugBN();
+void debugGoldenium();
 int main()
 {
     /*debugAct();
@@ -27,10 +28,10 @@ int main()
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	
-	int valueH = 800;
+	/*int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
-    int valueMiddle = 1000;
+    int valueMiddle = 1000;*/
 
 	DsPIC dspic;
     pthread_t thread_print;
@@ -48,49 +49,18 @@ int main()
 		std::cout << "Error:unable to create thread," << rc << std::endl;
 		exit(-1);
     }
-    std::cout << "Press enter to continue"  << std::endl;
-	getchar();
-	dspic.setVar8(CODE_VAR_VERBOSE,1);
-	dspic.start();
-	dspic.getVar(CODE_VAR_BAT);
-	getchar();
-	dspic.motorVoltage(1,8);
-	//dspic.getVar(CODE_VAR_RUPT);
-	getchar();
-	dspic.motorVoltage(1,-8);
-	getchar();
-	dspic.motorVoltage(1,0);
-	dspic.stop();
-	dspic.setVar8(CODE_VAR_VERBOSE,0);
-	exit(-1);
-	/*dspic.start();
-	dspic.stop();
-	dspic.servo(1,1500);
-	dspic.motor(1,-50);
-	dspic.motor(2,75);
-	dspic.go(1500,742,0,0);
-	dspic.turn(360,0,0);
-	dspic.AX12(1,512);
-	dspic.AX12(3,213);*/
-	/*float f = 42.0;
-	float *ptrF = &f;
-	char *ptrC = (char*)ptrF;
-	std::cout << (int)ptrC[0] << "/" << (int)ptrC[1] << "/" << (int)ptrC[2] << "/" << (int)ptrC[3] << "/" << std::endl;*/
+
     getchar();
 	dspic.setVar8(CODE_VAR_VERBOSE,1);
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
-    //dspic.getVar(CODE_VAR_ODO);
-    //dspic.initPos(1000,1500,0);
+    getchar();
+    dspic.start();
 	getchar();
+    dspic.stop();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	puts("verbose set to 0");
-    
-	//std::cout << dspic.read() << std::endl;
-    //web.s = "hola ! \n";
-    //getchar();
     puts("exiting ...");
-    //pthread_exit(NULL);
 
     return 0;
 }
@@ -378,7 +348,7 @@ void debugAct(){
         }
     }
 }
-void debutTestAllDelay(){
+void debugTestAllDelay(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
@@ -465,7 +435,7 @@ void debutTestAllDelay(){
     actBack.MoveServo(1,valueMiddle);
     actBack.MoveServo(2,valueMiddle);
 }
-void debutTestAllInstant(){
+void debugTestAllInstant(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
@@ -543,12 +513,12 @@ void debutTestAllInstant(){
     actBack.MoveServo(1,valueMiddle);
     actBack.MoveServo(2,valueMiddle);
 }
-void debutBN(){
+void debugBN(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     
-    int valueH = 800;
+    //int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
     int valueMiddle = 1000;
@@ -567,4 +537,46 @@ void debutBN(){
     actBack.MoveServo(2,valueDrop);
     delay(250);
     actBack.MoveServo(2,valueMiddle);
+}
+void debugGoldenium(){
+    DsPIC dspic;
+    pthread_t thread_print;
+
+    dspic.async_read(); //flush rx buffer
+
+    Web web(&dspic);
+    web.startThread();
+
+    int rc;
+    //std::cout << "main() : creating thread, " << std::endl;
+    rc = pthread_create(&thread_print, NULL, print, &web);
+
+    if (rc) {
+        std::cout << "Error:unable to create thread," << rc << std::endl;
+        exit(-1);
+    }
+    std::cout << "Press enter to continue"  << std::endl;
+    getchar();
+    dspic.setVar8(CODE_VAR_VERBOSE,1);
+    dspic.start();
+    dspic.getVar(CODE_VAR_BAT);
+    getchar();
+    dspic.setMotLin(1);
+    //dspic.motorVoltage(1,8);
+    //dspic.getVar(CODE_VAR_RUPT);
+    getchar();
+    dspic.motorVoltage(0,10);
+    getchar();
+    dspic.setMotLin(0);
+    getchar();
+    dspic.setMotLin(1);
+    getchar();
+    dspic.motorVoltage(0,0);
+    //dspic.motorVoltage(1,-8);
+    getchar();
+    dspic.motorVoltage(1,0);
+    getchar();
+    dspic.setMotLin(0);
+    dspic.stop();
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
 }

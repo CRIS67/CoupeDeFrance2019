@@ -279,42 +279,60 @@ void motorVoltage(uint8_t id, double voltage){
     double vbat = readBattery();
     
     switch(id){
-        case ID_PUMP:
+        case ID_PUMP:{
+            double PWM_VALUE = 0;
             if(voltage <= -VSAT_PUMP){
                 SENS_PUMP = BACKWARD;
-                PWM_PUMP = PWM_PR_PUMP * (VSAT_PUMP / vbat);
+                PWM_VALUE = PWM_PR_PUMP * (VSAT_PUMP / vbat);
             }
             else if(voltage >= VSAT_PUMP){
                 SENS_PUMP = FORWARD;
-                PWM_PUMP = PWM_PR_PUMP * (VSAT_PUMP / vbat);
+                PWM_VALUE = PWM_PR_PUMP * (VSAT_PUMP / vbat);
             }
             else if(voltage < 0){
                 SENS_PUMP = BACKWARD;
-                PWM_PUMP = -(int)(voltage * PWM_PR_PUMP / vbat);
+                PWM_VALUE = -(int)(voltage * PWM_PR_PUMP / vbat);
             }
             else{
                 SENS_PUMP = FORWARD;
-                PWM_PUMP = (int)(voltage * PWM_PR_PUMP / vbat);
+                PWM_VALUE = (int)(voltage * PWM_PR_PUMP / vbat);
             }
+            if(PWM_VALUE > PWM_PR_MOTOR_LINEAR){
+                PWM_VALUE = PWM_PR_MOTOR_LINEAR;
+            }
+            else if(PWM_VALUE < 0){
+                PWM_VALUE = 0;
+            }
+            PWM_PUMP = (uint16_t)PWM_VALUE;
             break;
-        case ID_MOTOR_LINEAR:
+        }
+        case ID_MOTOR_LINEAR:{
+            double PWM_VALUE = 0;
             if(voltage <= -VSAT_MOTOR_LINEAR){
                 SENS_MOTOR_LINEAR = BACKWARD;
-                PWM_MOTOR_LINEAR = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
+                PWM_VALUE = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
             }
             else if(voltage >= VSAT_MOTOR_LINEAR){
                 SENS_MOTOR_LINEAR = FORWARD;
-                PWM_MOTOR_LINEAR = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
+                PWM_VALUE = PWM_PR_MOTOR_LINEAR * (VSAT_MOTOR_LINEAR / vbat);
             }
             else if(voltage < 0){
                 SENS_MOTOR_LINEAR = BACKWARD;
-                PWM_MOTOR_LINEAR = -(int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
+                PWM_VALUE = -(int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
             }
             else{
                 SENS_MOTOR_LINEAR = FORWARD;
-                PWM_MOTOR_LINEAR = (int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
+                PWM_VALUE = (int)(voltage * PWM_PR_MOTOR_LINEAR / vbat);
             }
+            if(PWM_VALUE > PWM_PR_MOTOR_LINEAR){
+                PWM_VALUE = PWM_PR_MOTOR_LINEAR;
+            }
+            else if(PWM_VALUE < 0){
+                PWM_VALUE = 0;
+            }
+            PWM_MOTOR_LINEAR = (uint16_t)PWM_VALUE;
             break;
+        }
         /*case ID_MOTOR_LEFT:
             
             break;
