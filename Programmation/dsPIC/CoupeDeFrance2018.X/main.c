@@ -88,7 +88,7 @@ extern volatile unsigned char back;
 
 extern volatile unsigned char debugPosRpi;
 
-volatile unsigned char stop = 0;
+volatile unsigned char stop = 1;
 
 unsigned char detectUS = 0;
 unsigned char sensDetectUS = 1;
@@ -228,15 +228,27 @@ int main(){
     POS2CNTL = 0x8000;*/
     POS1CNTL = 0x0000;
     POS2CNTL = 0x0000;
+    testSendToMotor(0, 0);
     initAllPID(&pidSpeedLeft, &pidSpeedRight, &pidDistance, &pidAngle);
     initTimer();
-    IEC0bits.T1IE = 0;  //stop asserv
+    //IEC0bits.T1IE = 0;  //stop asserv
     //sendToMotor(8,0);
     double oldCurrent = 0;
     double coefLP = 0.01;
-    testSendToMotor(2, 2);
+    //testSendToMotor(2, 2);
+    x = 1000;
+    y = 1500;
+    theta = PI;
+    
+    xc = x;
+    yc = y;
+    thetac = theta;
+    
+    xf = x;
+    yf = y;
+    tf = theta;
     while(1){
-        double current;
+        /*double current;
         uint16_t cnt;
         for(cnt = 0; cnt < 1000;cnt++){
             int mes = readADC(ADC_CHANNEL_I_PUMP);
@@ -265,11 +277,130 @@ int main(){
         }
         else{
             LED_2 = 0;
-        }
-        //delay_ms(10);
+        }*/
+        delay_ms(10);
         LED_PLATINE = !LED_PLATINE;
         CheckMessages();
-        plot(1,(uint32_t)((int32_t)(current)));
+        sendPos();
+        if(newPosReceived){
+                if(0){
+                    
+                    newPosReceived = 0;
+                    
+                    double angularVelocity = 0;
+                    double maxAngularVelocity = funAngularSpeed;
+                    double AngularAcceleration = funAngularAcc;
+                    double angle = 0;
+                    theta0 = theta;
+                    double prevAngularVelocity = 0;
+                    double phi = 20*PI;
+                    double sign = 1;
+                    if(sens == 0){
+                        sign = -1;
+                        sens = 1;
+                    }
+                    else{
+                        sign = 1;
+                        sens = 0;
+                    }
+                    finalPoint = 0; 
+                            while(angularVelocity < maxAngularVelocity && angle < phi/2){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            double angle1 = angle;
+                            while(angle < phi - angle1){
+                                angle += TE * angularVelocity;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            AngularAcceleration = -AngularAcceleration;
+                            while(angularVelocity > 0 && angle < phi){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                    finalPoint = 1;
+                    
+                }
+                else{
+                    statePathGeneration = 42;
+                    delay_ms(100);
+                    newPosReceived = 0;
+                    if(newPosBackReceived)
+                    {
+                        newPosBackReceived = 0;
+                        //printRpi(("DEBUG goBack main 1\n"));
+                        goBack(receivedX,receivedY,2000,200);
+                        //printRpi(("DEBUG goBack main 2\n"));
+                    }
+                    else{
+                        //go(receivedX,receivedY,2000,200);
+                        //go(receivedX,receivedY,1000,100);
+                        modif_straightPath(receivedX,receivedY,0,funSpeed,funAcc);
+                        //modif_straightPath(receivedX,receivedY,0,1000,100);
+                    }
+                }
+            }
+            if(newAngleReceived){
+                if(0){
+                    newAngleReceived = 0;
+                    turn(receivedTheta);
+                }
+                else{
+                    newAngleReceived = 0;
+                    
+                    double angularVelocity = 0;
+                    double maxAngularVelocity = funAngularSpeed;
+                    double AngularAcceleration = funAngularAcc;
+                    double angle = 0;
+                    theta0 = theta;
+                    double prevAngularVelocity = 0;
+                    double phi = 20*PI;
+                    double sign = 1;
+                    if(sens == 0){
+                        sign = -1;
+                        sens = 1;
+                    }
+                    else{
+                        sign = 1;
+                        sens = 0;
+                    }
+                    finalPoint = 0; 
+                            while(angularVelocity < maxAngularVelocity && angle < phi/2){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            double angle1 = angle;
+                            while(angle < phi - angle1){
+                                angle += TE * angularVelocity;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                            AngularAcceleration = -AngularAcceleration;
+                            while(angularVelocity > 0 && angle < phi){
+                                angularVelocity += AngularAcceleration * TE;
+                                angle += TE * (prevAngularVelocity + angularVelocity) / 2;
+                                thetac = theta0 + angle * sign;
+                                prevAngularVelocity = angularVelocity;
+                                delay_ms(TE * 1000);
+                            }
+                    finalPoint = 1;
+                }
+                
+            }
+        //sendPosLongDouble();)
+        //plot(1,(uint32_t)((int32_t)(current)));
     }
     
     initAllPID(&pidSpeedLeft, &pidSpeedRight, &pidDistance, &pidAngle);
@@ -326,7 +457,7 @@ int main(){
         sendLog("d[3] = ");
         sendLog(itoa(ptrC[3]));
         sendLog("\n");*/
-        sendPos();
+        //sendPos();
         /*sendLog("errorX = ");
         sendLog(dtoa((double)(kahanErrorX*1000000)));
         sendLog("\n");
@@ -388,7 +519,7 @@ int main(){
         CheckMessages();
         //sendLog(itoa(dummy));
     }
-    while(1){
+    while(0){
         /*for(p = 10; p < 50; p++){
             plot(p,100);
             delay_ms(10);
