@@ -1,0 +1,5 @@
+*.o
+Programmation/dsPIC/CoupeDeFrance2019.X/build/
+Programmation/dsPIC/CoupeDeFrance2019.X/debug/
+Programmation/dsPIC/CoupeDeFrance2019.X/dist/
+
