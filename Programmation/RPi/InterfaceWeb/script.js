@@ -667,25 +667,8 @@ window.onload = function () {
 		    }
 		});
 		
-		$("#testButton2").click(function(event){
+		$("#Button_ClearChart").click(function(event){
 			clearChart();
-		});
-		$("#testButton3").click(function(event){
-			clearChart();
-			data = "";
-			for (var i = 0; i <= 150; i++) {
-				data += "#";
-				data += i;
-				data += " ";
-				var b = Math.sin(i/20);
-				data += b
-				data += "\n";
-				var a = 1;
-				if(b < 0){
-					a = -1;
-				}
-				dps2.push({x: i,y: a});
-			}
 		});
 		$("#button_go").click(function(event){
 			var xDest = Number(document.getElementById("inputText_destX").value);
@@ -1053,6 +1036,19 @@ window.onload = function () {
 				clearInterval(chartInterval);
 			}
 		});*/
+
+		$("#ButtonSendOdo1").click(function(event){
+			var cmd = "odo1=" + parseFloat(document.getElementById("numberOdo1").value);
+			sendCmd(cmd);
+		});
+		$("#ButtonSendOdo2").click(function(event){
+			var cmd = "odo2=" + parseFloat(document.getElementById("numberOdo2").value);
+			sendCmd(cmd);
+		});
+		$("#ButtonSendOdo3").click(function(event){
+			var cmd = "odo3=" + parseFloat(document.getElementById("numberOdo3").value);
+			sendCmd(cmd);
+		});
 		
 		function sendData() {
 			var data = $("#inputText").val();
@@ -1603,9 +1599,11 @@ window.onload = function () {
 					
 					var r = this.responseText;
 					//if(r != "OK"){
-					if(!r.startWith("OK")){
-						alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
-					}
+					/*if( r != null){
+						if(!r.startsWith("OK")){
+							alert("Error occured during SendCmd function : server did not respond \"OK\".\nResponse : " + r);
+						}
+					}*/
 				}
 			}
 			//xhr.send("cmd=" + cmd);
