@@ -117,25 +117,22 @@
 #define SPI_CHECKSUM    3
 
 //definition des varaibles pouvant être recu en spi
-#define AUCUNE            0
-#define PUMP_0_SPI        1
-#define PUMP_1_SPI        2
-#define PUMP_2_SPI        3
-#define MOVE_0_SPI        4
-#define MOVE_1_SPI        5
-#define MOVE_2_SPI        6
-#define MOVE_POS_0_SPI    7
-#define MOVE_POS_1_SPI    8
-#define MOVE_POS_2_SPI    9
-#define COLOR_SPI_0       10
-#define COLOR_SPI_1       11
-#define COLOR_SPI_2       12
-#define CURENT_SPI_0      13
-#define CURENT_SPI_1      14
-#define CURENT_SPI_2      15
-#define CURENT_SPI_FULL_0 16
-#define CURENT_SPI_FULL_1 17
-#define CURENT_SPI_FULL_2 18
+#define AUCUNE          0
+#define PUMP_0_SPI      1
+#define PUMP_1_SPI      2
+#define PUMP_2_SPI      3
+#define MOVE_0_SPI      4
+#define MOVE_1_SPI      5
+#define MOVE_2_SPI      6
+#define MOVE_POS_0_SPI  7
+#define MOVE_POS_1_SPI  8
+#define MOVE_POS_2_SPI  9
+#define COLOR_SPI_0     10
+#define COLOR_SPI_1     11
+#define COLOR_SPI_2     12
+#define CURENT_SPI_0    13
+#define CURENT_SPI_1    14
+#define CURENT_SPI_2    15
 
 #define PUMP_LAUNCH_0   0
 #define PUMP_LAUNCH_1   1
@@ -146,6 +143,7 @@
 
 void Affiche(String txt, unsigned char state);
 unsigned char MesureCourant(unsigned char nb_pump);
+unsigned char MesureCourantState(unsigned char nb_pump);
 char GetColor(unsigned char nb_bras);
 void StatePump(unsigned char nb_pump, boolean state);
 void MoveServo(unsigned char nb_servo, int temps);
@@ -166,7 +164,6 @@ unsigned char CptSpi = 0;             //compteur de d'octets recu
 unsigned char TypeVarSpi = AUCUNE;    //type de variable recu
 unsigned char TextSpi[TAILLE_SPI];    //message recu
 unsigned char SendNbSpi = 0;          //message envoyer
-unsigned char SendNbSpi_1 = 0;        //message envoyer 1
 boolean FlagReceiveSpi = 0;           //drapeau de récéption d'un message spi
 char TabPileSend[TAILLE_SEND];        //pile de récéption pour stocker les réponse à donner
 int CptPile = 0;                      //compteur de la pile de remplissage
@@ -180,9 +177,6 @@ unsigned char Color2 = 0;
 unsigned char Cur0 = 0;
 unsigned char Cur1 = 0;
 unsigned char Cur2 = 0;
-int Cur_full_0 = 0;
-int Cur_full_1 = 0;
-int Cur_full_2 = 0;
 boolean Rupt0 = 0;
 boolean Rupt1 = 0;
 boolean Rupt2 = 0;
@@ -229,6 +223,49 @@ void setup() {
   for(i=0;i<TAILLE_SEND;i++) {
     TabPileSend[i] = AUCUNE;
   }
+
+  /*
+  //Timers, a faire
+  //set timer0 interrupt at 16kHz
+  TCCR0A = 0;// set entire TCCR0A register to 0
+  TCCR0B = 0;// same for TCCR0B
+  TCNT0  = 0;//initialize counter value to 0
+  // set compare match register for 2khz increments
+  OCR0A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256)
+  // turn on CTC mode (Clear Timer on Compare)
+  TCCR0A |= (1 << WGM01);
+  // Set CS01 and CS00 bits for 1 prescaler
+  TCCR0B |= (1 << CS00);   
+  // enable timer compare interrupt
+  TIMSK0 |= (1 << OCIE0A);
+  
+  //set timer1 interrupt at 16Hz
+  TCCR1A = 0;// set entire TCCR1A register to 0
+  TCCR1B = 0;// same for TCCR1B
+  TCNT1  = 0;//initialize counter value to 0
+  // set compare match register for 1hz increments
+  OCR1A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256) (must be <65536)
+  // turn on CTC mode
+  TCCR1B |= (1 << WGM12);
+  // Set CS10 and CS12 bits for 1024 prescaler
+  TCCR1B |= (1 << CS10);  
+  // enable timer compare interrupt
+  TIMSK1 |= (1 << OCIE1A);
+
+  //set timer2 interrupt at 16kHz
+  TCCR2A = 0;// set entire TCCR2A register to 0
+  TCCR2B = 0;// same for TCCR2B
+  TCNT2  = 0;//initialize counter value to 0
+  // set compare match register for 8khz increments
+  OCR2A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256) (must be <256)
+  // turn on CTC mode
+  TCCR2A |= (1 << WGM21);
+  // Set CS21 bit for 8 prescaler
+  TCCR2B |= (1 << CS20);   
+  // enable timer compare interrupt
+  TIMSK2 |= (1 << OCIE2A);
+
+  sei();*/
   
   Affiche("FIN INIT", DEBUG_NORM_NB);
 }
@@ -515,7 +552,7 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 }
 
 /*******************************************************************/
-// Nom de la fonction: MesureCourant
+// Nom de la fonction: MesureCourantState
 //                    
 // Description: Fonction qui renvoi l'état du courant dans la pompe
 //
@@ -524,21 +561,18 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 // Sorties: unsigned char res : nombre renvoyé PUMP_EN_CHARGE => courant > 512, PUMP_A_VIDE => courant > 100, sinon PUMP_ERREUR
 //                              
 /*******************************************************************/
-unsigned char MesureCourant(unsigned char nb_pump) {
+unsigned char MesureCourantState(unsigned char nb_pump) {
   int courant;
   unsigned char res;
   switch(nb_pump) {
     case 0:
       courant = analogRead(I_ARM_0);
-      Cur_full_0 = courant;
     break;
     case 1:
        courant = analogRead(I_ARM_1);
-      Cur_full_1 = courant;
     break;
     case 2:
        courant = analogRead(I_ARM_2);
-      Cur_full_2 = courant;
     break;
     default:
       Affiche("current error", DEBUG_ERR_NB);
@@ -559,6 +593,39 @@ unsigned char MesureCourant(unsigned char nb_pump) {
   Affiche("RES = "+String(res), DEBUG_ACT_NB);
   Affiche("PUMP = "+String(nb_pump), DEBUG_ACT_NB);
   Affiche("COURANT = "+String(courant), DEBUG_ACT_NB);
+  return res;
+}
+
+/*******************************************************************/
+// Nom de la fonction: MesureCourant
+//                    
+// Description: Fonction qui renvoi l'état du courant dans la pompe
+//
+// Entrées: unsigned char nb_pump : numéro du bras
+//
+// Sorties: unsigned char res : valeur du courant
+//                              
+/*******************************************************************/
+unsigned char MesureCourant(unsigned char nb_pump) {
+  int courant;
+  unsigned char res;
+  switch(nb_pump) {
+    case 0:
+      courant = analogRead(I_ARM_0);
+    break;
+    case 1:
+       courant = analogRead(I_ARM_1);
+    break;
+    case 2:
+       courant = analogRead(I_ARM_2);
+    break;
+    default:
+      Affiche("current error", DEBUG_ERR_NB);
+      return WRONG_CHANNEL;
+    break;
+  }
+  Affiche("COURANT = "+String(courant), DEBUG_ACT_NB);
+  res = (unsigned char)(courant/4);
   return res;
 }
 
@@ -728,7 +795,7 @@ ISR(SPI_STC_vect) {
     case SPI_NUM_VAR:
       //gestion du type
       TypeVarSpi = data_spi;
-      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2) {
+      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2) {
         EtatSpi = SPI_CHECKSUM; //pas de message utile
       } else {
         EtatSpi = SPI_MSG_UTILE;
@@ -829,21 +896,6 @@ ISR(SPI_STC_vect) {
             CptPile++;
             CptPile %= TAILLE_SEND;
           break;
-          case CURENT_SPI_FULL_0:
-            TabPileSend[CptPile] = CURENT_SPI_FULL_0;
-            CptPile++;
-            CptPile %= TAILLE_SEND;
-          break;
-          case CURENT_SPI_FULL_1:
-            TabPileSend[CptPile] = CURENT_SPI_FULL_1;
-            CptPile++;
-            CptPile %= TAILLE_SEND;
-          break;
-          case CURENT_SPI_FULL_2:
-            TabPileSend[CptPile] = CURENT_SPI_FULL_2;
-            CptPile++;
-            CptPile %= TAILLE_SEND;
-          break;
           default:
             //do nothing
           break;
@@ -861,11 +913,7 @@ ISR(SPI_STC_vect) {
     CptSpiSend++;
     switch(CptSpiSend) {
       case 1:
-        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile]) {
-          SPDR = 0x04;
-        } else {
-          SPDR = 0x03;
-        }
+        SPDR = 0x03;
       break;
       case 2:
         SPDR = TabPileSend[CptReadPile];
@@ -874,69 +922,82 @@ ISR(SPI_STC_vect) {
         switch(TabPileSend[CptReadPile]) {
           case COLOR_SPI_0:
             SendNbSpi = Color0;
-            CptSpiSend++;
           break;
           case COLOR_SPI_1:
             SendNbSpi = Color1;
-            CptSpiSend++;
           break;
           case COLOR_SPI_2:
             SendNbSpi = Color2;
-            CptSpiSend++;
           break;
           case CURENT_SPI_0:
             SendNbSpi = Cur0;
-            CptSpiSend++;
           break;
           case CURENT_SPI_1:
             SendNbSpi = Cur1;
-            CptSpiSend++;
           break;
           case CURENT_SPI_2:
             SendNbSpi = Cur2;
-            CptSpiSend++;
-          break;
-          case CURENT_SPI_FULL_0:
-            SendNbSpi = (unsigned char)(Cur_full_0/256);
-          break;
-          case CURENT_SPI_FULL_1:
-            SendNbSpi = (unsigned char)(Cur_full_1/256);
-          break;
-          case CURENT_SPI_FULL_2:
-            SendNbSpi = (unsigned char)(Cur_full_2/256);
           break;
         }
         SPDR = SendNbSpi;
       break;
       case 4:
-        switch(TabPileSend[CptReadPile]) {
-          case CURENT_SPI_FULL_0:
-            SendNbSpi_1 = (Cur_full_0%256);
-          break;
-          case CURENT_SPI_FULL_1:
-            SendNbSpi_1 = (Cur_full_1%256);
-          break;
-          case CURENT_SPI_FULL_2:
-            SendNbSpi_1 = (Cur_full_2%256);
-          break;
-        }
-        SPDR = SendNbSpi_1;
-      break;
-      case 5:
-        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile]) {
-          SPDR = (0x04 + TabPileSend[CptReadPile] + SendNbSpi + SendNbSpi_1)%256;
-        } else {
-          SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
-        }
+        SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
         TabPileSend[CptReadPile] = AUCUNE;
         CptReadPile++;
         CptReadPile %= TAILLE_SEND;
         CptSpiSend = 0;
-        SendNbSpi = 0;
-        SendNbSpi_1 = 0;
       break;
     }
   } else {
     SPDR = 0;
   }
 }
+
+/*ISR(TIMER0_COMPA_vect) {
+  unsigned char res;
+  //timer0 => rutpeur + courant + monté bras + flag = 0
+  res = GetRuptState(PUMP_LAUNCH_0) & MesureCourant(PUMP_LAUNCH_0);
+  MoveServo(PUMP_LAUNCH_0, SERVO_0_MAX);
+  FlagPump0 = 1;
+  SendTailleSpi = 3;
+  SendVarSpi = COLOR_0_SPI;
+  if(res) {
+    SendNbSpi = OK;
+  } else {
+    SendNbSpi = ECHEC;
+  }
+  TIMSK0 &= (0 << !OCIE0A); //a voir
+}
+
+ISR(TIMER1_COMPA_vect) {
+  unsigned char res;
+  //timer1 => rutpeur + courant + monté bras + flag = 0
+  res = GetRuptState(PUMP_LAUNCH_1) & MesureCourant(PUMP_LAUNCH_1);
+  MoveServo(PUMP_LAUNCH_1, SERVO_1_MAX);
+  FlagPump1 = 1;
+  SendTailleSpi = 3;
+  SendVarSpi = COLOR_1_SPI;
+  if(res) {
+    SendNbSpi = OK;
+  } else {
+    SendNbSpi = ECHEC;
+  }
+  TIMSK1 &= (0 << !OCIE1A);
+}
+
+ISR(TIMER2_COMPA_vect) {
+  unsigned char res;
+  //timer2 => rutpeur + courant + monté bras + flag = 0
+  res = GetRuptState(PUMP_LAUNCH_2) & MesureCourant(PUMP_LAUNCH_2);
+  MoveServo(PUMP_LAUNCH_2, SERVO_2_MAX);
+  FlagPump2 = 1;
+  SendTailleSpi = 3;
+  SendVarSpi = COLOR_2_SPI;
+  if(res) {
+    SendNbSpi = OK;
+  } else {
+    SendNbSpi = ECHEC;
+  }
+  TIMSK2 &= (0 << !OCIE2A);
+}*/
