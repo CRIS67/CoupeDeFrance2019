@@ -147,6 +147,11 @@ volatile double funAcc = 1000;
 volatile double funAngularSpeed = 10;
 volatile double funAngularAcc = 1;
 
+volatile long double linSpeed = 0; //mm/s
+volatile long double linAcc = 0; //mm/s^2
+volatile long double rotSpeed = 0; //rad/s
+volatile long double rotAcc = 0; //rad/s^2
+
 int sens = 0;
 
 

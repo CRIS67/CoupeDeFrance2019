@@ -67,6 +67,11 @@ extern volatile double funAcc;
 extern volatile double funAngularSpeed;
 extern volatile double funAngularAcc;
 
+extern volatile long double linSpeed;  //mm/s
+extern volatile long double linAcc;    //mm/s^2
+extern volatile long double rotSpeed;  //rad/s
+extern volatile long double rotAcc;    //rad/s^2
+
 extern volatile uint8_t arrived;
 extern volatile long double distanceMax;
 // </editor-fold>				 
@@ -494,96 +499,6 @@ void CheckMessages(){
                             break;
                     }
                 }// </editor-fold>
-                // <editor-fold defaultstate="collapsed" desc="64bits">
-                else if (type == VAR_64b) {
-                    switch (var){
-                        case CODE_VAR_X_LD:{
-                            uint8_t *ptr = (uint8_t*)&x;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_X_LD,x);
-                            xc = x;
-                            xf = x;
-                            break;
-                        }
-                        case CODE_VAR_Y_LD:{
-                            uint8_t *ptr = (uint8_t*)&y;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_Y_LD,y);
-                            yc = y;
-                            yf = y;
-                            break;
-                        }
-                        case CODE_VAR_T_LD:{
-                            uint8_t *ptr = (uint8_t*)&theta;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_X_LD,theta);
-                            thetac = theta;
-                            tf = theta;
-                            break;
-                        }
-                        case CODE_VAR_COEF_DISSYMETRY_LD:{
-                            uint8_t *ptr = (uint8_t*)&coef_dissymmetry;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_COEF_DISSYMETRY_LD,coef_dissymmetry);
-                            break;
-                        }
-                        case CODE_VAR_MM_PER_TICKS_LD:{
-                            uint8_t *ptr = (uint8_t*)&mm_per_ticks;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_MM_PER_TICKS_LD,mm_per_ticks);
-                            break;
-                        }
-                        case CODE_VAR_RAD_PER_TICKS_LD:{
-                            uint8_t *ptr = (uint8_t*)&rad_per_ticks;
-                            ptr[0] = RxDMABuffer[iArg3];
-                            ptr[1] = RxDMABuffer[iArg4];
-                            ptr[2] = RxDMABuffer[iArg5];
-                            ptr[3] = RxDMABuffer[iArg6];
-                            ptr[4] = RxDMABuffer[iArg7];
-                            ptr[5] = RxDMABuffer[iArg8];
-                            ptr[6] = RxDMABuffer[iArg9];
-                            ptr[7] = RxDMABuffer[iArg10];
-                            sendLongDouble(CODE_VAR_RAD_PER_TICKS_LD,rad_per_ticks);
-                            break;
-                        }
-                    }
-                    break;
-                }// </editor-fold>
                 // <editor-fold defaultstate="collapsed" desc="long double 64bits">
                 else if (type == VAR_LD_64b) {
                     uint8_t *ptr = NULL;
@@ -618,8 +533,7 @@ void CheckMessages(){
                             break;
                         case CODE_VAR_TF_LD:
                             ptr = (uint8_t*) &tf;
-                            break;// </editor-fold>
-						/*
+                            break;// </editor-fold>						
                         // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
                         case CODE_VAR_TRAJ_LIN_SPEED_LD:
                             ptr = (uint8_t*) &linSpeed;
@@ -634,53 +548,37 @@ void CheckMessages(){
                             ptr = (uint8_t*) &rotAcc;
                             break; // </editor-fold>
                         // <editor-fold defaultstate="collapsed" desc="Odometry">
-                        case CODE_VAR_TICKS_PER_TURN_LD:
-                            ptr = (uint8_t*) &ticksPerTurn;
+                        case CODE_VAR_COEF_DISSYMETRY_LD:
+                            ptr = (uint8_t*) &coef_dissymmetry;
                             break;
-                        case CODE_VAR_WHEEL_DIAMETER_LD:
-                            ptr = (uint8_t*) & wheelDiameter;
+                        case CODE_VAR_MM_PER_TICKS_LD:
+                            ptr = (uint8_t*) &mm_per_ticks;
                             break;
-                        case CODE_VAR_DISTANCE_CENTER_TO_WHEEL_LD:
-                            ptr = (uint8_t*) &distanceCenterToWheel;
+                        case CODE_VAR_RAD_PER_TICKS_LD:
+                            ptr = (uint8_t*) &rad_per_ticks;
                             break;
-                        case CODE_VAR_WHEEL_DIAMETER0_LD:
-                            ptr = (uint8_t*) &wheelDiameter0;
-                            break;
-                        case CODE_VAR_WHEEL_DIAMETER1_LD:
-                            ptr = (uint8_t*) &wheelDiameter1;
-                            break;
-                        case CODE_VAR_WHEEL_DIAMETER2_LD:
-                            ptr = (uint8_t*) &wheelDiameter2;
-                            break; // </editor-fold>
+                        // </editor-fold>
                         // <editor-fold defaultstate="collapsed" desc="PID">
-                        case CODE_VAR_P_SPEED_0_LD:
-                            ptr = (uint8_t*) &pidSpeed0.Kp;
+                        case CODE_VAR_P_SPEED_L_LD:
+                            ptr = (uint8_t*) &pidSpeedLeft.Kp;
                             break;
-                        case CODE_VAR_I_SPEED_0_LD:
-                            ptr = (uint8_t*) &pidSpeed0.Ki;
+                        case CODE_VAR_I_SPEED_L_LD:
+                            ptr = (uint8_t*) &pidSpeedLeft.Ki;
                             break;
-                        case CODE_VAR_D_SPEED_0_LD:
-                            ptr = (uint8_t*) &pidSpeed0.Kd;
+                        case CODE_VAR_D_SPEED_L_LD:
+                            ptr = (uint8_t*) &pidSpeedLeft.Kd;
                             break;
-                        case CODE_VAR_P_SPEED_1_LD:
-                            ptr = (uint8_t*) &pidSpeed1.Kp;
+                            
+                        case CODE_VAR_P_SPEED_R_LD:
+                            ptr = (uint8_t*) &pidSpeedRight.Kp;
                             break;
-                        case CODE_VAR_I_SPEED_1_LD:
-                            ptr = (uint8_t*) &pidSpeed1.Ki;
+                        case CODE_VAR_I_SPEED_R_LD:
+                            ptr = (uint8_t*) &pidSpeedRight.Ki;
                             break;
-                        case CODE_VAR_D_SPEED_1_LD:
-                            ptr = (uint8_t*) &pidSpeed1.Kd;
+                        case CODE_VAR_D_SPEED_R_LD:
+                            ptr = (uint8_t*) &pidSpeedRight.Kd;
                             break;
-                        case CODE_VAR_P_SPEED_2_LD:
-                            ptr = (uint8_t*) &pidSpeed2.Kp;
-                            break;
-                        case CODE_VAR_I_SPEED_2_LD:
-                            ptr = (uint8_t*) &pidSpeed2.Ki;
-                            break;
-                        case CODE_VAR_D_SPEED_2_LD:
-                            ptr = (uint8_t*) &pidSpeed2.Kd;
-                            break;
-						*/
+						
                         case CODE_VAR_P_DISTANCE_LD:
                             ptr = (uint8_t*) &pidDistance.Kp;
                             break;
@@ -690,6 +588,7 @@ void CheckMessages(){
                         case CODE_VAR_D_DISTANCE_LD:
                             ptr = (uint8_t*) &pidDistance.Kd;
                             break;
+                            
                         case CODE_VAR_P_ANGLE_LD:
                             ptr = (uint8_t*) &pidAngle.Kp;
                             break;
