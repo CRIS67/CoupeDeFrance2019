@@ -91,6 +91,39 @@
 #define VAR_32b     2
 #define VAR_64b     3
 
+//Odometry
+
+#define COEF_DISSYMETRY                     1.010
+#define MM_PER_TICKS                        0.01886796369
+#define RAD_PER_TICKS                       0.0001405
+
+//PID speed left    units : rad/s -> V
+#define KP_SPEED_LEFT               0.05
+#define KI_SPEED_LEFT               0.35
+#define KD_SPEED_LEFT               0
+
+//PID speed right   units : rad/s -> V
+#define KP_SPEED_RIGHT              0.05
+#define KI_SPEED_RIGHT              0.35
+#define KD_SPEED_RIGHT              0
+
+//PID distance      units : mm -> rad/s
+#define KP_DISTANCE                 2
+#define KI_DISTANCE                 0
+#define KD_DISTANCE                 0
+
+//PID angle         units : rad -> rad/s
+#define KP_ANGLE                    1000
+#define KI_ANGLE                    0
+#define KD_ANGLE                    1
+
+//Trajectory generation
+#define TRAJ_LIN_SPEED				1000	//mm/s
+#define TRAJ_LIN_ACC				1000	//mm/s^2
+
+#define TRAJ_ROT_SPEED				10	//rad/s
+#define TRAJ_ACC_SPEED				1	//rad/s^2
+
 #include <wiringPi.h>
 #include <wiringSerial.h>
 #include <stdint.h>
