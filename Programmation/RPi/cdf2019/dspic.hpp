@@ -54,9 +54,9 @@
 
 #define CODE_VAR_VERBOSE    5
 
-#define CODE_VAR_X_LD       6
+/*#define CODE_VAR_X_LD       6
 #define CODE_VAR_Y_LD       7
-#define CODE_VAR_T_LD       8
+#define CODE_VAR_T_LD       8*/
 
 #define CODE_VAR_ALLPID		9
 
@@ -86,43 +86,53 @@
 #define CODE_VAR_MM_PER_TICKS_LD                    34
 #define CODE_VAR_RAD_PER_TICKS_LD                   35
 
+#define CODE_VAR_I_PUMP                             40
+
+#define CODE_VAR_P_SPEED_L_LD   42
+#define CODE_VAR_I_SPEED_L_LD   43
+#define CODE_VAR_D_SPEED_L_LD   44
+
+#define CODE_VAR_P_SPEED_R_LD   45
+#define CODE_VAR_I_SPEED_R_LD   46
+#define CODE_VAR_D_SPEED_R_LD   47
+
+#define CODE_VAR_P_DISTANCE_LD  51
+#define CODE_VAR_I_DISTANCE_LD  52
+#define CODE_VAR_D_DISTANCE_LD  53
+
+#define CODE_VAR_P_ANGLE_LD     54
+#define CODE_VAR_I_ANGLE_LD     55
+#define CODE_VAR_D_ANGLE_LD     56
+
+#define CODE_VAR_TRAJ_LIN_SPEED_LD  60
+#define CODE_VAR_TRAJ_LIN_ACC_LD    61
+
+#define CODE_VAR_TRAJ_ROT_SPEED_LD  62
+#define CODE_VAR_TRAJ_ROT_ACC_LD    63
+
+#define CODE_VAR_DISTANCE_MAX_LD    64
+
+#define CODE_VAR_TICKS_PER_TURN_LD              70
+#define CODE_VAR_WHEEL_DIAMETER_LD              71
+#define CODE_VAR_DISTANCE_CENTER_TO_WHEEL_LD    72
+
+#define CODE_VAR_X_LD    80
+#define CODE_VAR_Y_LD    81
+#define CODE_VAR_T_LD    82
+
+#define CODE_VAR_XC_LD    83
+#define CODE_VAR_YC_LD    84
+#define CODE_VAR_TC_LD    85
+
+#define CODE_VAR_XF_LD    86
+#define CODE_VAR_YF_LD    87
+#define CODE_VAR_TF_LD    88
+
 #define VAR_8b      0
 #define VAR_16b     1
 #define VAR_32b     2
 #define VAR_64b     3
-
-//Odometry
-
-#define COEF_DISSYMETRY                     1.010
-#define MM_PER_TICKS                        0.01886796369
-#define RAD_PER_TICKS                       0.0001405
-
-//PID speed left    units : rad/s -> V
-#define KP_SPEED_LEFT               0.05
-#define KI_SPEED_LEFT               0.35
-#define KD_SPEED_LEFT               0
-
-//PID speed right   units : rad/s -> V
-#define KP_SPEED_RIGHT              0.05
-#define KI_SPEED_RIGHT              0.35
-#define KD_SPEED_RIGHT              0
-
-//PID distance      units : mm -> rad/s
-#define KP_DISTANCE                 2
-#define KI_DISTANCE                 0
-#define KD_DISTANCE                 0
-
-//PID angle         units : rad -> rad/s
-#define KP_ANGLE                    1000
-#define KI_ANGLE                    0
-#define KD_ANGLE                    1
-
-//Trajectory generation
-#define TRAJ_LIN_SPEED				1000	//mm/s
-#define TRAJ_LIN_ACC				1000	//mm/s^2
-
-#define TRAJ_ROT_SPEED				10	//rad/s
-#define TRAJ_ACC_SPEED				1	//rad/s^2
+#define VAR_LD_64b  4
 
 #include <wiringPi.h>
 #include <wiringSerial.h>
@@ -131,6 +141,9 @@
 #include <vector>
 #include <queue>
 #include <unistd.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 struct microswitch{
   unsigned int ass0 : 1;
@@ -161,7 +174,8 @@ class DsPIC
         DsPIC();
         virtual ~DsPIC();
 
-		void initVarDspic();
+		//void initVarDspic();
+		void loadVarDspicFromFile(std::string path);
 		void servo(uint8_t id, uint16_t value);
 		void AX12(uint8_t id, uint16_t value);
 		void motor(uint8_t id, int8_t value);
@@ -170,7 +184,7 @@ class DsPIC
 		void start();
 		void stop();
 		void go(int16_t x, int16_t y,unsigned char rev, unsigned char relative);
-		void turn(int16_t t,unsigned char rev, unsigned char relative);
+		void turn(int16_t t, unsigned char relative);
 		void setVar8(uint8_t varCode, uint8_t var);
 		void setVar32(uint8_t varCode, uint32_t var);
 		void initPos(double x, double y, double t);

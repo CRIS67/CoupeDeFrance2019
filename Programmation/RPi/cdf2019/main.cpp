@@ -54,6 +54,9 @@ int main()
 	dspic.setVar8(CODE_VAR_VERBOSE,1);
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
+    dspic.loadVarDspicFromFile("config.txt");
+    //dspic.initPos(1000,1500,3.14159);
+    dspic.initPos(1000,3000,-3.14159/2);
     getchar();
     dspic.start();
 	getchar();

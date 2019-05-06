@@ -70,7 +70,7 @@ void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 	//std::cout << "sent : " << (int)data << std::endl;		//for debug
 	uint8_t buffer[1];
 	buffer[0] = data;
-	wiringPiSPIDataRW(CHANNEL, buffer, 1);
+	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 	if(receivingMsg){
 		bufferRx[iRxIn] = buffer[0];
 		iRxIn++;

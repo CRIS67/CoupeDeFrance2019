@@ -471,58 +471,24 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         prevCommandeR = commandeR;
 
 
-        if (!stop) {
-            if (detectUS) {
-                //unsigned char ok = 1,i;
-                /*for(i = 0; i < 3; i++){
-                    if(US[i] > 300 && US[i] < 1000){
-                        hUS++;
-                        //ok = 0;
-                        printRpi(("US["));
-                        printRpi(itoa((int)i));
-                        printRpi("] = ");
-                        printRpi(itoa((int)US[i]));
-                    }
-                }*/
-                if (sensDetectUS) {
-                    if ((US[1] > 300 && US[1] < 1000) || (US[0] > 300 && US[0] < 1000) || (US[2] > 300 && US[2] < 1000)) {
-                        hUS++;
-                    } else
-                        hUS = 0;
-                } else {
-                    if (US[4] > 300 && US[4] < 1000) {
-                        hUS++;
-                    } else
-                        hUS = 0;
-                }
-                if (hUS > 10) {
-                    sendToMotor(0, 0);
-                    while (1);
-                }
-                /*if(!ok){
-                    sendToMotor(0,0);
-                    while(1);
-                }*/
-            }
-            
-            if(!stop){
-                testSendToMotor(commandeR, commandeL);
-            }
-            else{
-                testSendToMotor(0, 0);
-            }
-            if(arrived){
-                testSendToMotor(0, 0);
-            }
-            
-            
-            if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
-                /*while (1) {
-                    testSendToMotor(0, 0);
-                }*/
-                //testSendToMotor(0, 0);
-            }
+        if(!stop){
+            testSendToMotor(commandeR, commandeL);
         }
+        else{
+            testSendToMotor(0, 0);
+        }
+        if(arrived){
+            testSendToMotor(0, 0);
+        }
+
+
+        if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
+            /*while (1) {
+                testSendToMotor(0, 0);
+            }*/
+            //testSendToMotor(0, 0);
+        }
+        
         /*plot(31,(uint32_t)((int32_t)(x*1000)));
         plot(32,(uint32_t)((int32_t)(xc*1000)));
         plot(33,(uint32_t)((int32_t)(y*1000)));

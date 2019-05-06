@@ -235,11 +235,11 @@ void* thread_HandleConnnection(void *threadid){
 				int angle = atoi(val);
 				if(opt != NULL && !strcmp(opt,"rel")){
 					printf("command executed : turn relative %d degree\n",angle);
-					w->dspic->turn(angle,0,1);
+					w->dspic->turn(angle,1);
 				}
 				else{
 					printf("command executed : turn absolute %d degree\n",angle);
-					w->dspic->turn(angle,0,0);
+					w->dspic->turn(angle,0);
 				}
 				sendStr = "OK";
 			}
