@@ -54,16 +54,16 @@ void Lidar::sendSPI(uint8_t *buf, uint8_t bufSize){	//add size & checksum
 	b[0] = bufSize + 1;
 	uint8_t checksum = b[0];
 	sendReceiveSPI(b[0]);
-	delayMicroseconds(SPI_DELAY);
+	delay(SPI_DELAY);
 	for(int i = 0; i < bufSize; i++){
 		b[0] = buf[i];
 		checksum += buf[i];
 		sendReceiveSPI(b[0]);
-		delayMicroseconds(SPI_DELAY);
+		delay(SPI_DELAY);
 	}
 	b[0] = checksum;
 	sendReceiveSPI(b[0]);
-	delayMicroseconds(SPI_DELAY);
+	delay(SPI_DELAY);
 	m_pSpi->unlock();
 }
 void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
@@ -71,6 +71,8 @@ void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 	uint8_t buffer[1];
 	buffer[0] = data;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
+
+	std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
 	if(receivingMsg){
 		bufferRx[iRxIn] = buffer[0];
 		iRxIn++;
@@ -108,7 +110,7 @@ void Lidar::flush(){
 	for(int i = 0; i < 100; i++){
 		buffer[0] = 0;
 		sendReceiveSPI(buffer[0]);
-		delayMicroseconds(SPI_DELAY);
+		delay(SPI_DELAY);
 	}
 	m_pSpi->unlock();
 }

@@ -20,7 +20,7 @@ coefDissymetry=0.9843
 mmPerTick=0.0337908
 radPerTick=0.000115479452
 #Acceleration et vitesse (génération de trajectoire)
-linSpeed=500
-linAcc=500
+linSpeed=1000
+linAcc=1000
 rotSpeed=10
 rotAcc=1

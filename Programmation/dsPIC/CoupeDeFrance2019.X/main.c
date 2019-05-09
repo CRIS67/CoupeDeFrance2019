@@ -46,6 +46,7 @@ void testInterrupt();
 void testDelay();
 void setMotLin(uint8_t state);
 double readAdcLowPass(uint8_t channel, uint16_t nbSamples, double coefLP);
+double readAdcMean(uint8_t channel, uint16_t nbSamples);
 
 //Global variables
 //char TX[TX_SIZE];
@@ -240,6 +241,7 @@ int main(){
     //sendToMotor(8,0);
     double oldCurrent = 0;
     double coefLP = 0.01;
+    double oldCurrent2 = 0;
     //testSendToMotor(2, 2);
     x = 1000;
     y = 1500;
@@ -254,12 +256,20 @@ int main(){
     tf = theta;
     while(1){
         /*double current;
+        double current2;
         uint16_t cnt;
-        for(cnt = 0; cnt < 1000;cnt++){
+        for(cnt = 0; cnt < 500;cnt++){
             int mes = readADC(ADC_CHANNEL_I_PUMP);
             current = mes;
             current = oldCurrent + (current - oldCurrent)*coefLP;
             oldCurrent = current;
+            //delay_us(100);
+        }
+        for(cnt = 0; cnt < 500;cnt++){
+            int mes = readADC(ADC_CHANNEL_I_ASS_1);
+            current = mes;
+            current = oldCurrent2 + (current - oldCurrent2)*coefLP;
+            oldCurrent2 = current;
             //delay_us(100);
         }
         
@@ -405,7 +415,11 @@ int main(){
                 
             }
         //sendPosLongDouble();)
-        //plot(1,(uint32_t)((int32_t)(current)));
+        
+       plot(1,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_PUMP,200,0.005))));
+       plot(2,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_ASS_1,200,0.005))));
+        //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
+        //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
     }
     
     initAllPID(&pidSpeedLeft, &pidSpeedRight, &pidDistance, &pidAngle);
@@ -1358,12 +1372,18 @@ void setMotLin(uint8_t state){
     unsigned long t1 = millis();
     if(state == 0){ //out
         while(!RUPT_ACT_0){ //wait for rupt
-            if( ( (millis() - t1) > (dt*1000) ) && (voltage < speed) ){
-                voltage += acc*dt;
-                if(voltage > speed){
-                    voltage = speed;
+            if( (millis() - t1) > (dt*1000) ){
+                if(voltage < speed){
+                    voltage += acc*dt;
+                    if(voltage > speed){
+                        voltage = speed;
+                    }
+                    motorVoltage(ID_MOTOR_LINEAR,voltage);
                 }
-                motorVoltage(ID_MOTOR_LINEAR,voltage);
+                
+        //plot(1,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_PUMP,200,0.005))));
+        //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
+        //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
             }
         }
         motorVoltage(ID_MOTOR_LINEAR,-voltage); //brake
@@ -1371,14 +1391,27 @@ void setMotLin(uint8_t state){
         motorVoltage(ID_MOTOR_LINEAR,0);    //stop
     }
     else if(state == 1){ //in
-        while(!RUPT_ACT_1){ //wait for rupt
-            if( ( (millis() - t1) > (dt*1000) ) && (voltage > -speed) ){
+        uint8_t nbCurrent = 0;
+        while(!RUPT_ACT_1 && nbCurrent < 10){ //wait for rupt
+            if( (millis() - t1) > (dt*1000) ){
+                if(voltage > -speed){
                 voltage -= acc*dt;
                 if(voltage < -speed){
                     voltage = -speed;
                 }
                 motorVoltage(ID_MOTOR_LINEAR,voltage);
+                }
+                //plot(1,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_PUMP,100,0.1))));
+        //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
+        //plot(1,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_PUMP,200,0.005))));
+        //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
             }
+            double current = readAdcLowPass(ADC_CHANNEL_I_PUMP,100,0.01);
+            if(current > 30 && current < 40)
+                nbCurrent++;
+            else
+                nbCurrent = 0;
+            plot(1,(uint32_t)((int32_t)(current)));
         }
         motorVoltage(ID_MOTOR_LINEAR,-voltage); //brake
         delay_ms(80);
@@ -1397,4 +1430,13 @@ double readAdcLowPass(uint8_t channel, uint16_t nbSamples, double coefLP){
 		oldCurrent = current;
 	}
 	return current;
+}
+double readAdcMean(uint8_t channel, uint16_t nbSamples){
+	double tot = 0;
+	uint16_t cnt;
+	for(cnt = 0; cnt < nbSamples;cnt++){
+		int mes = readADC(channel);
+        tot += mes;
+	}
+	return tot / nbSamples;
 }

@@ -226,7 +226,7 @@ void initTimer5() { //Timer 5   -> 20µs delay
     T5CONbits.TON = 0; //disable Timer5
 }
 // </editor-fold>
-
+double myCos(double x);
 // <editor-fold defaultstate="collapsed" desc="Timer interrupts">
 void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     IFS0bits.T1IF = 0; //Clear Timer1 interrupt flag
@@ -342,8 +342,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         double errorD = sqrt((x - xc)*(x - xc) + (y - yc)*(y - yc));
 
         //projection de l'erreur
-        //errorD = errorD * cos(thetaRobotPoint - theta);
-        
+        errorD = -errorD * myCos(thetaRobotPoint - (double)theta);
+        //plot(1,(uint32_t)(int32_t)(1000*myCos(thetaRobotPoint - (double)theta)));
+        //plot(2,(uint32_t)(int32_t)(1000*errorD));
+        /*
         // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
         double thetaDiff = (double)theta - thetaRobotPoint;
         while (thetaDiff > PI) {
@@ -355,7 +357,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         if (thetaDiff > -PI / 2 && thetaDiff < PI / 2) {
             errorD = -errorD;
         }// </editor-fold>
-
+        */
 
         if (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT)
             setSetPoint(&pidAngle, thetaRobotPointFinal);
@@ -750,4 +752,21 @@ void delay_us(uint32_t delay){
 void delay_ms(uint32_t delay){
     uint32_t tick = millis();
     while(millis() - tick < delay);
+}
+
+
+double myCos(double x){
+  if(x < 0)
+    x = -x;
+  while(x > 2*PI)
+      x-= 2*PI;
+  double res=0;
+  double term=1;
+  int k=0;
+  while (res+term!=res){
+    res+=term;
+    k+=2;
+    term*=-x*x/k/(k-1);
+  }  
+  return res;
 }

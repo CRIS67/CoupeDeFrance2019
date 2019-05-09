@@ -230,14 +230,20 @@
 #define PWM_R                   PDC2
 #define PWM_L                   SDC2
 
-#define PWM_PUMP                PDC3
-#define PWM_MOTOR_LINEAR        SDC3
+#define PWM_PUMP                SDC3
+#define PWM_MOTOR_LINEAR        PDC3
 
-#define PWM_PR_PUMP             SPHASE3
-#define PWM_PR_MOTOR_LINEAR     PHASE3
+#define PWM_PR_PUMP             PHASE3
+#define PWM_PR_MOTOR_LINEAR     SPHASE3
 
 #define PWM_PR_L                PHASE2
 #define PWM_PR_R                SPHASE2
+
+#define SENS_PUMP               LATGbits.LATG1
+#define SENS_MOTOR_LINEAR       LATGbits.LATG0
+
+#define SENS_L      LATGbits.LATG12
+#define SENS_R      LATGbits.LATG13
 
 //#define VBAT        (((double)ADC1BUF0*5.7*3.3)/1024)//12  //à remplacer plus tard par lecture de la tension ?
 
@@ -254,15 +260,15 @@
 #define MAX_ERROR_D     8//1//10      //mm
 #define MAX_ERROR_A     0.05//0.02//0.01//0.01rad ~= 0.57°
 
-#define MAX_ERROR_D_INF     5//1//10      //mm
-#define MAX_ERROR_D_SUP     10//1//10      //mm
+#define MAX_ERROR_D_INF     1//1//10      //mm
+#define MAX_ERROR_D_SUP     5//1//10      //mm
 #define MAX_ERROR_A_INF     0.05//0.02//0.01//0.01rad ~= 0.57°
 #define MAX_ERROR_A_SUP     0.1//0.02//0.01//0.01rad ~= 1.04°
 
 #define MAX_SPEED_STOP  5 // ENCODER_WHEEL_RADIUS    //rad/s -> 5mm/s
 
 #define N_ASSERV        10  //nombre d'itérations entre 2 boucles d'asserv'
-#define DIST_AIM_POINT  50  //distance au dessus de laquelle le robot vise le point final
+#define DIST_AIM_POINT  5  //distance au dessus de laquelle le robot vise le point final
 //#define SMOOTHING_FACTOR    0.2
 //#define N_SMOOTHING     5
 
@@ -272,12 +278,6 @@
 
 #define NB_US       6               //number of sensors
 #define N_US        20              //loop iterations
-
-#define SENS_PUMP               LATGbits.LATG0
-#define SENS_MOTOR_LINEAR       LATGbits.LATG1
-
-#define SENS_L      LATGbits.LATG12
-#define SENS_R      LATGbits.LATG13
 
 #define RUPT_ASS_0  PORTEbits.RE8
 #define RUPT_ASS_1  PORTGbits.RG10

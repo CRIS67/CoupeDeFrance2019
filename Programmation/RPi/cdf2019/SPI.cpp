@@ -1,11 +1,12 @@
 #include "SPI.hpp"
 
 SPI::SPI(int channel, int speed){
-	wiringPiSetup();
+	//wiringPiSetup();
 	m_channel = channel;
     m_fd = wiringPiSPISetup(channel, speed);
 	pinMode(PIN_MUX_A, OUTPUT);
 	pinMode(PIN_MUX_B, OUTPUT);
+	m_slaveId = -1;
 }
 SPI::~SPI(){
 
@@ -16,6 +17,7 @@ void SPI::setSlave(uint8_t id){
 		m_slaveId = id;
 		digitalWrite(PIN_MUX_A,(id & 0x1));			//bit0 of id -> MUX_A
 		digitalWrite(PIN_MUX_B,((id >> 1) & 0x1));	//bit1 of id -> MUX_B
+		std::cout << "slave set to = " << (int)m_slaveId << std::endl;
 	}
 }
 int SPI::getSlaveId(){
