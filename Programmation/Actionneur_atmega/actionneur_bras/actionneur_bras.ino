@@ -229,6 +229,10 @@ void setup() {
   for(i=0;i<TAILLE_SEND;i++) {
     TabPileSend[i] = AUCUNE;
   }
+
+  MoveServo(0, SERVO_0_MIN);
+  MoveServo(1, SERVO_1_MIN);
+  MoveServo(2, SERVO_2_MIN);
   
   Affiche("FIN INIT", DEBUG_NORM_NB);
 }
