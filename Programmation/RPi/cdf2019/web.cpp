@@ -613,11 +613,11 @@ std::string realResponse(Web *w){
 	DsPIC *dspic = w->dspic;
 	std::ostringstream myString;
 	myString << "x=";
-	myString << dspic->x;
+	myString << dspic->x_ld;
 	myString << "&y=";
-	myString << dspic->y;
+	myString << dspic->y_ld;
 	myString << "&t=";
-	myString << dspic->t;
+	myString << dspic->t_ld*180/3.14159;
 	
 	myString << "&b=";
 	myString << dspic->bat;

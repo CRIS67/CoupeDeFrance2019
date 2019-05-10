@@ -28,8 +28,8 @@ int main()
     /*debugAct();
     exit(0);*/
     //wiringPiSetup();
-    debugAct();
-    exit(0);
+    /*debugAct();
+    exit(0);*/
     wiringPiSetup();
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
@@ -70,11 +70,44 @@ int main()
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
-    dspic.initPos(1000,1500,3.14159);
+    //dspic.initPos(1000,1500,3.14159);
+    //dspic.initPos(1000,1500,0);
+    dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
     getchar();
-    //dspic.start();
+    dspic.start();
     getchar();
+    /*f° turn buguée (thetac dans le dspic)
+    int nTurn = 1;
+    dspic.turn(nTurn*360,1);
+    getchar();
+    dspic.turn(-nTurn*360,1);*/
+    
+    /*trigo
+    for(int i = 0; i < 1; i++){
+        dspic.go(500,0,0,0);
+        getchar();
+        dspic.go(500,500,0,0);
+        getchar();
+        dspic.go(0,500,0,0);
+        getchar();
+        dspic.go(0,0,0,0);
+        getchar();
+    }*/
+
+    //horaire
+    for(int i = 0; i < 10; i++){
+        dspic.go(0,500,0,0);
+        getchar();
+        dspic.go(500,500,0,0);
+        getchar();
+        dspic.go(500,0,0,0);
+        getchar();
+        dspic.go(0,0,0,0);
+        getchar();
+    }
+
+    /*getchar();
     dspic.go(709,1303,0,0);
     getchar();
     dspic.go(703,1123,0,0);
@@ -94,7 +127,8 @@ int main()
     getchar();
     actFront.MoveServo(0,valueH);
     actFront.MoveServo(1,valueH);
-    actFront.MoveServo(2,valueH);
+    actFront.MoveServo(2,valueH);*/
+
     /*getchar();
     lidar.flush();*/
     getchar();
@@ -173,10 +207,11 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout.precision(11);
+                                    /*std::cout.precision(11);
                                     std::cout << "received from DsPIC : x_ld = " << x_ld << std::endl;
-                                    std::cout.precision(6);
+                                    std::cout.precision(6);*/
                                     //dspic->bat = vbat;
+                                    dspic->x_ld = x_ld;
                                 }
                                 break;
                             case CODE_VAR_Y_LD :
@@ -187,9 +222,10 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout.precision(11);
+                                    dspic->y_ld = y_ld;
+                                    /*std::cout.precision(11);
                                     std::cout << "received from DsPIC : y_ld = " << y_ld << std::endl;
-                                    std::cout.precision(6);
+                                    std::cout.precision(6);*/
                                     //dspic->bat = vbat;
                                 }
                                 break;
@@ -201,9 +237,10 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout.precision(11);
+                                    dspic->t_ld = t_ld;
+                                    /*std::cout.precision(11);
                                     std::cout << "received from DsPIC : t_ld = " << t_ld << std::endl;
-                                    std::cout.precision(6);
+                                    std::cout.precision(6);*/
                                     //dspic->bat = vbat;
                                 }
                                 break;

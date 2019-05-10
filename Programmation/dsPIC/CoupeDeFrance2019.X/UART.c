@@ -874,6 +874,8 @@ void CheckMessages(){
                 newAngleReceived = 1;
                 sendLog("turn ");
                 sendLog(itoa(t));
+                sendLog(" to ");
+                sendLog(itoa(t_d*180/PI));
                 sendLog("\n");
                 //cout << "turn " << t_d << endl;
                 break;

@@ -3,7 +3,7 @@ int Send(int in){
 	unsigned char buffer[1];
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
-	std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
+	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
 	delayMicroseconds(SPI_DELAY);
 	return (int)buffer[0];
 	

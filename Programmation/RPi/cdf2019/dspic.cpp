@@ -174,7 +174,8 @@ void DsPIC::loadVarDspicFromFile(std::string path){
 		std::cout << "Unable to open file";
 	}
 	
-	std::cout <<  kpR << std::endl;
+	/*
+    std::cout <<  kpR << std::endl;
 	std::cout <<  kiR << std::endl;
 	std::cout <<  kdR << std::endl;
 	
@@ -198,6 +199,7 @@ void DsPIC::loadVarDspicFromFile(std::string path){
 	std::cout <<  linAcc << std::endl;
 	std::cout <<  rotSpeed << std::endl;
 	std::cout <<  rotAcc << std::endl;
+    */
 	
 	//PID speed left
     setVarDouble64b(CODE_VAR_P_SPEED_L_LD,kpR);

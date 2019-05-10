@@ -268,7 +268,7 @@
 #define MAX_SPEED_STOP  5 // ENCODER_WHEEL_RADIUS    //rad/s -> 5mm/s
 
 #define N_ASSERV        10  //nombre d'itérations entre 2 boucles d'asserv'
-#define DIST_AIM_POINT  5  //distance au dessus de laquelle le robot vise le point final
+#define DIST_AIM_POINT  20  //distance au dessus de laquelle le robot vise le point final
 //#define SMOOTHING_FACTOR    0.2
 //#define N_SMOOTHING     5
 
