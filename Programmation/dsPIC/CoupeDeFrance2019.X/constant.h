@@ -356,6 +356,12 @@
 #define ACCELERATION_MAX    3500     //mm.s^-2
 #define SPEED_MAX           1000000    //mm.s^-1
 #define TE                  0.01    //s
+
+#define TRAJ_MODE_LIN           0   //Control for linear motion : aim for final point if distance to final point > DIST_AIM_POINT
+#define TRAJ_MODE_ROT           1   //Control for rotation motion : theta setpoint = thetac
+
+#define CMD_TRAJ_ROT_AND_LIN    0   // option for rotation & linear motion (function go)
+#define CMD_TRAJ_ROT            1   // option for rotation without linear motion (function turn)
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Servomotors">

@@ -88,6 +88,8 @@ volatile uint8_t nearPointAngle = 0;
 volatile uint16_t nplot = 0;
 
 extern volatile uint8_t arrived;
+extern uint8_t trajMode;
+extern uint8_t cmdTraj;
 
 volatile long double distanceMax = 10;  //The robot is arrived at its destination if its distance to the destination point is less than this value
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
@@ -359,7 +361,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         }// </editor-fold>
         */
 
-        if (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT)
+        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && trajMode == TRAJ_MODE_LIN)
             setSetPoint(&pidAngle, thetaRobotPointFinal);
         else
             setSetPoint(&pidAngle, thetac);
@@ -545,9 +547,25 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             //plot(6,(uint32_t)(int32_t)(stateTrap*1000));// </editor-fold>
         }
         switch (statePathGeneration) {
+            // <editor-fold defaultstate="collapsed" desc="Idle">
             case 0:
-                break;
+                break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Rotation">
             case 1: //1st Rotation
+                /*
+                Initialize following variables before execution : 
+                -theta0 = theta
+                -finalPoint = 0;
+                -angularVelocity = 0
+                -prevAngularVelocity = 0
+                -maxAngularVelocity
+                -AngularAcceleration
+                -angle = 0
+                -phi = destination angle (relative to actual robot angle) (MUST BE POSITIVE)
+                -sign = 1 for CCW (counter clockwise / trigo) / 0 for CW(clockwise)
+                -cmdTraj = CMD_TRAJ_ROT_AND_LIN if rotation & linear motion CMD_TRAJ_ROT if only rotation
+                 */
+                trajMode = TRAJ_MODE_ROT;
                 switch (stateTrap) {
                     case 1: //acceleration
                         if (angularVelocity < maxAngularVelocity && angle < phi / 2) {
@@ -579,25 +597,40 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                             thetac = theta0 + angle * sign;
                             prevAngularVelocity = angularVelocity;
                         } else {
-                            statePathGeneration = 2;
-                            stateTrap = 1;
+                            if(cmdTraj == CMD_TRAJ_ROT_AND_LIN){ // next state is linear motion
+                                statePathGeneration = 2;
+                                stateTrap = 1;
 
-                            thetac = theta0 + phi*sign;
-                            xf = cx;
-                            yf = cy;
-                            tf = ct;
-                            y_0 = y;
-                            x_0 = x;
-                            dx = cx - x_0;
-                            dy = cy - y_0;
-                            alpha = atan2(dy, dx);
-                            totalDistance = sqrt(dx * dx + dy * dy);
+                                thetac = theta0 + phi*sign;
+                                xf = cx;
+                                yf = cy;
+                                tf = ct;
+                                y_0 = y;
+                                x_0 = x;
+                                dx = cx - x_0;
+                                dy = cy - y_0;
+                                alpha = atan2(dy, dx);
+                                totalDistance = sqrt(dx * dx + dy * dy);
+                            }
+                            else{//CMD_TRAJ_ROT : next state is idle
+                                statePathGeneration = 0;
+                                stateTrap = 1;
+                                thetac = theta0 + phi*sign;
+                                
+                                //xc = cx;
+                                //yc = cy;
+
+                                finalPoint = 1;
+                            }
 
                         }
                         break;
                 }
-                break;
+                trajMode = TRAJ_MODE_LIN;
+                break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Translation">
             case 2: //Translation
+                //trajMode = TRAJ_MODE_LIN;
                 switch (stateTrap) {
                     case 1: //acceleration
                         if (speed < speedMax && dist < totalDistance / 2) {
@@ -646,7 +679,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                         break;
 
                 }
-                break;
+                break; // </editor-fold>
+
         }
         // </editor-fold>
     }// </editor-fold>
