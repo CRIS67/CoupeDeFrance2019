@@ -193,7 +193,6 @@ int main()
 
     /*=============DStarImplementation END===================*/
 
-    getchar();
     dspic.stop();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	puts("verbose set to 0");
