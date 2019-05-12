@@ -134,7 +134,7 @@ int main()
     simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
     printPath(simplifiedPath,mapVector); 
 
-    int counter=0
+    int counter=0; 
 
     /* Dstar Loop*/
     while(startNode.coord != goalNode.coord){
@@ -193,63 +193,6 @@ int main()
 
     /*=============DStarImplementation END===================*/
 
-
-
-
-    /*f° turn buguée (thetac dans le dspic)
-    int nTurn = 1;
-    dspic.turn(nTurn*360,1);
-    getchar();
-    dspic.turn(-nTurn*360,1);*/
-    
-    /*trigo
-    for(int i = 0; i < 1; i++){
-        dspic.go(500,0,0,0);
-        getchar();
-        dspic.go(500,500,0,0);
-        getchar();
-        dspic.go(0,500,0,0);
-        getchar();
-        dspic.go(0,0,0,0);
-        getchar();
-    }*/
-
-    //horaire
-    for(int i = 0; i < 10; i++){
-        dspic.go(0,500,0,0);
-        getchar();
-        dspic.go(500,500,0,0);
-        getchar();
-        dspic.go(500,0,0,0);
-        getchar();
-        dspic.go(0,0,0,0);
-        getchar();
-    }
-
-    /*getchar();
-    dspic.go(709,1303,0,0);
-    getchar();
-    dspic.go(703,1123,0,0);
-    actFront.SetPump(0,1);
-    //actFront.SetPump(1,1);
-    //actFront.SetPump(2,1);
-    getchar();
-    dspic.go(709,1303,1,0);
-    getchar();
-    actFront.MoveServo(0,valueL);
-    //actFront.MoveServo(1,valueL);
-    //actFront.MoveServo(2,valueL);
-    getchar();
-    actFront.SetPump(0,0);
-    actFront.SetPump(1,0);
-    actFront.SetPump(2,0);
-    getchar();
-    actFront.MoveServo(0,valueH);
-    actFront.MoveServo(1,valueH);
-    actFront.MoveServo(2,valueH);*/
-
-    /*getchar();
-    lidar.flush();*/
     getchar();
     dspic.stop();
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
