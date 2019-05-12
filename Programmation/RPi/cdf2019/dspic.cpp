@@ -9,7 +9,7 @@ DsPIC::~DsPIC(){
 /**
 Initialize constant parameters of dspic : PID, odometry, maximum speed, maximum acceleration
 */
-void DsPIC::initVarDspic(){
+/*void DsPIC::initVarDspic(){
 	//PID speed left
     setVarDouble64b(CODE_VAR_P_SPEED_L_LD,KP_SPEED_LEFT);
     setVarDouble64b(CODE_VAR_I_SPEED_L_LD,KI_SPEED_LEFT);
@@ -36,7 +36,7 @@ void DsPIC::initVarDspic(){
 	//Angular speed & acceleration for trajectory generation
     setVarDouble64b(CODE_VAR_TRAJ_ROT_SPEED_LD,TRAJ_ROT_SPEED);
     setVarDouble64b(CODE_VAR_TRAJ_ROT_ACC_LD,TRAJ_ACC_SPEED);
-}
+}*/
 /**
 arg : 	<path> 	: path of config file ("config.txt" for example)
 
@@ -174,7 +174,8 @@ void DsPIC::loadVarDspicFromFile(std::string path){
 		std::cout << "Unable to open file";
 	}
 	
-	std::cout <<  kpR << std::endl;
+	/*
+    std::cout <<  kpR << std::endl;
 	std::cout <<  kiR << std::endl;
 	std::cout <<  kdR << std::endl;
 	
@@ -198,33 +199,34 @@ void DsPIC::loadVarDspicFromFile(std::string path){
 	std::cout <<  linAcc << std::endl;
 	std::cout <<  rotSpeed << std::endl;
 	std::cout <<  rotAcc << std::endl;
+    */
 	
 	//PID speed left
-    setVarDouble64b(CODE_VAR_P_SPEED_L_LD,KP_SPEED_LEFT);
-    setVarDouble64b(CODE_VAR_I_SPEED_L_LD,KI_SPEED_LEFT);
-    setVarDouble64b(CODE_VAR_D_SPEED_L_LD,KD_SPEED_LEFT);
+    setVarDouble64b(CODE_VAR_P_SPEED_L_LD,kpR);
+    setVarDouble64b(CODE_VAR_I_SPEED_L_LD,kiR);
+    setVarDouble64b(CODE_VAR_D_SPEED_L_LD,kdR);
     //PID speed left
-    setVarDouble64b(CODE_VAR_P_SPEED_R_LD,KP_SPEED_RIGHT);
-    setVarDouble64b(CODE_VAR_I_SPEED_R_LD,KI_SPEED_RIGHT);
-    setVarDouble64b(CODE_VAR_D_SPEED_R_LD,KD_SPEED_RIGHT);
+    setVarDouble64b(CODE_VAR_P_SPEED_R_LD,kpL);
+    setVarDouble64b(CODE_VAR_I_SPEED_R_LD,kiL);
+    setVarDouble64b(CODE_VAR_D_SPEED_R_LD,kdL);
     //PID distance
-    setVarDouble64b(CODE_VAR_P_DISTANCE_LD,KP_DISTANCE);
-    setVarDouble64b(CODE_VAR_I_DISTANCE_LD,KI_DISTANCE);
-    setVarDouble64b(CODE_VAR_D_DISTANCE_LD,KD_DISTANCE);
+    setVarDouble64b(CODE_VAR_P_DISTANCE_LD,kpD);
+    setVarDouble64b(CODE_VAR_I_DISTANCE_LD,kiD);
+    setVarDouble64b(CODE_VAR_D_DISTANCE_LD,kdD);
     //PID angle
-    setVarDouble64b(CODE_VAR_P_ANGLE_LD,KP_ANGLE);
-    setVarDouble64b(CODE_VAR_I_ANGLE_LD,KI_ANGLE);
-    setVarDouble64b(CODE_VAR_D_ANGLE_LD,KD_ANGLE);
+    setVarDouble64b(CODE_VAR_P_ANGLE_LD,kpA);
+    setVarDouble64b(CODE_VAR_I_ANGLE_LD,kiA);
+    setVarDouble64b(CODE_VAR_D_ANGLE_LD,kdA);
 	//Odometry
-    setVarDouble64b(CODE_VAR_COEF_DISSYMETRY_LD,COEF_DISSYMETRY);
-    setVarDouble64b(CODE_VAR_MM_PER_TICKS_LD,MM_PER_TICKS);
-    setVarDouble64b(CODE_VAR_RAD_PER_TICKS_LD,RAD_PER_TICKS);
+    setVarDouble64b(CODE_VAR_COEF_DISSYMETRY_LD,coefDissymetry);
+    setVarDouble64b(CODE_VAR_MM_PER_TICKS_LD,mmPerTick);
+    setVarDouble64b(CODE_VAR_RAD_PER_TICKS_LD,radPerTick);
 	//Linear speed & acceleration for trajectory generation
-    setVarDouble64b(CODE_VAR_TRAJ_LIN_SPEED_LD,TRAJ_LIN_SPEED);
-    setVarDouble64b(CODE_VAR_TRAJ_LIN_ACC_LD,TRAJ_LIN_ACC);
+    setVarDouble64b(CODE_VAR_TRAJ_LIN_SPEED_LD,linSpeed);
+    setVarDouble64b(CODE_VAR_TRAJ_LIN_ACC_LD,linAcc);
 	//Angular speed & acceleration for trajectory generation
-    setVarDouble64b(CODE_VAR_TRAJ_ROT_SPEED_LD,TRAJ_ROT_SPEED);
-    setVarDouble64b(CODE_VAR_TRAJ_ROT_ACC_LD,TRAJ_ACC_SPEED);
+    setVarDouble64b(CODE_VAR_TRAJ_ROT_SPEED_LD,rotSpeed);
+    setVarDouble64b(CODE_VAR_TRAJ_ROT_ACC_LD,rotAcc);
 }
 /**
 arg : 	<id> 	: [0;3] 		: 	id of servo (depends of number of available servomotors controllable by the dspic)
@@ -394,9 +396,6 @@ Change voltage applied to motor n° <id> to the value specified by <value> ( sig
 */
 void DsPIC::turn(int16_t t, unsigned char relative){
     uint8_t option = 0;
-    if(rev){
-        option += MASK_OPTION_REVERSE;
-    }
     if(relative){
         option += MASK_OPTION_RELATIVE;
     }

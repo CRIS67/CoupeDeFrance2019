@@ -65,7 +65,7 @@ void Actuators::MoveServo(int nb_bras, int pos){
 	if(nb_bras < 0 || nb_bras > 2) {
 		std::cout << "erreur nb_bras" << std::endl;
 	} else {
-		if(pos < 700 || pos > 1600) {
+		if(pos < 600 || pos > 1600) {
 			std::cout << "erreur pos" << std::endl;
 		} else {
 			nb_bras += 7;

@@ -88,6 +88,8 @@ volatile uint8_t nearPointAngle = 0;
 volatile uint16_t nplot = 0;
 
 extern volatile uint8_t arrived;
+extern uint8_t trajMode;
+extern uint8_t cmdTraj;
 
 volatile long double distanceMax = 10;  //The robot is arrived at its destination if its distance to the destination point is less than this value
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
@@ -226,7 +228,7 @@ void initTimer5() { //Timer 5   -> 20µs delay
     T5CONbits.TON = 0; //disable Timer5
 }
 // </editor-fold>
-
+double myCos(double x);
 // <editor-fold defaultstate="collapsed" desc="Timer interrupts">
 void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
     IFS0bits.T1IF = 0; //Clear Timer1 interrupt flag
@@ -342,8 +344,10 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         double errorD = sqrt((x - xc)*(x - xc) + (y - yc)*(y - yc));
 
         //projection de l'erreur
-        //errorD = errorD * cos(thetaRobotPoint - theta);
-        
+        errorD = -errorD * myCos(thetaRobotPoint - (double)theta);
+        //plot(1,(uint32_t)(int32_t)(1000*myCos(thetaRobotPoint - (double)theta)));
+        //plot(2,(uint32_t)(int32_t)(1000*errorD));
+        /*
         // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
         double thetaDiff = (double)theta - thetaRobotPoint;
         while (thetaDiff > PI) {
@@ -355,9 +359,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         if (thetaDiff > -PI / 2 && thetaDiff < PI / 2) {
             errorD = -errorD;
         }// </editor-fold>
+        */
 
-
-        if (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT)
+        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && trajMode == TRAJ_MODE_LIN)
             setSetPoint(&pidAngle, thetaRobotPointFinal);
         else
             setSetPoint(&pidAngle, thetac);
@@ -471,58 +475,24 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         prevCommandeR = commandeR;
 
 
-        if (!stop) {
-            if (detectUS) {
-                //unsigned char ok = 1,i;
-                /*for(i = 0; i < 3; i++){
-                    if(US[i] > 300 && US[i] < 1000){
-                        hUS++;
-                        //ok = 0;
-                        printRpi(("US["));
-                        printRpi(itoa((int)i));
-                        printRpi("] = ");
-                        printRpi(itoa((int)US[i]));
-                    }
-                }*/
-                if (sensDetectUS) {
-                    if ((US[1] > 300 && US[1] < 1000) || (US[0] > 300 && US[0] < 1000) || (US[2] > 300 && US[2] < 1000)) {
-                        hUS++;
-                    } else
-                        hUS = 0;
-                } else {
-                    if (US[4] > 300 && US[4] < 1000) {
-                        hUS++;
-                    } else
-                        hUS = 0;
-                }
-                if (hUS > 10) {
-                    sendToMotor(0, 0);
-                    while (1);
-                }
-                /*if(!ok){
-                    sendToMotor(0,0);
-                    while(1);
-                }*/
-            }
-            
-            if(!stop){
-                testSendToMotor(commandeR, commandeL);
-            }
-            else{
-                testSendToMotor(0, 0);
-            }
-            if(arrived){
-                testSendToMotor(0, 0);
-            }
-            
-            
-            if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
-                /*while (1) {
-                    testSendToMotor(0, 0);
-                }*/
-                //testSendToMotor(0, 0);
-            }
+        if(!stop){
+            testSendToMotor(commandeR, commandeL);
         }
+        else{
+            testSendToMotor(0, 0);
+        }
+        if(arrived){
+            testSendToMotor(0, 0);
+        }
+
+
+        if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
+            /*while (1) {
+                testSendToMotor(0, 0);
+            }*/
+            //testSendToMotor(0, 0);
+        }
+        
         /*plot(31,(uint32_t)((int32_t)(x*1000)));
         plot(32,(uint32_t)((int32_t)(xc*1000)));
         plot(33,(uint32_t)((int32_t)(y*1000)));
@@ -577,9 +547,25 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
             //plot(6,(uint32_t)(int32_t)(stateTrap*1000));// </editor-fold>
         }
         switch (statePathGeneration) {
+            // <editor-fold defaultstate="collapsed" desc="Idle">
             case 0:
-                break;
+                break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Rotation">
             case 1: //1st Rotation
+                /*
+                Initialize following variables before execution : 
+                -theta0 = theta
+                -finalPoint = 0;
+                -angularVelocity = 0
+                -prevAngularVelocity = 0
+                -maxAngularVelocity
+                -AngularAcceleration
+                -angle = 0
+                -phi = destination angle (relative to actual robot angle) (MUST BE POSITIVE)
+                -sign = 1 for CCW (counter clockwise / trigo) / 0 for CW(clockwise)
+                -cmdTraj = CMD_TRAJ_ROT_AND_LIN if rotation & linear motion CMD_TRAJ_ROT if only rotation
+                 */
+                trajMode = TRAJ_MODE_ROT;
                 switch (stateTrap) {
                     case 1: //acceleration
                         if (angularVelocity < maxAngularVelocity && angle < phi / 2) {
@@ -611,25 +597,40 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                             thetac = theta0 + angle * sign;
                             prevAngularVelocity = angularVelocity;
                         } else {
-                            statePathGeneration = 2;
-                            stateTrap = 1;
+                            if(cmdTraj == CMD_TRAJ_ROT_AND_LIN){ // next state is linear motion
+                                statePathGeneration = 2;
+                                stateTrap = 1;
 
-                            thetac = theta0 + phi*sign;
-                            xf = cx;
-                            yf = cy;
-                            tf = ct;
-                            y_0 = y;
-                            x_0 = x;
-                            dx = cx - x_0;
-                            dy = cy - y_0;
-                            alpha = atan2(dy, dx);
-                            totalDistance = sqrt(dx * dx + dy * dy);
+                                thetac = theta0 + phi*sign;
+                                xf = cx;
+                                yf = cy;
+                                tf = ct;
+                                y_0 = y;
+                                x_0 = x;
+                                dx = cx - x_0;
+                                dy = cy - y_0;
+                                alpha = atan2(dy, dx);
+                                totalDistance = sqrt(dx * dx + dy * dy);
+                            }
+                            else{//CMD_TRAJ_ROT : next state is idle
+                                statePathGeneration = 0;
+                                stateTrap = 1;
+                                thetac = theta0 + phi*sign;
+                                
+                                //xc = cx;
+                                //yc = cy;
+
+                                finalPoint = 1;
+                            }
 
                         }
                         break;
                 }
-                break;
+                trajMode = TRAJ_MODE_LIN;
+                break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Translation">
             case 2: //Translation
+                //trajMode = TRAJ_MODE_LIN;
                 switch (stateTrap) {
                     case 1: //acceleration
                         if (speed < speedMax && dist < totalDistance / 2) {
@@ -678,7 +679,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                         break;
 
                 }
-                break;
+                break; // </editor-fold>
+
         }
         // </editor-fold>
     }// </editor-fold>
@@ -784,4 +786,21 @@ void delay_us(uint32_t delay){
 void delay_ms(uint32_t delay){
     uint32_t tick = millis();
     while(millis() - tick < delay);
+}
+
+
+double myCos(double x){
+  if(x < 0)
+    x = -x;
+  while(x > 2*PI)
+      x-= 2*PI;
+  double res=0;
+  double term=1;
+  int k=0;
+  while (res+term!=res){
+    res+=term;
+    k+=2;
+    term*=-x*x/k/(k-1);
+  }  
+  return res;
 }

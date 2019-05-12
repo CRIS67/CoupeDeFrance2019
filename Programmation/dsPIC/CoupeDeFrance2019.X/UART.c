@@ -199,6 +199,9 @@ void __attribute__((interrupt, no_auto_psv)) _U2TXInterrupt(void) {
 }// </editor-fold>
 
 
+void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, double accMax, uint8_t direction);
+void testModif_turn(double arg_ct, double arg_angularSpeedMax, double arg_angularAccMax);
+
 void push(char c){
     TxLoopBuffer[iF] = c;
     iF++;
@@ -835,23 +838,31 @@ void CheckMessages(){
                     y_arg += y;
                 }
                 if (x_arg >= 0 && x_arg <= 2000 && y_arg >= 0 && y_arg <= 3000) {
-                    receivedX = (double) x_arg;
-                    receivedY = (double) y_arg;
-                    newPosReceived = 1;
-                    if (option & MASK_OPTION_REVERSE) {
-                        newPosBackReceived = 1;
+                    //receivedX = (double) x_arg;
+                    //receivedY = (double) y_arg;
+                    //newPosReceived = 1;
+                    if(!stop){
+                        if (option & MASK_OPTION_REVERSE) {
+                            //newPosBackReceived = 1;
+                            modif_straightPath((double)x_arg,(double) y_arg, linSpeed, linAcc, BACKWARD);
+                        }
+                        else{
+                            modif_straightPath((double)x_arg,(double) y_arg, linSpeed, linAcc, FORWARD);
+                        }
+                    
+                        sendLog("received : go ");
+                        sendLog(itoa(x_arg));
+                        sendLog(" ");
+                        sendLog(itoa(y_arg));
+                        sendLog("\n");
                     }
-                    //cout << "go " << x_arg << " " << y_arg << endl;
-                    sendLog("go ");
-                    sendLog(itoa(x_arg));
-                    sendLog(" ");
-                    sendLog(itoa(y_arg));
-                    sendLog("\n");
-                    /*sendLog("received [go] : x = ");
-                    sendLog(itoa(x));
-                    sendLog(" & y = ");
-                    sendLog(itoa(y));
-                    sendLog("\n");*/
+                    else{
+                        sendLog("received : go ");
+                        sendLog(itoa(x_arg));
+                        sendLog(" ");
+                        sendLog(itoa(y_arg));
+                        sendLog(" but stop = 1\n");
+                    }
                 }
                 break;
             }// </editor-fold>
@@ -870,11 +881,25 @@ void CheckMessages(){
                 if (option & MASK_OPTION_RELATIVE)
                     t_d += theta;
 
-                receivedTheta = t_d;
-                newAngleReceived = 1;
-                sendLog("turn ");
-                sendLog(itoa(t));
-                sendLog("\n");
+                /*receivedTheta = t_d;
+                newAngleReceived = 1;*/
+                
+                if(!stop){
+                    testModif_turn(t_d, rotSpeed, rotAcc);
+                
+                    sendLog("received : turn ");
+                    sendLog(itoa(t));
+                    sendLog(" to ");
+                    sendLog(itoa(t_d*180/PI));
+                    sendLog("\n");
+                }
+                else{
+                    sendLog("received : turn ");
+                    sendLog(itoa(t));
+                    sendLog(" to ");
+                    sendLog(itoa(t_d*180/PI));
+                    sendLog(" but stop = 1\n");
+                }
                 //cout << "turn " << t_d << endl;
                 break;
             }// </editor-fold>

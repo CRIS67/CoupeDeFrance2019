@@ -235,11 +235,11 @@ void* thread_HandleConnnection(void *threadid){
 				int angle = atoi(val);
 				if(opt != NULL && !strcmp(opt,"rel")){
 					printf("command executed : turn relative %d degree\n",angle);
-					w->dspic->turn(angle,0,1);
+					w->dspic->turn(angle,1);
 				}
 				else{
 					printf("command executed : turn absolute %d degree\n",angle);
-					w->dspic->turn(angle,0,0);
+					w->dspic->turn(angle,0);
 				}
 				sendStr = "OK";
 			}
@@ -613,11 +613,11 @@ std::string realResponse(Web *w){
 	DsPIC *dspic = w->dspic;
 	std::ostringstream myString;
 	myString << "x=";
-	myString << dspic->x;
+	myString << dspic->x_ld;
 	myString << "&y=";
-	myString << dspic->y;
+	myString << dspic->y_ld;
 	myString << "&t=";
-	myString << dspic->t;
+	myString << dspic->t_ld*180/3.14159;
 	
 	myString << "&b=";
 	myString << dspic->bat;
