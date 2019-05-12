@@ -56,8 +56,8 @@ bool sensorTreatment(int enemyX, int enemyY, int enemyWidth,
 
 void printPath(std::vector<Node> path, std::vector<std::vector<int>>& mapVector)
 {
-	std::cout <<"===== PRINTING PATH =====" << std::endl << std::endl; 
 
+    std::cout <<"===== PRINTING PATH =====" << std::endl << std::endl; 
     std::vector<std::vector<int>> tmpMap = mapVector; 
 
     int x,y; 

@@ -13,6 +13,40 @@
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
 
+// DStarIncludes 
+#include <utility>
+#include <algorithm>
+#include <cmath>
+#include <bits/stdc++.h>
+#include <limits>
+#include <map>
+#include "mapGeneration.hpp"
+#include "dStarLite.hpp"
+
+//DStarGlobal 
+int mapRows {10};  
+int mapColumns {10};  
+float km {0}; // variable for the D*
+
+std::vector<std::vector<int>> mapVector; // the robot's map 
+
+bool obstacleDetection {false}; 
+bool pointReached {false}; 
+ 
+Node startNode = {infinity,infinity,0,std::pair<int,int>(0,0)};
+Node goalNode = {infinity,0,0,std::pair<int,int>(9,9), false};
+
+priorityList uList; // priority List
+mappedNodes knownNodes; // node the robot can see
+
+
+const int enemyWidth = 500; // The distance the enemy takes place on the map, it is represented as a square 
+
+std::vector<Node> simplifiedPath; 
+std::vector<Node> completePath; 
+
+
+
 void *print(void *ptr);
 void debugAct();
 void debugTestAllDelay();
@@ -77,6 +111,77 @@ int main()
     getchar();
     dspic.start();
     getchar();
+
+    /*=============DStarImplementation START===================*/
+
+
+    // Map Generation 
+    generateMap(mapVector,mapRows,mapColumns); // generates empty map 
+    createRectangle(4, 4, 5, 5, mapVector); // creates a 5x5 obstacle rectangle  at (4,4) 
+    printMap(mapRows, mapColumns, mapVector);
+
+    //DStarLite first run
+    Node lastNode = startNode;
+    initialize(mapVector, knownNodes, uList, startNode, goalNode);
+    goalNode = knownNodes.at(goalNode.coord);
+    computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+    startNode = knownNodes.at(startNode.coord); // we update the start node
+    goalNode = knownNodes.at(goalNode.coord); // we update the goal node
+
+    std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
+   
+    /* Dstar Loop*/
+    while(startNode.coord != goalNode.coord){
+
+        if(startNode.costG == infinity){
+            std::cerr << "NOT KNOWN PATH" << std::endl;
+            break;
+        }
+
+        startNode = bestNode(startNode, knownNodes); // we "move" the robot
+        findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
+
+        int xSetpoint = startNode.coord.first *30; 
+        int ySetpoint = startNode.coord.second *30; 
+        dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
+
+        // Wait until the robot reaches the point
+        while(!pointReached)
+        {
+            /*
+            TO BE IMPLEMENTED 
+            - getPointReached() from the dsPic
+            - readSensorValues() 
+            - obstcaleDetection = sensorTreatment() -> determine if we have to update the map 
+            */
+          if(obstacleDetection)
+            {
+                km = km + distance2(lastNode, startNode);
+                lastNode = startNode;
+                updateMap(knownNodes, mapVector, uList, startNode.coord, goalNode); // we update all the changed nodes
+                computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+                startNode = knownNodes.at(startNode.coord); // we update the start node
+                goalNode = knownNodes.at(goalNode.coord);
+
+                /*
+                TO BE IMPLEMENTED 
+                - simplifiedPath = pathTreatment(getPath()) set critical points to go to 
+                - create a vector with those points and update them if changes in the map 
+                */
+
+            }
+        }
+
+        // Debug 
+        std::cout << "Press enter to continue to the next point" << std::endl; 
+        getchar();
+    }
+
+    /*=============DStarImplementation END===================*/
+
+
+
+
     /*f° turn buguée (thetac dans le dspic)
     int nTurn = 1;
     dspic.turn(nTurn*360,1);
