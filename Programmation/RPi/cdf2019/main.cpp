@@ -130,7 +130,12 @@ int main()
     goalNode = knownNodes.at(goalNode.coord); // we update the goal node
 
     std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
-   
+    std::vector<Node> simplifiedPath = pathTreatment(completePath);
+    simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
+    printPath(simplifiedPath,mapVector); 
+
+    int counter=0
+
     /* Dstar Loop*/
     while(startNode.coord != goalNode.coord){
 
@@ -139,7 +144,9 @@ int main()
             break;
         }
 
-        startNode = bestNode(startNode, knownNodes); // we "move" the robot
+        //startNode = bestNode(startNode, knownNodes); // we "move" the robot
+        startNode = simplifiedPath.at(counter); 
+        counter++;
         findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
 
         int xSetpoint = startNode.coord.first *30; 
@@ -147,14 +154,20 @@ int main()
         dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
 
         // Wait until the robot reaches the point
+         while(!dspic.arrived){
+             delay(50);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
+             dspic.getVar(CODE_VAR_ARRIVED); //send a request to update the arrived variable
+             delay(50); 
+         }
+        /*
         while(!pointReached)
         {
-            /*
+            
             TO BE IMPLEMENTED 
             - getPointReached() from the dsPic
             - readSensorValues() 
             - obstcaleDetection = sensorTreatment() -> determine if we have to update the map 
-            */
+            
           if(obstacleDetection)
             {
                 km = km + distance2(lastNode, startNode);
@@ -164,14 +177,14 @@ int main()
                 startNode = knownNodes.at(startNode.coord); // we update the start node
                 goalNode = knownNodes.at(goalNode.coord);
 
-                /*
+               
                 TO BE IMPLEMENTED 
                 - simplifiedPath = pathTreatment(getPath()) set critical points to go to 
                 - create a vector with those points and update them if changes in the map 
-                */
+                
 
             }
-        }
+        }*/
 
         // Debug 
         std::cout << "Press enter to continue to the next point" << std::endl; 
