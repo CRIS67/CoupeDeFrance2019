@@ -22,6 +22,7 @@
 #include <map>
 #include "mapGeneration.hpp"
 #include "dStarLite.hpp"
+#include "trajectoryHandle.hpp"
 
 //DStarGlobal 
 int mapRows {10};  
