@@ -183,8 +183,8 @@ int main()
                 - create a vector with those points and update them if changes in the map 
                 
 
-            }
-        }*/
+            }*/
+        }
 
         // Debug 
         std::cout << "Press enter to continue to the next point" << std::endl; 
