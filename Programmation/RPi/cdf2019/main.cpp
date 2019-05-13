@@ -35,7 +35,7 @@ bool obstacleDetection {false};
 bool pointReached {false}; 
  
 Node startNode = {infinity,infinity,0,std::pair<int,int>(0,0)};
-Node goalNode = {infinity,0,0,std::pair<int,int>(9,9), false};
+Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
 mappedNodes knownNodes; // node the robot can see
@@ -46,6 +46,8 @@ const int enemyWidth = 500; // The distance the enemy takes place on the map, it
 std::vector<Node> simplifiedPath; 
 std::vector<Node> completePath; 
 
+// Strategy include 
+#include "LK.h" 
 
 
 void *print(void *ptr);
@@ -100,86 +102,110 @@ int main()
     std::cout << "Press enter to start the D*" << std::endl; 
     getchar();
 
-    /*=============DStarImplementation START===================*/
-
+    /*=============Strategy  START===================*/
+    
+    std::vector<Node> strategyTour; 
+    LK strategy(100); 
+    strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file  
+    strategy.optimize(strategyTour); // optimize the tour 
+    strategy.printSolution(); // debug 
+    std::cout << "Initial distance " <<  heuristic.calculateDistance(toure) << std::endl; 
+    std::cout << "Final distance " <<  heuristic.getDistance() << std::endl; 
+    strategyTour = strategy.getSolution();  // We update the optimized tour 
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
     createRectangle(4, 4, 5, 5, mapVector); // creates a 5x5 obstacle rectangle  at (4,4) 
     printMap(mapRows, mapColumns, mapVector);
 
-    //DStarLite first run
-    Node lastNode = startNode;
-    initialize(mapVector, knownNodes, uList, startNode, goalNode);
-    goalNode = knownNodes.at(goalNode.coord);
-    computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
-    startNode = knownNodes.at(startNode.coord); // we update the start node
-    goalNode = knownNodes.at(goalNode.coord); // we update the goal node
+    /* For all actions we do a D* run */
 
-    std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
-    std::vector<Node> simplifiedPath = pathTreatment(completePath);
-    simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
-    printPath(simplifiedPath,mapVector); 
+    for(uint i = 0; i< strategyTour.size(); i++)
+    {
 
-    int counter=0; 
+      /*=============DStarImplementation START===================*/
 
-    /* Dstar Loop*/
-    while(startNode.coord != goalNode.coord){
 
-        if(startNode.costG == infinity){
-            std::cerr << "NOT KNOWN PATH" << std::endl;
-            break;
-        }
+      goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
+      //DStarLite first run
+      Node lastNode = startNode;
+      initialize(mapVector, knownNodes, uList, startNode, goalNode);
+      goalNode = knownNodes.at(goalNode.coord);
+      computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+      startNode = knownNodes.at(startNode.coord); // we update the start node
+      goalNode = knownNodes.at(goalNode.coord); // we update the goal node
 
-        //startNode = bestNode(startNode, knownNodes); // we "move" the robot
-        startNode = simplifiedPath.at(counter); 
-        counter++;
-        findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
+      std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
+      std::vector<Node> simplifiedPath = pathTreatment(completePath);
+      simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
+      printPath(simplifiedPath,mapVector); 
 
-        int xSetpoint = startNode.coord.first *30; 
-        int ySetpoint = startNode.coord.second *30; 
-        dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
+      int counter=0; 
 
-        // Wait until the robot reaches the point
-        /*
-         while(!dspic.arrived){
-             delay(50);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
-             dspic.getVar(CODE_VAR_ARRIVED); //send a request to update the arrived variable
-             delay(50); 
-         }*/
-        /*
-        while(!pointReached)
-        {
-            
-            TO BE IMPLEMENTED 
-            - getPointReached() from the dsPic
-            - readSensorValues() 
-            - obstcaleDetection = sensorTreatment() -> determine if we have to update the map 
-            
-          if(obstacleDetection)
-            {
-                km = km + distance2(lastNode, startNode);
-                lastNode = startNode;
-                updateMap(knownNodes, mapVector, uList, startNode.coord, goalNode); // we update all the changed nodes
-                computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
-                startNode = knownNodes.at(startNode.coord); // we update the start node
-                goalNode = knownNodes.at(goalNode.coord);
+      /* Dstar Loop*/
+      while(startNode.coord != goalNode.coord){
 
-               
-                TO BE IMPLEMENTED 
-                - simplifiedPath = pathTreatment(getPath()) set critical points to go to 
-                - create a vector with those points and update them if changes in the map 
-                
+          if(startNode.costG == infinity){
+              std::cerr << "NOT KNOWN PATH" << std::endl;
+              break;
+          }
 
-            }
-        }*/
+          //startNode = bestNode(startNode, knownNodes); // we "move" the robot
+          startNode = simplifiedPath.at(counter); 
+          counter++;
+          findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
 
-        // Debug 
-        std::cout << "Press enter to continue to the next point" << std::endl; 
-        getchar();
+          int xSetpoint = startNode.coord.first *30; 
+          int ySetpoint = startNode.coord.second *30; 
+          dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
+
+          // Wait until the robot reaches the point
+          /*
+           while(!dspic.arrived){
+               delay(50);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
+               dspic.getVar(CODE_VAR_ARRIVED); //send a request to update the arrived variable
+               delay(50); 
+           }*/
+          /*
+          while(!pointReached)
+          {
+              
+              TO BE IMPLEMENTED 
+              - getPointReached() from the dsPic
+              - readSensorValues() 
+              - obstcaleDetection = sensorTreatment() -> determine if we have to update the map 
+              
+            if(obstacleDetection)
+              {
+                  km = km + distance2(lastNode, startNode);
+                  lastNode = startNode;
+                  updateMap(knownNodes, mapVector, uList, startNode.coord, goalNode); // we update all the changed nodes
+                  computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+                  startNode = knownNodes.at(startNode.coord); // we update the start node
+                  goalNode = knownNodes.at(goalNode.coord);
+
+                 
+                  TO BE IMPLEMENTED 
+                  - simplifiedPath = pathTreatment(getPath()) set critical points to go to 
+                  - create a vector with those points and update them if changes in the map 
+                  
+
+              }
+          }*/
+
+          // Debug 
+          std::cout << "Press enter to continue to the next point" << std::endl; 
+          getchar();
+      }
+
+      /*=============DStarImplementation END===================*/
+      strategyTour.erease(strategyTour.begin()+i); // We remove the action
+
+ 
     }
 
-    /*=============DStarImplementation END===================*/
+
+        /*=============Strategy  END ===================*/
 
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);

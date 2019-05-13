@@ -7,7 +7,8 @@
 #include <cmath>
 #include <fstream>       // for ifstream, ofstream
 
-
+#inclue "dStarLite.hpp" // to have the Node structure 
+/*
 struct Node
 {
 	float costG; // cost of the path as in A*
@@ -20,6 +21,7 @@ struct Node
         int id;
 
 };
+*/
 // an edge (u,v)
 struct edge {
     Node u;

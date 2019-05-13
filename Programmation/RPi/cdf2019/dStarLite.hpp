@@ -23,6 +23,8 @@ struct Node
 	std::pair<int,int> coord; // coordinates of the node in the map
 	bool isObstacle = false; // if the node is an obstacle is set to true
 	std::pair<float, float> key {-1,-1}; // default node key
+        int rank;
+        int id;
 
 };
 
