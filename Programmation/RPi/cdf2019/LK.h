@@ -7,7 +7,7 @@
 #include <cmath>
 #include <fstream>       // for ifstream, ofstream
 
-#inclue "dStarLite.hpp" // to have the Node structure 
+#include "dStarLite.hpp" // to have the Node structure 
 /*
 struct Node
 {

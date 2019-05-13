@@ -109,8 +109,8 @@ int main()
     strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file  
     strategy.optimize(strategyTour); // optimize the tour 
     strategy.printSolution(); // debug 
-    std::cout << "Initial distance " <<  heuristic.calculateDistance(toure) << std::endl; 
-    std::cout << "Final distance " <<  heuristic.getDistance() << std::endl; 
+    std::cout << "Initial distance " <<  strategy.calculateDistance(strategyTour) << std::endl; 
+    std::cout << "Final distance " <<  strategy.getDistance() << std::endl; 
     strategyTour = strategy.getSolution();  // We update the optimized tour 
 
     // Map Generation 
@@ -199,13 +199,14 @@ int main()
       }
 
       /*=============DStarImplementation END===================*/
-      strategyTour.erease(strategyTour.begin()+i); // We remove the action
-
- 
+      startNode = goalNode; 
+      std::cout << "Press enter for next action"  << std::endl; 
+      getchar(); 
+      //strategyTour.erase(strategyTour.begin()+i); // We remove the action
     }
 
 
-        /*=============Strategy  END ===================*/
+    /*=============Strategy  END ===================*/
 
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);

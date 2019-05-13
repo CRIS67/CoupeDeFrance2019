@@ -26,7 +26,7 @@ trajectoryHandle.o : trajectoryHandle.cpp
 	g++ -o trajectoryHandle.o -c trajectoryHandle.cpp -Wall -lwiringPi -pthread
 
 LK.o: LK.cpp
-	g++   -o LK.o -c LK.cpp -Wall -Wextra -pedantic -ansi -std=c++11
+	g++ -o LK.o -c LK.cpp -Wall -lwiringPi -pthread
 
 main.o: main.cpp web.hpp dspic.hpp SPI.hpp lidar.hpp actuators.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
 	g++ -o main.o -c main.cpp -Wall -lwiringPi -pthread 
