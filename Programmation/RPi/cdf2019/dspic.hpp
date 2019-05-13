@@ -168,7 +168,7 @@ struct pid{
   uint32_t Ki;
   uint32_t Kd;
 };
-
+void *print(void *ptr);
 class DsPIC
 {
     public:

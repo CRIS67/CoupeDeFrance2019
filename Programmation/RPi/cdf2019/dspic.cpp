@@ -562,102 +562,102 @@ return value : vector containing bytes of a complete packet
     return RxBuf;
 }
 
-void setX(double x){
+void DsPIC::setX(double x){
 	m_mutex.lock();
-	this.x_ld = x;
-	this.updatedX = true;
+	this->x_ld = x;
+	this->updatedX = true;
 	m_mutex.unlock();
 }
-double getX(){
+double DsPIC::getX(){
 	m_mutex.lock();
-	double x = this.x_ld;
-	this.updatedX = false;
+	double x = this->x_ld;
+	this->updatedX = false;
 	m_mutex.unlock();
 	return x;
 }
-bool isUpdatedX(){
+bool DsPIC::isUpdatedX(){
 	m_mutex.lock();
-	bool updated = this.updatedX;
+	bool updated = this->updatedX;
 	m_mutex.unlock();
 	return updated;
 }
 
-void setY(double y){
+void DsPIC::setY(double y){
 	m_mutex.lock();
-	this.y_ld = y;
-	this.updatedY = true;
+	this->y_ld = y;
+	this->updatedY = true;
 	m_mutex.unlock();
 }
-double getY(){
-	m_mutey.lock();
-	double y = this.y_ld;
-	this.updatedY = false;
-	m_mutey.unlock();
+double DsPIC::getY(){
+	m_mutex.lock();
+	double y = this->y_ld;
+	this->updatedY = false;
+	m_mutex.unlock();
 	return y;
 }
-bool isUpdatedY(){
-	m_mutey.lock();
-	bool updated = this.updatedY;
-	m_mutey.unlock();
+bool DsPIC::isUpdatedY(){
+	m_mutex.lock();
+	bool updated = this->updatedY;
+	m_mutex.unlock();
 	return updated;
 }
 
-void setT(double t){
+void DsPIC::setT(double t){
 	m_mutex.lock();
-	this.t_ld = t;
-	this.updatedT = true;
+	this->t_ld = t;
+	this->updatedT = true;
 	m_mutex.unlock();
 }
-double getT(){
+double DsPIC::getT(){
 	m_mutex.lock();
-	double t = this.t_ld;
-	this.updatedT = false;
+	double t = this->t_ld;
+	this->updatedT = false;
 	m_mutex.unlock();
 	return t;
 }
-bool isUpdatedT(){
+bool DsPIC::isUpdatedT(){
 	m_mutex.lock();
-	bool updated = this.updatedT;
+	bool updated = this->updatedT;
 	m_mutex.unlock();
 	return updated;
 }
 
-void setBat(float bat){
+void DsPIC::setBat(float bat){
 	m_mutex.lock();
-	this.bat = bat;
-	this.updatedBat = true;
+	this->bat = bat;
+	this->updatedBat = true;
 	m_mutex.unlock();
 }
-float getBat(){
+float DsPIC::getBat(){
 	m_mutex.lock();
-	float bat = this.bat;
-	this.updatedBat = false;
+	float bat = this->bat;
+	this->updatedBat = false;
 	m_mutex.unlock();
 	return bat;
 }
-bool isUpdatedBat(){
+bool DsPIC::isUpdatedBat(){
 	m_mutex.lock();
-	bool updated = this.updatedBat;
+	bool updated = this->updatedBat;
 	m_mutex.unlock();
 	return updated;
 }
 
-void setRupt(microswitch rupt){
+void DsPIC::setRupt(microswitch rupt){
 	m_mutex.lock();
-	this.rupt = rupt;
-	this.updatedRupt = true;
+	this->rupt = rupt;
+	this->updatedRupt = true;
 	m_mutex.unlock();
 }
-microswitch getRupt(){
+microswitch DsPIC::getRupt(){
 	m_mutex.lock();
-	microswitch rupt = this.rupt;
-	this.updatedRupt = false;
+	microswitch rupt = this->rupt;
+	this->updatedRupt = false;
 	m_mutex.unlock();
 	return rupt;
 }
-bool isUpdatedRupt(){
+bool DsPIC::isUpdatedRupt(){
 	m_mutex.lock();
-	bool updated = this.updatedRupt;
+	bool updated = this->updatedRupt;
 	m_mutex.unlock();
 	return updated;
 }
@@ -667,6 +667,7 @@ Thread for handling dsPIC UART response
 arg : 	<ptr> 		: 	pointer to instance of dspic
 */
 void *print(void *ptr) {
+    //std::cout << "DsPIC thread >Hello World!" << std::endl;
 	DsPIC *dspic = (DsPIC*)ptr;
 	while(1){
         std::vector<uint8_t> msg = dspic->readMsg();
@@ -845,44 +846,44 @@ void *print(void *ptr) {
                                 }
                                 break;
 							case CODE_VAR_P_SPEED_L :
-								w->dspic->pidSpeedLeft.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedLeft.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_I_SPEED_L :
-								w->dspic->pidSpeedLeft.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedLeft.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_D_SPEED_L :
-								w->dspic->pidSpeedLeft.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedLeft.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 
 							case CODE_VAR_P_SPEED_R :
-								w->dspic->pidSpeedRight.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedRight.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_I_SPEED_R :
-								w->dspic->pidSpeedRight.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedRight.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_D_SPEED_R :
-								w->dspic->pidSpeedRight.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidSpeedRight.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 
 							case CODE_VAR_P_DISTANCE :
-								w->dspic->pidDistance.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidDistance.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_I_DISTANCE :
-								w->dspic->pidDistance.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidDistance.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_D_DISTANCE :
-								w->dspic->pidDistance.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidDistance.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 
 							case CODE_VAR_P_ANGLE :
-								w->dspic->pidAngle.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidAngle.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_I_ANGLE :
-								w->dspic->pidAngle.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->pidAngle.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								break;
 							case CODE_VAR_D_ANGLE :
-								w->dspic->pidAngle.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
-								w->dspic->isPIDUpdated = true;
+								dspic->pidAngle.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
+								dspic->isPIDUpdated = true;
 								break;
                             case CODE_VAR_COEF_DISSYMETRY_LD:
                                 if(msg.size() > 8){
@@ -929,7 +930,7 @@ void *print(void *ptr) {
                             s += msg[i];
                         std::cout << "Received log from DsPIC : " << s << std::endl;
                         dspic->logs.push(s);
-                        //w->sendMsg("l=" + s);
+                        //sendMsg("l=" + s);
                         break;
                     }
                     case TX_CODE_PLOT :{    //plot

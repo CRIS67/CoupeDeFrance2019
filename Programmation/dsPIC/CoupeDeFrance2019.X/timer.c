@@ -88,8 +88,10 @@ volatile uint8_t nearPointAngle = 0;
 volatile uint16_t nplot = 0;
 
 extern volatile uint8_t arrived;
-extern uint8_t trajMode;
+extern volatile uint8_t trajMode;
 extern uint8_t cmdTraj;
+volatile uint8_t countTransition = 0;
+extern volatile uint8_t directionTraj;
 
 volatile long double distanceMax = 10;  //The robot is arrived at its destination if its distance to the destination point is less than this value
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
@@ -361,7 +363,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         }// </editor-fold>
         */
 
-        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && trajMode == TRAJ_MODE_LIN)
+        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && (trajMode == TRAJ_MODE_LIN))
             setSetPoint(&pidAngle, thetaRobotPointFinal);
         else
             setSetPoint(&pidAngle, thetac);
@@ -597,6 +599,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                             thetac = theta0 + angle * sign;
                             prevAngularVelocity = angularVelocity;
                         } else {
+                            trajMode = TRAJ_MODE_LIN;
                             if(cmdTraj == CMD_TRAJ_ROT_AND_LIN){ // next state is linear motion
                                 statePathGeneration = 2;
                                 stateTrap = 1;
@@ -626,7 +629,6 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                         }
                         break;
                 }
-                trajMode = TRAJ_MODE_LIN;
                 break; // </editor-fold>
             // <editor-fold defaultstate="collapsed" desc="Translation">
             case 2: //Translation
@@ -680,6 +682,38 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
 
                 }
                 break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Transition">
+            case 3: //transition go
+                countTransition = 0;
+                xc = x;
+                yc = y;
+                xf = x;
+                yf = y;
+                thetac = theta;
+                finalPoint = 1;
+                trajMode = TRAJ_MODE_LIN;
+                statePathGeneration = 4;
+                break;
+            case 4:
+                if(countTransition < 50){
+                    countTransition++;
+                    //testSendToMotor(0,0);
+                }
+                else{
+                    finalPoint = 0;
+                    theta0 = theta;
+                    statePathGeneration = 1;
+                    phi = atan2(cy-y,cx-x) - theta;
+                    if(directionTraj == BACKWARD){
+                        phi -= PI;
+                    }
+                    while(phi < -PI)
+                        phi += 2*PI;
+                    while(phi > PI){
+                        phi -= 2*PI;
+                    }
+                }
+                break;// </editor-fold>
 
         }
         // </editor-fold>

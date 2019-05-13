@@ -29,13 +29,14 @@ Web::Web(DsPIC *ds){
 		perror("bind");
 		exit(EXIT_FAILURE);
     }
-    puts("bind done");
+    //puts("bind done");
 
     //Listen
     listen(socket_listen , 3);
 
     //Accept and incoming connection
-    puts("Waiting for incoming connections...");
+    //puts("Waiting for incoming connections...");
+
     socket_client = -1;
 }
 Web::~Web(){
@@ -86,7 +87,7 @@ std::string Web::receiveMsg(){
 }
 bool Web::startThread(){
    int rc;
-    std::cout << "Web::ctor() : creating thread, " << std::endl;
+    //std::cout << "Web::ctor() : creating thread, " << std::endl;
     rc = pthread_create(&threads, NULL, thread_HandleConnnection, (void*)this);
 
     if (rc) {
@@ -97,7 +98,7 @@ bool Web::startThread(){
 }
 void* thread_HandleConnnection(void *threadid){
    Web *w = (Web*)threadid;
-   std::cout << "Hello World!" << std::endl;
+   //std::cout << "Web thread >Hello World!" << std::endl;
    double i = 0;
    char msg_arr[100];
    while(1){
@@ -613,35 +614,37 @@ std::string realResponse(Web *w){
 	DsPIC *dspic = w->dspic;
 	std::ostringstream myString;
 	myString << "x=";
-	myString << dspic->x_ld;
+	myString << dspic->getX();
 	myString << "&y=";
-	myString << dspic->y_ld;
+	myString << dspic->getY();
 	myString << "&t=";
-	myString << dspic->t_ld*180/3.14159;
+	myString << dspic->getT()*180/3.14159;
 	
 	myString << "&b=";
-	myString << dspic->bat;
+	myString << dspic->getBat();
+
+	microswitch rupt = dspic->getRupt();
 
 	myString << "&r1=";
-	myString << dspic->rupt.ass0;
+	myString << rupt.ass0;
 	myString << "&r2=";
-	myString << dspic->rupt.ass1;
+	myString << rupt.ass1;
 	myString << "&r3=";
-	myString << dspic->rupt.ass2;
+	myString << rupt.ass2;
 	myString << "&r4=";
-	myString << dspic->rupt.ass3;
+	myString << rupt.ass3;
 	myString << "&r5=";
-	myString << dspic->rupt.act0;
+	myString << rupt.act0;
 	myString << "&r6=";
-	myString << dspic->rupt.act1;
+	myString << rupt.act1;
 	myString << "&r7=";
-	myString << dspic->rupt.act2;
+	myString << rupt.act2;
 	myString << "&r8=";
-	myString << dspic->rupt.act3;
+	myString << rupt.act3;
 	myString << "&r9=";
-	myString << dspic->rupt.act4;
+	myString << rupt.act4;
 	myString << "&r10=";
-	myString << dspic->rupt.act5;
+	myString << rupt.act5;
 
 	for(int i = 0; i < 6; i++){
         myString << "&d" << i + 1 << "=";
@@ -662,8 +665,9 @@ std::string realResponse(Web *w){
         //std::cout << "plot : " << (int)p.id << "=" << p.x << ";" << p.y << std::endl;
         //myString << qs;
 	}
-	if(w->waitingResponsePID && w->dspic->isPIDUpdated){
-        w->waitingResponsePID = false;
+	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
+    if(dspic->isPIDUpdated){
+        dspic->isPIDUpdated = false;
 		myString << "&p1=";
 		myString << dspic->pidSpeedLeft.Kp;
 		myString << "&i1=";
