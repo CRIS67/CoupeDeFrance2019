@@ -10,7 +10,7 @@
 
 
 
-bool LK::choose_x1(node *tour, int n, bool *visited, node *t1,
+bool LK::choose_x1(Node *tour, int n, bool *visited, Node *t1,
         edge *x1){
     
     // conditions in LK: 
@@ -18,7 +18,7 @@ bool LK::choose_x1(node *tour, int n, bool *visited, node *t1,
 
     int i1 = (*t1).rank;
     int i2 = (i1+1)%n;
-    node t2 = tour[i2];
+    Node t2 = tour[i2];
 
     x1->u = *t1; // this means: 
     x1->v = t2; //     x1 = (t1,t2)
@@ -34,8 +34,8 @@ bool LK::choose_x1(node *tour, int n, bool *visited, node *t1,
     return true;
 }
 
-bool LK::choose_y1(node *tour, int n, bool *visited, 
-        edge x1, node *t2, node *t3, edge *y1, int *G1){
+bool LK::choose_y1(Node *tour, int n, bool *visited, 
+        edge x1, Node *t2, Node *t3, edge *y1, int *G1){
     
     // conditios in LK:
     //      - y1 not in tour
@@ -68,7 +68,7 @@ bool LK::choose_y1(node *tour, int n, bool *visited,
     return true;
 }
 
-bool LK::choose_xi(node *tour, int n, bool *visited, node *t3,
+bool LK::choose_xi(Node *tour, int n, bool *visited, Node *t3,
         edge *x2){
     //Conditions LK:
     //    1. x in T
@@ -77,7 +77,7 @@ bool LK::choose_xi(node *tour, int n, bool *visited, node *t3,
     
     // find x limited to one choice 
     
-    node t4 = tour[(n+(t3->rank)-1)%n];
+    Node t4 = tour[(n+(t3->rank)-1)%n];
     if(visited[t4.id])
         return false;
     
@@ -88,8 +88,8 @@ bool LK::choose_xi(node *tour, int n, bool *visited, node *t3,
     return true;
 }
 
-bool LK::choose_yi(node *tour,int n, bool *visited,
-        node *t4,edge x2, edge *y2,int *Gi){
+bool LK::choose_yi(Node *tour,int n, bool *visited,
+        Node *t4,edge x2, edge *y2,int *Gi){
     // conditions LK: 
     //     1. y not in T
     //     3. yi != xi
@@ -97,7 +97,7 @@ bool LK::choose_yi(node *tour,int n, bool *visited,
 
     for (int i=0;i<n;i++){
     
-        node t5 = tour[i];
+        Node t5 = tour[i];
         
         // if visited skip
         if (visited[t5.id])
@@ -133,20 +133,20 @@ bool LK::choose_yi(node *tour,int n, bool *visited,
 
 
 // store 
-void LK::store(node *tour_, node *tour, int n){
+void LK::store(Node *tour_, Node *tour, int n){
     for(int i=0; i<n; i++)
         tour_[i] = tour[i];
 }
 
 
-void LK::flip(node *tour, int n, std::list<edge> X){
+void LK::flip(Node *tour, int n, std::list<edge> X){
     
-    node t1 = (X.front()).u;
+    Node t1 = (X.front()).u;
     //X.pop_front();
 
     int r = 1;
     int i, j;
-    node ti;
+    Node ti;
     //while (!X.empty()){
         ti = (X.back()).u;
         //X.pop_front();
@@ -158,7 +158,7 @@ void LK::flip(node *tour, int n, std::list<edge> X){
             j = t1.rank;
             r= (-1)*r;
         }*/
-        node tmp;
+        Node tmp;
         for(int k=0; k< ((n + j-i ) %n +1)/2 ; k++){
             tmp = tour[(i+k)%n];
             tour[(i+k)%n] = tour[(n+j-k)%n];
@@ -171,15 +171,19 @@ void LK::flip(node *tour, int n, std::list<edge> X){
 }
 
 
-void LK::optimize(std::vector<node> initialTour){
+void LK::optimize(std::vector<Node> initialTour){
 
     int n = initialTour.size(); // s.getSize();// size of instance
-    node T[n];       // tour of nodes
-    bool visited[n];    // visited nodes
-    std::cout << "Number of nodes : " << n << std::endl; 
+    Node T[n];       // tour of Nodes
+    bool visited[n];    // visited Nodes
+    std::cout << "Number of Nodes : " << n << std::endl; 
 
     for(int i=0; i<n; i++){
-        node u = {i,initialTour.at(i).id, initialTour.at(i).coord};  //;{i,s.getVal(i)}; // node (rank, ID)
+        //Node u = {i,initialTour.at(i).id, initialTour.at(i).coord};  //;{i,s.getVal(i)}; // Node (rank, ID)
+        Node u; 
+        u.rank = i; 
+        u.id = initialTour.at(i).id; 
+        u.coord = initialTour.at(i).coord; 
         T[i] = u;
         visited[T[i].id] = false;
     }
@@ -192,9 +196,9 @@ void LK::optimize(std::vector<node> initialTour){
     int nb_moves = 0;
     edge x1,y1,x2,y2;
     std::list<edge> X,Y;
-    node tour[n];
-    node tour_b[n];
-    node t,t_next;
+    Node tour[n];
+    Node tour_b[n];
+    Node t,t_next;
     int G = 0;
     int g = 0;
     bool stop = false;
@@ -336,7 +340,7 @@ void LK::optimize(std::vector<node> initialTour){
     //s.setPath(tour_);
 }
 
-double LK::distance(node n1, node n2){
+double LK::distance(Node n1, Node n2){
 
   double x = n2.coord.first - n1.coord.first ; 
   double y = n2.coord.second - n1.coord.second ; 
@@ -346,7 +350,7 @@ double LK::distance(node n1, node n2){
   return sqrt(x*x+y*y); 
 }
 
-std::vector<node> LK::getSolution() {
+std::vector<Node> LK::getSolution() {
   return m_solution; 
 }
 
@@ -368,11 +372,72 @@ double LK::getDistance(){
   return tourDistance; 
 }
 
-double LK::calculateDistance(std::vector<node> solution){
+double LK::calculateDistance(std::vector<Node> solution){
 
   double tourDistance=0;  
   for(uint i =0; i<solution.size()-1; i++){
     tourDistance = tourDistance + distance(solution.at(i), solution.at(i+1)); 
   }
   return tourDistance; 
+}
+
+void LK::readNodes(std::vector<Node>& initialTour){
+  std::ifstream data("entree.txt"); 
+
+  if(!data){
+    std::cerr << "Problem opening file" << std::endl; 
+    exit(1); 
+  }
+
+  uint counter {0}; 
+  int rank, id, coordx, coordy, info ; 
+  while (data)
+  {
+      std::string strInput;
+      data >> strInput; 
+      counter++; 
+      if(strInput.length() != 0 ){
+        info  = std::stoi(strInput) ; 
+      }
+      else 
+        return; 
+      switch(counter){
+        case 1: 
+           rank=info; 
+           break;
+        case 2: 
+           id=info;   
+           break;
+        case 3: 
+           coordx=info;   
+           break;
+
+        case 4: 
+           coordy=info;   
+           Node n ; //{rank ,id, std::make_pair(coordx, coordy) }; 
+           n.rank = rank; 
+           n.id = id; 
+           n.coord = std::make_pair(coordx, coordy); 
+           initialTour.push_back(n); 
+           counter = 0; 
+           break;
+    }
+  }
+}
+
+void LK::writeSolution(std::vector<Node> solution){
+
+  std::ofstream outf("solution.txt"); 
+  
+  if(!outf)
+  {
+    std::cerr<< "Problem opening the file" << std::endl; 
+    exit(1); 
+  }
+
+  for(uint i =0; i<solution.size(); i++)
+  {
+    outf << solution.at(i).id << "\t" << solution.at(i).coord.first << "\t" << solution.at(i).coord.second << std::endl; 
+  }
+
 }

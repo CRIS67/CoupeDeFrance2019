@@ -57,38 +57,23 @@ void debugGoldenium();
 int main()
 {
 	
-    /*wiringPiSetup();
-    debugTestAllDelay();
-    exit(0);*/
-    /*debugAct();
-    exit(0);*/
-    //wiringPiSetup();
-    /*debugAct();
-    exit(0);*/
     wiringPiSetup();
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     Lidar lidar(&spi,SPI_ID_LIDAR);
 	
-	int valueH = 700;
+    int valueH = 700;
     int valueL = 1600;
     int valueDrop = 1500;
     int valueMiddle = 1000;
 
-    actFront.MoveServo(0,valueH);
-    actFront.MoveServo(1,valueH);
-    actFront.MoveServo(2,valueH);
-    actBack.MoveServo(0,valueH);
-    actBack.MoveServo(1,valueH);
-    actBack.MoveServo(2,valueH);
-
-	DsPIC dspic;
+    DsPIC dspic;
     pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
-	Web web(&dspic);
+    Web web(&dspic);
     web.startThread();
 
     int rc;
@@ -101,16 +86,18 @@ int main()
     }
 
     getchar();
-	dspic.setVar8(CODE_VAR_VERBOSE,1);
-	puts("verbose set to 1");
-	dspic.getVar(CODE_VAR_BAT);
+    dspic.setVar8(CODE_VAR_VERBOSE,1);
+    puts("verbose set to 1");
+    dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
     //dspic.initPos(1000,1500,0);
     dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
+    std::cout << "Press enter to dspic.start() " << std::endl; 
     getchar();
     dspic.start();
+    std::cout << "Press enter to start the D*" << std::endl; 
     getchar();
 
     /*=============DStarImplementation START===================*/
@@ -154,11 +141,12 @@ int main()
         dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
 
         // Wait until the robot reaches the point
+        /*
          while(!dspic.arrived){
              delay(50);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
              dspic.getVar(CODE_VAR_ARRIVED); //send a request to update the arrived variable
              delay(50); 
-         }
+         }*/
         /*
         while(!pointReached)
         {
@@ -183,8 +171,8 @@ int main()
                 - create a vector with those points and update them if changes in the map 
                 
 
-            }*/
-        }
+            }
+        }*/
 
         // Debug 
         std::cout << "Press enter to continue to the next point" << std::endl; 
@@ -194,12 +182,13 @@ int main()
     /*=============DStarImplementation END===================*/
 
     dspic.stop();
-	dspic.setVar8(CODE_VAR_VERBOSE,0);
-	puts("verbose set to 0");
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
+    puts("verbose set to 0");
     puts("exiting ...");
 
     return 0;
 }
+
 void *print(void *ptr) {
    Web *w = (Web*)ptr;
    DsPIC *dspic = w->dspic;
