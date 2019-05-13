@@ -334,6 +334,13 @@ int main(){
        //plot(2,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_ASS_1,200,0.005))));
         //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
         //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
+        plot(1,statePathGeneration);
+        plot(2,stateTrap);
+        plot(3,finalPoint);
+        plot(4,arrived);
+        plot(11,(uint32_t)(int32_t)(theta*1800/PI));
+        plot(12,(uint32_t)(int32_t)(thetac*1800/PI));
+        plot(13,(uint32_t)(int32_t)(pidAngle.setPoint*1800/PI));
     }
     return 0;
 }
@@ -890,7 +897,7 @@ void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, doubl
 }
 void testModif_turn(double arg_ct, double arg_angularSpeedMax, double arg_angularAccMax){
     /*INIT*/
-    phi = arg_ct;
+    phi = arg_ct - theta;
     /*Phase 1 : rotation */
     finalPoint = 0;
     theta0 = theta;

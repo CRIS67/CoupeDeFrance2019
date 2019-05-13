@@ -144,6 +144,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <mutex>
 
 struct microswitch{
   unsigned int ass0 : 1;
@@ -193,9 +194,9 @@ class DsPIC
 		void getVar(uint8_t varCode);
 		std::string async_read();
         std::vector<uint8_t> readMsg();
+		
 		int16_t x = 1500,y = 1000, t = 45;
 		int16_t US[6];
-		microswitch rupt;
 		std::queue<std::string> logs;
 		std::queue<point> plots;
 		pid pidSpeedLeft = {0,0,0};
@@ -204,15 +205,49 @@ class DsPIC
 		pid pidAngle = {0,0,0};
 		//uint16_t nbUpdatePID = 0;
 		bool isPIDUpdated = false;
-		float bat = 0;
-		double x_ld = 0;
-		double y_ld = 0;
-		double t_ld = 0;
 		double coef_dissymetry = 0;
 		double mm_per_tick = 0;
 		double rad_per_tick = 0;
+		
+		void setX(double x);
+		double getX();
+		bool isUpdatedX();
+		void setY(double y);
+		double getY();
+		bool isUpdatedY();
+		void setT(double t);
+		double getT();
+		bool isUpdatedT();
+		
+		void setPos(double x, double y, double t);
+		
+		void setArrived(bool arrived);
+		bool getArrived();
+		bool isUpdatedArrived();
+		
+		void setRupt(microswitch rupt);
+		microswitch getRupt();
+		bool isUpdatedRupt();
+		
+		void setBat(float bat);
+		float getBat();
+		bool isUpdatedBat();
+		
+		
     protected:
+		double x_ld = 0;
+		double y_ld = 0;
+		double t_ld = 0;
+		float bat = 0;
+		microswitch rupt;
 		int fd;
+        pthread_t m_threadReception;
+		std::mutex m_mutex;
+		bool updatedX = false;
+		bool updatedY = false;
+		bool updatedT = false;
+		bool updatedBat = false;
+		bool updatedRupt = false;
     private:
 };
 
