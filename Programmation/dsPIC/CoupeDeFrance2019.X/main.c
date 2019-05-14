@@ -533,8 +533,8 @@ void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, doubl
     
     cmdTraj = CMD_TRAJ_ROT_AND_LIN;
 
-    //if(statePathGeneration == 0){
-    if(1){
+    if(statePathGeneration == 0){
+    //if(1){
         statePathGeneration = 1;
         stateTrap = 1;
     }
