@@ -29,9 +29,19 @@ class Web
         bool sendMsg(std::string message);
 		std::string receiveMsg();
         bool startThread();
+		
         std::string s;
 		DsPIC *dspic;
 		bool waitingResponsePID = false;
+		
+		void addLidarPoints(float x, float y);
+		void addLidarPoints(floatPoint fp);
+		void addLidarPoints(std::vector<floatPoint> vect_fp);
+		void clearLidarPoints();
+		bool m_clearLidarPoints = false;
+		bool m_radarScan = true;
+		std::queue<floatPoint> lidarPoints;
+		
     protected:
         int socket_listen;
         int socket_client;

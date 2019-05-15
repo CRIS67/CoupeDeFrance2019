@@ -96,6 +96,26 @@ bool Web::startThread(){
     }
     return true;
 }
+
+void Web::addLidarPoints(float x, float y){
+	floatPoint fp;
+	fp.x = x;
+	fp.y = y;
+	addLidarPoints(fp);
+}
+void Web::addLidarPoints(floatPoint fp){
+	lidarPoints.push(fp);
+}
+void Web::addLidarPoints(std::vector<floatPoint> vect_fp){
+	for(unsigned int i = 0; i < vect_fp.size(); i++){
+		floatPoint fp = vect_fp[i];
+		addLidarPoints(fp);
+	}
+}
+void Web::clearLidarPoints(){
+	m_clearLidarPoints = true;
+}
+
 void* thread_HandleConnnection(void *threadid){
    Web *w = (Web*)threadid;
    //std::cout << "Web thread >Hello World!" << std::endl;
@@ -690,6 +710,25 @@ std::string realResponse(Web *w){
         dspic->clearPlots();
 	}
 
+	if(w->m_clearLidarPoints){
+		w->m_clearLidarPoints = false;
+		myString << "&w=";
+	}
+	
+	while(w->lidarPoints.size() > 0){
+		if(!w->m_radarScan){
+			myString << "&s=";
+		}
+        else{
+			myString << "&z=";
+		}
+        floatPoint fp = w->lidarPoints.front();
+        w->lidarPoints.pop();
+        myString << fp.x << ";" << fp.y;
+        //std::cout << "log sent to web -> " << qs << std::endl;
+        //myString << qs;
+	}
+	
 	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
     //if(dspic->isPIDUpdated){
     if(dspic->isUpdatedAllPid()){
