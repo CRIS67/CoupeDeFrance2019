@@ -242,7 +242,7 @@ class DsPIC
 
 		void setUS(US us);
         US getUS();
-        bool isUpdatedRupt();
+        bool isUpdatedUS();
 
         void setPidSpeedLeft(pid p);
         pid getPidSpeedLeft();
@@ -294,9 +294,10 @@ class DsPIC
 		bool updatedT = false;
 		bool updatedBat = false;
 		bool updatedRupt = false;
+		bool updatedUS = false;
 		bool updatedPidSpeedLeft = false;
 		bool updatedPidSpeedRight = false;
-		bool updatedPidDistace = false;
+		bool updatedPidDistance = false;
 		bool updatedPidAngle = false;
 		bool updatedAllPid = false;
 		bool updatedPlots = false;

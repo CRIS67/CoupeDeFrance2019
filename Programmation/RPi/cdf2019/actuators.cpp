@@ -4,13 +4,17 @@ int Send(int in){
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
-	delayMicroseconds(SPI_DELAY);
+	//delay(SPI_DELAY_MS);
+	delayMicroseconds(SPI_DELAY_US);
 	return (int)buffer[0];
 	
 }
 Actuators::Actuators(SPI *pSpi,uint8_t id){
     m_pSpi = pSpi;
 	m_id = id;
+	
+	flush(255);
+	//ajouter ping();
 }
 Actuators::~Actuators(){
 

@@ -9,6 +9,11 @@
 
 #include "SPI.hpp"
 
+#define SERVO_VALUE_HIGH	700
+#define SERVO_VALUE_MIDDLE	1000
+#define SERVO_VALUE_DROP	1500
+#define SERVO_VALUE_LOW		1600
+
 class Actuators
 {
     public:

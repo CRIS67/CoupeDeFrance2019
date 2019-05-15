@@ -41,8 +41,16 @@
 #include <queue>
 #include <unistd.h>
 #include <iostream>
+#include <pthread.h>
 
 #include "SPI.hpp"
+
+struct pointFloat2d{
+  float x;
+  float y;
+};
+
+void* thread_Lidar(void *threadid);
 
 class Lidar
 {
@@ -54,14 +62,23 @@ class Lidar
 		void stop();
 		
 		void sendReceiveSPI(uint8_t data);
-		void flush();
+		void flush(uint16_t nbBytes);
 		void checkMessages();
 		void sendSPI(uint8_t *buf, uint8_t bufSize);
 		void getAvailableData();
 		void getRawPoint();
-		void getDetectedPoints();
+		void sendGetDetectedPoints();
 		void setSpeed(uint8_t speed);
 		void getSpeed();
+		
+		bool startThreadDetection();
+		void stopThreadDetection();
+		
+		bool isContinueThread();
+		
+		void addDetectedPoint(pointFloat2d p);
+		std::queue<pointFloat2d> getDetectedPoints();
+		std::queue<pointFloat2d> getAndClearDetectedPoints();
 		
 		int16_t x = 1500,y = 1000, t = 45;
 		uint8_t bufferRx[SIZE_BUFFER_RX];
@@ -73,9 +90,13 @@ class Lidar
 		uint32_t nbBytesReceivedTotal = 0;
 		uint8_t nbMsgReceived = 0;
     protected:
-		uint8_t m_id;	//id of this SPI slave
+		std::mutex m_mutex;
+		uint8_t m_id;			//id of this SPI slave
+		pthread_t m_thread;
+		bool m_continueThread;
 		//int fd;
 		SPI *m_pSpi;	//pointer to SPI instance
+		std::queue<pointFloat2d> m_qDetectedPoints;
     private:
 };
 

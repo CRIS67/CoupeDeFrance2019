@@ -35,50 +35,89 @@ int main()
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     Lidar lidar(&spi,SPI_ID_LIDAR);
+	//lidar.flush(255);
+	lidar.start();
+	//lidar.startThreadDetection();
 	
-	int valueH = 700;
+	/*int valueH = 700;
     int valueL = 1600;
     int valueDrop = 1500;
-    int valueMiddle = 1000;
-
-    actFront.MoveServo(0,valueH);
-    actFront.MoveServo(1,valueH);
-    actFront.MoveServo(2,valueH);
-    actBack.MoveServo(0,valueH);
-    actBack.MoveServo(1,valueH);
-    actBack.MoveServo(2,valueH);
-
+    int valueMiddle = 1000;*/
+	
+    actFront.MoveServo(0,SERVO_VALUE_HIGH);
+    actFront.MoveServo(1,SERVO_VALUE_HIGH);
+    actFront.MoveServo(2,SERVO_VALUE_HIGH);
+    actBack.MoveServo(0,SERVO_VALUE_HIGH);
+    actBack.MoveServo(1,SERVO_VALUE_HIGH);
+    actBack.MoveServo(2,SERVO_VALUE_HIGH);
+	
 	DsPIC dspic;
-    pthread_t thread_print;
+    //pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
 	Web web(&dspic);
     web.startThread();
 
-    int rc;
+    //int rc;
     //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &dspic);
+    //rc = pthread_create(&thread_print, NULL, print, &dspic);
 
-    if (rc) {
+    /*if (rc) {
 		std::cout << "Error:unable to create thread," << rc << std::endl;
 		exit(-1);
-    }
+    }*/
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
-
+	
+	
+	/*getchar();
+	std::cout << "length of queueDetectedPoint : " << lidar.getDetectedPoints().size() << std::endl;
+	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
+	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
+	delay(100);
+	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
+	
+	getchar();
+	lidar.stopThreadDetection();*/
+    /*
+	getchar();
+	//lidar.start();
+    //getchar();
+	lidar.startThreadDetection();
+    getchar();
+	actFront.MoveServo(0,valueL);
+    actFront.MoveServo(1,valueL);
+    actFront.MoveServo(2,valueL);
+    actBack.MoveServo(0,valueL);
+    actBack.MoveServo(1,valueL);
+    actBack.MoveServo(2,valueL);
+	delay(500);
+	actFront.MoveServo(0,valueH);
+    actFront.MoveServo(1,valueH);
+    actFront.MoveServo(2,valueH);
+    actBack.MoveServo(0,valueH);
+    actBack.MoveServo(1,valueH);
+    actBack.MoveServo(2,valueH);
+	getchar();
+	lidar.stopThreadDetection();
+	//lidar.stop();
+	*/
     getchar();
 	dspic.setVar8(CODE_VAR_VERBOSE,1);
 	puts("verbose set to 1");
 	dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
-    dspic.initPos(1000,1500,0);
+    dspic.initPos(1200,2550,-3.14159/2);
     //dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
     getchar();
     dspic.start();
     getchar();
+	dspic.go(1200,450,0,0);
+    getchar();
+	dspic.go(1200,2550,1,0);
     /*f° turn buguée (thetac dans le dspic)
     int nTurn = 1;
     dspic.turn(nTurn*360,1);
@@ -138,7 +177,7 @@ int main()
 	dspic.setVar8(CODE_VAR_VERBOSE,0);
 	puts("verbose set to 0");
     puts("exiting ...");
-
+	lidar.stop();
     return 0;
 }
 void debugAct(){

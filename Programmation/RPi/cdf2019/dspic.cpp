@@ -2,6 +2,11 @@
 
 DsPIC::DsPIC(){
     fd = serialOpen ("/dev/serial0", BAUDRATE);
+	int rc;
+	rc = pthread_create(&m_threadReception, NULL, print, this);
+	if (rc) {
+		std::cout << "Error:unable to create dspic thread" << rc << std::endl;
+    }
 }
 DsPIC::~DsPIC(){
 
@@ -675,7 +680,7 @@ US DsPIC::getUS(){
 	m_mutex.unlock();
 	return us;
 }
-bool DsPIC::isUpdatedRupt(){
+bool DsPIC::isUpdatedUS(){
 	m_mutex.lock();
 	bool updated = this->updatedUS;
 	m_mutex.unlock();
@@ -771,7 +776,7 @@ bool DsPIC::isUpdatedAllPid(){
 	m_mutex.lock();
 	bool b = this->updatedAllPid;
 	m_mutex.unlock();
-	return p;
+	return b;
 }
 
 void DsPIC::addLog(std::string str){
@@ -797,7 +802,7 @@ bool DsPIC::isUpdatedLogs(){
     m_mutex.lock();
 	bool b = this->updatedLogs;
 	m_mutex.unlock();
-	return p;
+	return b;
 }
 
 void DsPIC::addPlot(point p){
@@ -823,7 +828,7 @@ bool DsPIC::isUpdatedPlots(){
     m_mutex.lock();
 	bool b = this->updatedPlots;
 	m_mutex.unlock();
-	return p;
+	return b;
 }
 
 /**
@@ -1028,76 +1033,87 @@ void *print(void *ptr) {
                                     //std::cout << "received from DsPIC : US[5] = " << dspic->US[5] << " (H = " << (int)msg[3] << " & L = " << (int)msg[4] << ")" << std::endl;
                                 }
                                 break;
-							case CODE_VAR_P_SPEED_L :
+							case CODE_VAR_P_SPEED_L :{
 								//dspic->pidSpeedLeft.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedLeft();
 								p.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedLeft(p);
 								break;
-							case CODE_VAR_I_SPEED_L :
+							}
+							case CODE_VAR_I_SPEED_L :{
 								//dspic->pidSpeedLeft.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedLeft();
 								p.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedLeft(p);
 								break;
-							case CODE_VAR_D_SPEED_L :
+							}
+							case CODE_VAR_D_SPEED_L :{
 								//dspic->pidSpeedLeft.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedLeft();
 								p.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedLeft(p);
 								break;
-
-							case CODE_VAR_P_SPEED_R :
+							}
+							
+							case CODE_VAR_P_SPEED_R :{
 								//dspic->pidSpeedRight.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedRight();
 								p.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedRight(p);
 								break;
-							case CODE_VAR_I_SPEED_R :
+							}
+							case CODE_VAR_I_SPEED_R :{
 								//dspic->pidSpeedRight.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedRight();
 								p.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedRight(p);
 								break;
-							case CODE_VAR_D_SPEED_R :
+							}
+							case CODE_VAR_D_SPEED_R :{
 								//dspic->pidSpeedRight.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidSpeedRight();
 								p.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidSpeedRight(p);
 								break;
+							}
 
-							case CODE_VAR_P_DISTANCE :
+							case CODE_VAR_P_DISTANCE :{
 								//dspic->pidDistance.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidDistance();
 								p.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidDistance(p);
 								break;
-							case CODE_VAR_I_DISTANCE :
+							}
+							case CODE_VAR_I_DISTANCE :{
 								//dspic->pidDistance.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidDistance();
 								p.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidDistance(p);
 								break;
-							case CODE_VAR_D_DISTANCE :
+							}
+							case CODE_VAR_D_DISTANCE :{
 								//dspic->pidDistance.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidDistance();
 								p.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidDistance(p);
 								break;
+							}
 
-							case CODE_VAR_P_ANGLE :
+							case CODE_VAR_P_ANGLE :{
 								//dspic->pidAngle.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidAngle();
 								p.Kp = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidAngle(p);
 								break;
-							case CODE_VAR_I_ANGLE :
+							}
+							case CODE_VAR_I_ANGLE :{
 								//dspic->pidAngle.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidAngle();
 								p.Ki = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								dspic->setPidAngle(p);
 								break;
-							case CODE_VAR_D_ANGLE :
+							}
+							case CODE_VAR_D_ANGLE :{
 								//dspic->pidAngle.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
 								pid p = dspic->getPidAngle();
 								p.Kd = ((uint32_t)msg[3] << 24) + ((uint32_t)msg[4] << 16) + ((uint32_t)msg[5] << 8) + msg[6];
@@ -1105,6 +1121,7 @@ void *print(void *ptr) {
 								//dspic->isPIDUpdated = true;
 								dspic->setUpdatedAllPid(true);
 								break;
+							}
                             case CODE_VAR_COEF_DISSYMETRY_LD:
                                 if(msg.size() > 8){
                                     double var;

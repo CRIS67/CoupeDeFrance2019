@@ -4,6 +4,19 @@ Lidar::Lidar(SPI *pSpi,uint8_t id){
 	//fd = wiringPiSPISetup(CHANNEL, SPI_FREQUENCY);
 	m_pSpi = pSpi;
 	m_id = id;
+	
+	/*Initialize*/
+	flush(255);
+	iRxIn = 0;
+	iRxOut = 0;
+	receivingMsg = false;
+	currentMsgSize = 0;
+	nbBytesReceived = 0;
+	nbBytesReceivedTotal = 0;
+	nbMsgReceived = 0;
+	//rajouter ping()
+	//start(); 					// dans le main ?
+	//startThreadDetection(); 	// dans le main ?
 }
 Lidar::~Lidar(){
 	
@@ -28,7 +41,7 @@ void Lidar::getRawPoint(){
 	buffer[0] = LIDAR_CMD_GET_RAW_POINT;
 	sendSPI(buffer,1);
 }
-void Lidar::getDetectedPoints(){
+void Lidar::sendGetDetectedPoints(){
 	uint8_t buffer[1];
 	buffer[0] = LIDAR_CMD_GET_DETECTED_POINTS;
 	sendSPI(buffer,1);
@@ -54,16 +67,19 @@ void Lidar::sendSPI(uint8_t *buf, uint8_t bufSize){	//add size & checksum
 	b[0] = bufSize + 1;
 	uint8_t checksum = b[0];
 	sendReceiveSPI(b[0]);
-	delay(SPI_DELAY);
+	//delay(SPI_DELAY_MS);
+	delayMicroseconds(SPI_DELAY_US);
 	for(int i = 0; i < bufSize; i++){
 		b[0] = buf[i];
 		checksum += buf[i];
 		sendReceiveSPI(b[0]);
-		delay(SPI_DELAY);
+		//delay(SPI_DELAY_MS);
+		delayMicroseconds(SPI_DELAY_US);
 	}
 	b[0] = checksum;
 	sendReceiveSPI(b[0]);
-	delay(SPI_DELAY);
+	//delay(SPI_DELAY_MS);
+	delayMicroseconds(SPI_DELAY_US);
 	m_pSpi->unlock();
 }
 void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
@@ -72,7 +88,7 @@ void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 	buffer[0] = data;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 
-	std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
+	//std::cout << "sent : " << (int)data << " / " << (int)buffer[0] << std::endl;		//for debug
 	if(receivingMsg){
 		bufferRx[iRxIn] = buffer[0];
 		iRxIn++;
@@ -101,16 +117,17 @@ void Lidar::sendReceiveSPI(uint8_t data){	//send & handle response
 		nbBytesReceived = 0;
 	}
 }
-void Lidar::flush(){
+void Lidar::flush(uint16_t nbBytes){
 	m_pSpi->lock();
 	if(m_pSpi->getSlaveId() != m_id){	
 		m_pSpi->setSlave(m_id);		//change Chip select
 	}
 	uint8_t buffer[1];
-	for(int i = 0; i < 100; i++){
+	for(uint16_t i = 0; i < nbBytes; i++){
 		buffer[0] = 0;
 		sendReceiveSPI(buffer[0]);
-		delay(SPI_DELAY);
+		//delay(SPI_DELAY_MS);
+		delayMicroseconds(SPI_DELAY_US);
 	}
 	m_pSpi->unlock();
 }
@@ -142,16 +159,16 @@ void Lidar::checkMessages(){
 		else{	//Checksum ok
 			switch(buf[1]){	//type of msg
 				case LIDAR_RET_DEBUG_DEBUG:
-					std::cout << "Debug : debug received" << std::endl;
+					std::cout << "Lidar> Debug : debug received" << std::endl;
 					break;
 				case LIDAR_RET_DEBUG_START:
-					std::cout << "Debug : Start received" << std::endl;
+					std::cout << "Lidar> Debug : Start received" << std::endl;
 					break;
 				case LIDAR_RET_DEBUG_STOP:
-					std::cout << "Debug : Stop received" << std::endl;
+					std::cout << "Lidar> Debug : Stop received" << std::endl;
 					break;
 				case LIDAR_RET_DATA_AVAILABLE:
-					std::cout << "Data available = " << (int)buf[2]  << std::endl;
+					std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
 					break;
 				case LIDAR_RET_RAW_POINT:{
 					float distance;
@@ -173,21 +190,22 @@ void Lidar::checkMessages(){
 					/*for(int i = 2; i < 10; i++){
 						std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
 					}*/
-					std::cout << "Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
+					std::cout << "Lidar> Distance : " << distance << " & angle : " << angle << "& quality : " << (int)quality << std::endl;
 					break;}
 				case LIDAR_RET_DETECTED_POINTS:{
 					uint8_t s = buf[0];
 					uint8_t nbPoints = s/8;
 					//std::cout << "s : " << (int)s << " & nbPoints : " << (int)nbPoints << std::endl;
 					for(int i =0; i < nbPoints; i++){
-						float x,y;
-						float *dPtr = &x;
+						pointFloat2d p;
+						//float x,y;
+						float *dPtr = &p.x;
 						uint8_t *ptr = (uint8_t*)dPtr;
 						ptr[0] = buf[i*8+2];
 						ptr[1] = buf[i*8+3];
 						ptr[2] = buf[i*8+4];
 						ptr[3] = buf[i*8+5];
-						dPtr = &y;
+						dPtr = &p.y;
 						ptr = (uint8_t*)dPtr;
 						ptr[0] = buf[i*8+6];
 						ptr[1] = buf[i*8+7];
@@ -197,7 +215,9 @@ void Lidar::checkMessages(){
 							std::cout << "buf["<<i<<"] : " << (int)buf[i] << " / ";
 						}*/
 						//std::cout << "x : " << x << " & y : " << y << std::endl;
-						std::cout << x << "," << y << std::endl;
+						//std::cout << x << "," << y << std::endl;
+						//std::cout << "Lidar> " p.x << "," << p.y << std::endl;
+						addDetectedPoint(p);
 					}
 					
 					break;}
@@ -218,6 +238,63 @@ void Lidar::checkMessages(){
 		}
 	}
 }
+bool Lidar::startThreadDetection(){
+	m_mutex.lock();
+	m_continueThread = true;
+	m_mutex.unlock();
+	int rc = pthread_create(&m_thread, NULL, thread_Lidar, this);
+	if (rc) {
+		std::cout << "Error:unable to create thread," << rc << std::endl;
+		return false;
+    }
+	return true;
+}
+void Lidar::stopThreadDetection(){
+	m_mutex.lock();
+	m_continueThread = false;
+	m_mutex.unlock();
+}
+void* thread_Lidar(void *threadid){
+	Lidar *lidar = (Lidar*)threadid;
+
+	while(lidar->isContinueThread()){
+		lidar->sendGetDetectedPoints();
+		lidar->flush(255);
+		lidar->checkMessages();
+		delay(1);
+		
+		//delay(10);
+	}
+	
+	pthread_exit(NULL);
+}
+
+bool Lidar::isContinueThread(){
+	m_mutex.lock();
+	bool b = m_continueThread;
+	m_mutex.unlock();
+	return b;
+}
+		
+void Lidar::addDetectedPoint(pointFloat2d p){
+	m_mutex.lock();
+	m_qDetectedPoints.push(p);
+	m_mutex.unlock();
+}
+std::queue<pointFloat2d> Lidar::getDetectedPoints(){
+	m_mutex.lock();
+	std::queue<pointFloat2d> q = m_qDetectedPoints;
+	m_mutex.unlock();
+	return q;
+}
+std::queue<pointFloat2d> Lidar::getAndClearDetectedPoints(){
+	m_mutex.lock();
+	std::queue<pointFloat2d> q;
+	std::swap(m_qDetectedPoints,q);
+	m_mutex.unlock();
+	return q;
+}
+		
 /*void Lidar::initPos(double x, double y, double t){
     setVarDouble64b(CODE_VAR_X_LD,x);
     setVarDouble64b(CODE_VAR_Y_LD,y);

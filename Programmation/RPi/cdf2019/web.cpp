@@ -91,8 +91,8 @@ bool Web::startThread(){
     rc = pthread_create(&threads, NULL, thread_HandleConnnection, (void*)this);
 
     if (rc) {
-    std::cout << "Error:unable to create thread," << rc << std::endl;
-    return false;
+		std::cout << "Error:unable to create thread," << rc << std::endl;
+		return false;
     }
     return true;
 }
@@ -522,7 +522,7 @@ void* thread_HandleConnnection(void *threadid){
 			else if(!strcmp(cmd,"loadPID")){
 				w->dspic->loadPID();
 				w->waitingResponsePID = true;
-				w->dspic->isPIDUpdated = false;
+				w->dspic->setUpdatedAllPid(false);
 			}
 			else if(!strcmp(cmd,"odo1")){
 				if(val == NULL){
@@ -693,7 +693,7 @@ std::string realResponse(Web *w){
 	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
     //if(dspic->isPIDUpdated){
     if(dspic->isUpdatedAllPid()){
-        dspic->setAllPidUpdated(false);
+        dspic->setUpdatedAllPid(false);
         //dspic->isPIDUpdated = false;
         pid p = dspic->getPidSpeedLeft();
 		myString << "&p1=";
