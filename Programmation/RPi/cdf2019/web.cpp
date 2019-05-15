@@ -149,7 +149,7 @@ void* thread_HandleConnnection(void *threadid){
 				if(atoi(val) == 1){
 					w->dspic->stop();
 				}
-				
+
 			}
 			else if(!strcmp(cmd,"x")){
 				if(val == NULL){
@@ -619,7 +619,7 @@ std::string realResponse(Web *w){
 	myString << dspic->getY();
 	myString << "&t=";
 	myString << dspic->getT()*180/3.14159;
-	
+
 	myString << "&b=";
 	myString << dspic->getBat();
 
@@ -646,55 +646,87 @@ std::string realResponse(Web *w){
 	myString << "&r10=";
 	myString << rupt.act5;
 
-	for(int i = 0; i < 6; i++){
+	/*for(int i = 0; i < 6; i++){
         myString << "&d" << i + 1 << "=";
-	myString << dspic->US[i];
+        myString << dspic->US[i];
+	}*/
+
+	US us = dspic->getUS();
+	myString << "&d1=";
+	myString << us.US0;
+	myString << "&d2=";
+	myString << us.US1;
+	myString << "&d3=";
+	myString << us.US2;
+	myString << "&d4=";
+	myString << us.US3;
+	myString << "&d5=";
+	myString << us.US4;
+	myString << "&d6=";
+	myString << us.US5;
+
+	if(dspic->isUpdatedLogs()){
+        std::queue<std::string> logs = dspic->getLogs();
+        while(logs.size() > 0){
+            myString << "&l=";
+            std::string qs = logs.front();
+            logs.pop();
+            myString << qs;
+            //std::cout << "log sent to web -> " << qs << std::endl;
+            //myString << qs;
+        }
+        dspic->clearLogs();
 	}
-	while(dspic->logs.size() > 0){
-        myString << "&l=";
-        std::string qs = dspic->logs.front();
-        dspic->logs.pop();
-        myString << qs;
-        //std::cout << "log sent to web -> " << qs << std::endl;
-        //myString << qs;
+
+	if(dspic->isUpdatedPlots()){
+        std::queue<point> plots = dspic->getPlots();
+        while(plots.size() > 0){
+            point p = plots.front();
+            plots.pop();
+            myString << "&c" << (int)p.id << "=" << p.x << ";" << p.y;
+            //std::cout << "plot : " << (int)p.id << "=" << p.x << ";" << p.y << std::endl;
+            //myString << qs;
+        }
+        dspic->clearPlots();
 	}
-	while(dspic->plots.size() > 0){
-        point p = dspic->plots.front();
-        dspic->plots.pop();
-        myString << "&c" << (int)p.id << "=" << p.x << ";" << p.y;
-        //std::cout << "plot : " << (int)p.id << "=" << p.x << ";" << p.y << std::endl;
-        //myString << qs;
-	}
+
 	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
-    if(dspic->isPIDUpdated){
-        dspic->isPIDUpdated = false;
+    //if(dspic->isPIDUpdated){
+    if(dspic->isUpdatedAllPid()){
+        dspic->setAllPidUpdated(false);
+        //dspic->isPIDUpdated = false;
+        pid p = dspic->getPidSpeedLeft();
 		myString << "&p1=";
-		myString << dspic->pidSpeedLeft.Kp;
+		//myString << dspic->pidSpeedLeft.Kp;
+		myString << p.Kp;
 		myString << "&i1=";
-		myString << dspic->pidSpeedLeft.Ki;
+		myString << p.Ki;
 		myString << "&a1=";
-		myString << dspic->pidSpeedLeft.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidSpeedRight();
 		myString << "&p2=";
-		myString << dspic->pidSpeedRight.Kp;
+		myString << p.Kp;
 		myString << "&i2=";
-		myString << dspic->pidSpeedRight.Ki;
+		myString << p.Ki;
 		myString << "&a2=";
-		myString << dspic->pidSpeedRight.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidDistance();
 		myString << "&p3=";
-		myString << dspic->pidDistance.Kp;
+		myString << p.Kp;
 		myString << "&i3=";
-		myString << dspic->pidDistance.Ki;
+		myString << p.Ki;
 		myString << "&a3=";
-		myString << dspic->pidDistance.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidAngle();
 		myString << "&p4=";
-		myString << dspic->pidAngle.Kp;
+		myString << p.Kp;
 		myString << "&i4=";
-		myString << dspic->pidAngle.Ki;
+		myString << p.Ki;
 		myString << "&a4=";
-		myString << dspic->pidAngle.Kd;
+		myString << p.Kd;
 	}
 	/*myString << "&c1=";
 	myString << i;
