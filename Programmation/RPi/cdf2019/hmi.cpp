@@ -12,9 +12,7 @@ HMI::~HMI(){
 }
 
 void HMI::SendManual(void) {
-	int fd, result;
 	unsigned char buffer[100];
-	fd = wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
 	int in = 0;
 	while(in != -1) {
 		std::cout << ">";
@@ -33,14 +31,15 @@ int HMI::Send(int in){
 	unsigned char buffer[1];
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
-	std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
+	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
 	//delay(SPI_DELAY_MS);
 	delayMicroseconds(SPI_DELAY_US);
 	return (int)buffer[0];
 
 }
-void HMI::SetPrgm(int in, string txt) {
-	int i, check = 0;
+void HMI::SetPrgm(int in, std::string txt) {
+	unsigned int i;
+	int check = 0;
 	char txt_char[txt.size()+1];
 	strcpy(txt_char, txt.c_str());
 	if(txt.size() < 16) {
@@ -68,10 +67,11 @@ void HMI::SetPos(int in, int pos) {
 	Send(lsb);
 	Send(4+in+msb+lsb);
 }
-void HMI::SetTxt(int in, string txt) {
+void HMI::SetTxt(int in, std::string txt) {
 	EraseScreen(in);
 	delay(ERASE_TIME);
-	int i, check = 0;
+	unsigned int i; 
+	int check = 0;
 	in += 7;
 	char txt_char[txt.size()+1];
 	strcpy(txt_char, txt.c_str());
@@ -91,7 +91,7 @@ void HMI::SetTxt(int in, string txt) {
 		std::cout << "erreur chaine trop longue max 196" << std::endl;
 	}
 }
-void HMI::SetTxtFull(string txt_in) {
+void HMI::SetTxtFull(std::string txt_in) {
 	if(txt_in.size() < 197) {
 		SetTxt(1, txt_in.substr(0,txt_in.size()));
 		delay(ERASE_TIME);

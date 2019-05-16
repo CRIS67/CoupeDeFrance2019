@@ -21,12 +21,12 @@ class HMI
         virtual ~HMI();
 
         void SendManual(void);
-        int Send(int in);
-
-        void SetPrgm(void);
-        void SetPos(void);
-        void SetTxt(void);
-        void EraseScreen(int in_era);
+		int Send(int in);
+		void SetPrgm(int in, std::string txt);
+		void SetPos(int in, int pos);
+		void SetTxt(int in, std::string txt);
+		void SetTxtFull(std::string txt_in);
+		void EraseScreen(int in_era);
 		void flush(uint16_t nb);
 
     protected:

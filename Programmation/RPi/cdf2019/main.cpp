@@ -22,30 +22,18 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
-
-    /*wiringPiSetup();
-    debugTestAllDelay();
-    exit(0);*/
-    /*debugAct();
-    exit(0);*/
-    //wiringPiSetup();
-    /*debugAct();
-    exit(0);*/
     wiringPiSetup();
+	
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
-    /*A AJOUTER : FLUSH tous les slaves*/
+	
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
+	
     Lidar lidar(&spi,SPI_ID_LIDAR);
 	//lidar.flush(255);
 	lidar.start();
-
-	HMI hmi(&spi,SPI_ID_HMI);
 	//lidar.startThreadDetection();
 
-	/*int valueH = 700;
-    int valueL = 1600;
-    int valueDrop = 1500;
-    int valueMiddle = 1000;*/
+	HMI hmi(&spi,SPI_ID_HMI);
 
     actFront.MoveServo(0,SERVO_VALUE_HIGH);
     actFront.MoveServo(1,SERVO_VALUE_HIGH);
@@ -55,21 +43,10 @@ int main()
     actBack.MoveServo(2,SERVO_VALUE_HIGH);
 
 	DsPIC dspic;
-    //pthread_t thread_print;
-
     dspic.async_read(); //flush rx buffer
 
 	Web web(&dspic);
     web.startThread();
-
-    //int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    //rc = pthread_create(&thread_print, NULL, print, &dspic);
-
-    /*if (rc) {
-		std::cout << "Error:unable to create thread," << rc << std::endl;
-		exit(-1);
-    }*/
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
 

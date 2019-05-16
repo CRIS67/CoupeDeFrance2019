@@ -98,17 +98,17 @@ bool Web::startThread(){
 }
 
 void Web::addLidarPoints(float x, float y){
-	floatPoint fp;
+	pointFloat2d fp;
 	fp.x = x;
 	fp.y = y;
 	addLidarPoints(fp);
 }
-void Web::addLidarPoints(floatPoint fp){
+void Web::addLidarPoints(pointFloat2d fp){
 	lidarPoints.push(fp);
 }
-void Web::addLidarPoints(std::vector<floatPoint> vect_fp){
+void Web::addLidarPoints(std::vector<pointFloat2d> vect_fp){
 	for(unsigned int i = 0; i < vect_fp.size(); i++){
-		floatPoint fp = vect_fp[i];
+		pointFloat2d fp = vect_fp[i];
 		addLidarPoints(fp);
 	}
 }
@@ -722,7 +722,7 @@ std::string realResponse(Web *w){
         else{
 			myString << "&z=";
 		}
-        floatPoint fp = w->lidarPoints.front();
+        pointFloat2d fp = w->lidarPoints.front();
         w->lidarPoints.pop();
         myString << fp.x << ";" << fp.y;
         //std::cout << "log sent to web -> " << qs << std::endl;

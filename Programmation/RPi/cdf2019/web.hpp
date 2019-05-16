@@ -14,6 +14,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
+#include "lidar.hpp"
 
 #define DEBUG_PID	0
 
@@ -35,12 +36,12 @@ class Web
 		bool waitingResponsePID = false;
 		
 		void addLidarPoints(float x, float y);
-		void addLidarPoints(floatPoint fp);
-		void addLidarPoints(std::vector<floatPoint> vect_fp);
+		void addLidarPoints(pointFloat2d fp);
+		void addLidarPoints(std::vector<pointFloat2d> vect_fp);
 		void clearLidarPoints();
 		bool m_clearLidarPoints = false;
 		bool m_radarScan = true;
-		std::queue<floatPoint> lidarPoints;
+		std::queue<pointFloat2d> lidarPoints;
 		
     protected:
         int socket_listen;
