@@ -9,6 +9,7 @@
 #include "SPI.hpp"
 #include "lidar.hpp"
 #include "actuators.hpp"
+#include "hmi.hpp"
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
@@ -21,7 +22,7 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
-	
+
     /*wiringPiSetup();
     debugTestAllDelay();
     exit(0);*/
@@ -37,20 +38,22 @@ int main()
     Lidar lidar(&spi,SPI_ID_LIDAR);
 	//lidar.flush(255);
 	lidar.start();
+
+	HMI hmi(&spi,SPI_ID_HMI);
 	//lidar.startThreadDetection();
-	
+
 	/*int valueH = 700;
     int valueL = 1600;
     int valueDrop = 1500;
     int valueMiddle = 1000;*/
-	
+
     actFront.MoveServo(0,SERVO_VALUE_HIGH);
     actFront.MoveServo(1,SERVO_VALUE_HIGH);
     actFront.MoveServo(2,SERVO_VALUE_HIGH);
     actBack.MoveServo(0,SERVO_VALUE_HIGH);
     actBack.MoveServo(1,SERVO_VALUE_HIGH);
     actBack.MoveServo(2,SERVO_VALUE_HIGH);
-	
+
 	DsPIC dspic;
     //pthread_t thread_print;
 
@@ -69,15 +72,15 @@ int main()
     }*/
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
-	
-	
+
+
 	/*getchar();
 	std::cout << "length of queueDetectedPoint : " << lidar.getDetectedPoints().size() << std::endl;
 	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
 	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
 	delay(100);
 	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
-	
+
 	getchar();
 	lidar.stopThreadDetection();*/
     /*
@@ -123,7 +126,7 @@ int main()
     dspic.turn(nTurn*360,1);
     getchar();
     dspic.turn(-nTurn*360,1);*/
-    
+
     /*trigo
     for(int i = 0; i < 1; i++){
         dspic.go(500,0,0,0);
@@ -274,7 +277,7 @@ void debugTestAllDelay(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
@@ -361,7 +364,7 @@ void debugTestAllInstant(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
@@ -439,7 +442,7 @@ void debugBN(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     //int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
