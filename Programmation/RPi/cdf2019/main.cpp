@@ -25,8 +25,8 @@
 #include "trajectoryHandle.hpp"
 
 //DStarGlobal 
-int mapRows {10};  
-int mapColumns {10};  
+int mapRows {2000};  
+int mapColumns {3000};  
 float km {0}; // variable for the D*
 
 std::vector<std::vector<int>> mapVector; // the robot's map 
@@ -104,7 +104,7 @@ int main()
 
     /*=============Strategy  START===================*/
     
-    std::vector<Node> strategyTour; 
+    std::vector<Node> strategyTour; // Contains the nodes we are going to visit 
     LK strategy(100); 
     strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file  
     strategy.optimize(strategyTour); // optimize the tour 
@@ -115,7 +115,21 @@ int main()
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
-    createRectangle(4, 4, 5, 5, mapVector); // creates a 5x5 obstacle rectangle  at (4,4) 
+    createRectangle(1600,0,400 ,2000, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+
+    /*Ensemble palets*/
+    createRectangle(900,850,300,300,mapVector); 
+    createRectangle(900,1850,300,300,mapVector); 
+    
+    /* Palets*/
+    createRectangle(412,412,76,76,mapVector); 
+    createRectangle(712,412,76,76,mapVector); 
+    createRectangle(1032,412,76,76,mapVector); 
+    createRectangle(412,2462,76,76,mapVector); 
+    createRectangle(712,2462,76,76,mapVector); 
+    createRectangle(1032,2462,76,76,mapVector); 
+     
+    std::cout << "MAP GENERATED" << std::endl; 
     printMap(mapRows, mapColumns, mapVector);
 
     /* For all actions we do a D* run */
@@ -153,11 +167,12 @@ int main()
           //startNode = bestNode(startNode, knownNodes); // we "move" the robot
           startNode = simplifiedPath.at(counter); 
           counter++;
+          std::cout << "PRINTING PATH" << std::endl; 
           findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
 
-          int xSetpoint = startNode.coord.first *30; 
-          int ySetpoint = startNode.coord.second *30; 
-          dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
+          int xSetpoint = startNode.coord.first *1; 
+          int ySetpoint = startNode.coord.second *1; 
+          //dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
 
           // Wait until the robot reaches the point
           /*

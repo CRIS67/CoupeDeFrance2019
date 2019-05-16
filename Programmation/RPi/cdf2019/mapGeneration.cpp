@@ -31,7 +31,7 @@ void createRectangle(uint startX, uint startY, int width, int length, std::vecto
 
 void printMap(int mapRows, int mapColumns, std::vector<std::vector<int>>& mapVector) {
 
-	std::cout << "PRINTING RANDOM MAP" << std::endl;
+	std::cout << "PRINTING  MAP" << std::endl;
 	for(int i = 0; i< mapRows; i++){
 
 		for (int j= 0; j<mapColumns; j++){
