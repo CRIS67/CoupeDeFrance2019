@@ -400,6 +400,7 @@ char GetColor(unsigned char nb_bras) {
   #endif
   Affiche("H="+String(H), DEBUG_COL_NB);
   // Déduction de la couleur à partir du HSL 
+  Hg = H;
   if(white > LIM_WHITE_MAX) {
     col = 0;
     Affiche("pas de palet", DEBUG_COL_NB);
@@ -861,9 +862,6 @@ ISR(SPI_STC_vect) {
           break;
           case SEUIL_R_HAUT:
             LIM_RED_MAX = TextSpi[0]*256+TextSpi[1];
-          break;
-          case SEUIL_R_BAS:
-            LIM_RED_MIN = TextSpi[0]*256+TextSpi[1];
           break;
           case SEUIL_G_BAS:
             LIM_GREEN_MIN = TextSpi[0]*256+TextSpi[1];
