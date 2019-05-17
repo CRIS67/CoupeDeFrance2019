@@ -346,7 +346,10 @@
 					Sensors
 				</div>
 				<div>
-					Ultrasonic<br/><br/>
+					Battery<br/><br/>
+					Voltage : <input class="outputText" id="outputText_BatteryVoltage" type="text" value=""/> V<br/>
+					Percentage : <input class="outputText" id="outputText_BatteryPercentage" type="text" value=""/> %<br/>
+					<br/><br/>Ultrasonic<br/><br/>
 					1 : <input class="outputText" id="outputText_US1" type="text" value=""/> cm<br/>
 					2 : <input class="outputText" id="outputText_US2" type="text" value=""/> cm<br/>
 					3 : <input class="outputText" id="outputText_US3" type="text" value=""/> cm<br/>

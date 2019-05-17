@@ -16,6 +16,10 @@
 #define RX_CODE_MOTOR_VOLTAGE   10
 #define RX_CODE_SET_MOT_LIN   	11
 
+
+
+#define RX_CODE_RESET           66
+
 #define RX_SIZE_START 2
 #define RX_SIZE_STOP 2
 #define RX_SIZE_SET       // var,type,value
@@ -30,6 +34,8 @@
 #define RX_SIZE_AX12    5 // id,value_H,value_L
 #define RX_SIZE_GO      7 // option,x_H,x_L,y_H,y_L
 #define RX_SIZE_TURN    5 // option,t_H,t_L
+
+#define RX_SIZE_RESET           2
 
 #define MASK_OPTION_RELATIVE    0x2
 #define MASK_OPTION_REVERSE     0x1

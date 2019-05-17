@@ -31,13 +31,17 @@ int HMI::Send(int in){
 	unsigned char buffer[1];
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
-	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
+	std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
 	//delay(SPI_DELAY_MS);
 	delayMicroseconds(SPI_DELAY_US);
 	return (int)buffer[0];
 
 }
 void HMI::SetPrgm(int in, std::string txt) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	unsigned int i;
 	int check = 0;
 	char txt_char[txt.size()+1];
@@ -57,8 +61,14 @@ void HMI::SetPrgm(int in, std::string txt) {
 	} else {
 		std::cout << "chaine trop longue max 15" << std::endl;
 	}
+	m_pSpi->unlock();
+
 }
 void HMI::SetPos(int in, int pos) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	in += 6;
 	int lsb = pos%256, msb = (int)(pos/256);
 	Send(4);
@@ -66,8 +76,13 @@ void HMI::SetPos(int in, int pos) {
 	Send(msb);
 	Send(lsb);
 	Send(4+in+msb+lsb);
+	m_pSpi->unlock();
 }
 void HMI::SetTxt(int in, std::string txt) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	EraseScreen(in);
 	delay(ERASE_TIME);
 	unsigned int i; 
@@ -90,8 +105,13 @@ void HMI::SetTxt(int in, std::string txt) {
 	} else {
 		std::cout << "erreur chaine trop longue max 196" << std::endl;
 	}
+	m_pSpi->unlock();
 }
 void HMI::SetTxtFull(std::string txt_in) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	if(txt_in.size() < 197) {
 		SetTxt(1, txt_in.substr(0,txt_in.size()));
 		delay(ERASE_TIME);
@@ -127,8 +147,13 @@ void HMI::SetTxtFull(std::string txt_in) {
 	} else {
 		std::cout << "erreur chaine trop longue";
 	}
+	m_pSpi->unlock();
 }
 void HMI::EraseScreen(int in_era) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
 	int check_era = 198, i_era;
 	Send(198);
 	in_era += 7;
@@ -139,6 +164,7 @@ void HMI::EraseScreen(int in_era) {
 		Send('\0');
 	}
 	Send(check_era);
+	m_pSpi->unlock();
 }
 void HMI::flush(uint16_t nb){
 	m_pSpi->lock();

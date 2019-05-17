@@ -1,8 +1,9 @@
 #include "lidar.hpp"
 
-Lidar::Lidar(SPI *pSpi,uint8_t id){
+Lidar::Lidar(SPI *pSpi,uint8_t id, Web *pWeb){
 	//fd = wiringPiSPISetup(CHANNEL, SPI_FREQUENCY);
 	m_pSpi = pSpi;
+	m_pWeb = pWeb;
 	m_id = id;
 	
 	/*Initialize*/
@@ -216,8 +217,16 @@ void Lidar::checkMessages(){
 						}*/
 						//std::cout << "x : " << x << " & y : " << y << std::endl;
 						//std::cout << x << "," << y << std::endl;
-						//std::cout << "Lidar> " p.x << "," << p.y << std::endl;
-						addDetectedPoint(p);
+						//std::cout << "Lidar> " << p.x << "," << p.y << std::endl;
+						//addDetectedPoint(p);
+						double angle = atan2(p.y,p.x);
+						double distance = sqrt(p.x*p.x + p.y*p.y);
+						angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						p.x = distance*cos(angle);
+						p.y = distance*sin(angle);
+						p.x += m_pWeb->dspic->getX();
+						p.y += m_pWeb->dspic->getY();
+						m_pWeb->addLidarPoints(p);
 					}
 					
 					break;}

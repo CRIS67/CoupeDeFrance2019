@@ -14,9 +14,13 @@
 #include <math.h>
 #include <unistd.h>
 #include "dspic.hpp"
-#include "lidar.hpp"
 
 #define DEBUG_PID	0
+
+struct pointFloat2d{
+  float x;
+  float y;
+};
 
 void* thread_HandleConnnection(void *threadid);
 std::string simulateResponse(double i);

@@ -1338,7 +1338,13 @@ window.onload = function () {
 
 			ctx.fillStyle = style;
 			ctx.fill();
-			ctx.clearRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			//ctx.clearRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			ctx.fillStyle = 'orange';
+			ctx.fillRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			ctx.fillStyle = 'black';
+			//ctx.fillStyle = 'style';
+			//ctx.fill();
+
 			ctx.fillText(text,-width / 2 + 20,-height / 2 + 25);
 			/*ctx.beginPath();
 			ctx.moveTo(width/2,height/2);
@@ -1732,7 +1738,7 @@ window.onload = function () {
 		}
 		function drawCanvas(){
 			ctx.drawImage(img, 0, 0);
-			drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "blue", "GR");
+			drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "black", "GR");
 			for(var i = 0; i < lidarPoints.length;i++){
 				drawPoint(ctx, lidarPoints[i].x, lidarPoints[i].y, "red");
 			}

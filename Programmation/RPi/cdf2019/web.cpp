@@ -728,6 +728,18 @@ std::string realResponse(Web *w){
         //std::cout << "log sent to web -> " << qs << std::endl;
         //myString << qs;
 	}
+	/*std::queue<pointFloat2d> points  = w->lidar->getAndClearDetectedPoints();
+    while(points.size()){
+        pointFloat2d fp = points.front();
+        if(!w->m_radarScan){
+			myString << "&s=";
+		}
+        else{
+			myString << "&z=";
+		}
+		myString << fp.x << ";" << fp.y;
+        points.pop();
+    }*/
 	
 	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
     //if(dspic->isPIDUpdated){

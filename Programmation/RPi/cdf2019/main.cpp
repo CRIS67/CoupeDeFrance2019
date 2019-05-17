@@ -22,25 +22,30 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
+    //debugAct();
+    //exit(0);
     wiringPiSetup();
 	
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 	
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 	
-    Lidar lidar(&spi,SPI_ID_LIDAR);
-	//lidar.flush(255);
-	lidar.start();
-	//lidar.startThreadDetection();
+    
 
-	HMI hmi(&spi,SPI_ID_HMI);
+	/*HMI hmi(&spi,SPI_ID_HMI);
+    hmi.SetPos(0,400);
+    hmi.SetPos(1,300);
+    hmi.SetPrgm(1,"hello");
+    hmi.SetPrgm(2,"world");
+    hmi.SetPrgm(3,"=) !");*/
+    //hmi.SetTxtFull("Hello CRIS ! =D ");
 
-    actFront.MoveServo(0,SERVO_VALUE_HIGH);
+    /*actFront.MoveServo(0,SERVO_VALUE_HIGH);
     actFront.MoveServo(1,SERVO_VALUE_HIGH);
     actFront.MoveServo(2,SERVO_VALUE_HIGH);
     actBack.MoveServo(0,SERVO_VALUE_HIGH);
     actBack.MoveServo(1,SERVO_VALUE_HIGH);
-    actBack.MoveServo(2,SERVO_VALUE_HIGH);
+    actBack.MoveServo(2,SERVO_VALUE_HIGH);*/
 
 	DsPIC dspic;
     dspic.async_read(); //flush rx buffer
@@ -48,18 +53,15 @@ int main()
 	Web web(&dspic);
     web.startThread();
 
+    Lidar lidar(&spi, SPI_ID_LIDAR, &web);
+    //lidar.flush(255);
+    lidar.setSpeed(150);
+    lidar.start();
+    //lidar.stop();
+    lidar.startThreadDetection();
+
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
 
-
-	/*getchar();
-	std::cout << "length of queueDetectedPoint : " << lidar.getDetectedPoints().size() << std::endl;
-	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
-	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
-	delay(100);
-	std::cout << "length of queueDetectedPoint : " << lidar.getAndClearDetectedPoints().size() << std::endl;
-
-	getchar();
-	lidar.stopThreadDetection();*/
     /*
 	getchar();
 	//lidar.start();
@@ -89,15 +91,17 @@ int main()
 	dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
-    dspic.initPos(1200,2550,-3.14159/2);
+    //dspic.initPos(1200,2550,-3.14159/2);
+    dspic.initPos(1200-155,2550+124,-3.14159/2);
+    //dspic.initPos(1000,1500,-3.14159/2);
     //dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
-    getchar();
+    /*getchar();
     dspic.start();
     getchar();
 	dspic.go(1200,450,0,0);
     getchar();
-	dspic.go(1200,2550,1,0);
+	dspic.go(1200,2550,1,0);*/
     /*f° turn buguée (thetac dans le dspic)
     int nTurn = 1;
     dspic.turn(nTurn*360,1);
@@ -168,23 +172,9 @@ void debugAct(){
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     DsPIC dspic;
-    pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
-    Web web(&dspic);
-    web.startThread();
-
-    int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-
-    if (rc) {
-        std::cout << "Error:unable to create thread," << rc << std::endl;
-        exit(-1);
-    }
-
-    getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
@@ -202,7 +192,9 @@ void debugAct(){
             int id = choice;
             std::cout << "Press 1 to start pump" << std::endl;
             std::cout << "Press 2 to stop pump" << std::endl;
-            std::cout << "Press 3 to set servo" << std::endl;
+            std::cout << "Press 3 to measure current" << std::endl;
+            std::cout << "Press 4 to set servo" << std::endl;
+            std::cout << "Press 5 to testMeasure" << std::endl;
             std::cin >> choice;
             switch(choice){
                 case 1:
@@ -222,6 +214,14 @@ void debugAct(){
                     }
                     break;
                 case 3:
+                    if(id < 3){
+                        std::cout << "current : " << actFront.debugGetCurrent(id) << std::endl;
+                    }
+                    else{
+                        std::cout << "current : " << actBack.debugGetCurrent(id-3) << std::endl;
+                    }
+                    break;
+                case 4:
                     std::cout << "enter duty cycle" << std::endl;
                     int dutyCycle;
                     std::cin >> dutyCycle;
@@ -230,6 +230,30 @@ void debugAct(){
                     }
                     else{
                         actBack.MoveServo(id-3,dutyCycle);
+                    }
+                    break;
+                case 5:
+                    if(id < 3){
+                        actFront.SetPump(id,1);
+                        delay(2000);
+                        std::cout << "current : " << actFront.debugGetCurrent(id) << std::endl;
+                        std::cout << "currentFull : " << actFront.debugGetCurrentFull(id) << std::endl;
+                        actFront.SetPump(id,0);
+                    }
+                    else{
+                        actBack.SetPump(id-3,1);
+                        delay(500);
+                        std::cout << "current : " << actBack.debugGetCurrent(id-3) << std::endl;
+                        std::cout << "currentFull : " << actBack.debugGetCurrentFull(id-3) << std::endl;
+                        actBack.SetPump(id-3,0);
+                    }
+                    break;
+                case 6:
+                    if(id < 3){
+                        std::cout << "color : " << actFront.debugGetColor(id) << std::endl;
+                    }
+                    else{
+                        std::cout << "color : " << actBack.debugGetColor(id-3) << std::endl;
                     }
                     break;
             }
@@ -249,6 +273,8 @@ void debugAct(){
         }
 
     }
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
+    puts("verbose set to 0");
 }
 void debugTestAllDelay(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
@@ -442,21 +468,9 @@ void debugBN(){
 }
 void debugGoldenium(){
     DsPIC dspic;
-    pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
-    Web web(&dspic);
-    web.startThread();
-
-    int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-
-    if (rc) {
-        std::cout << "Error:unable to create thread," << rc << std::endl;
-        exit(-1);
-    }
     std::cout << "Press enter to continue"  << std::endl;
     getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);

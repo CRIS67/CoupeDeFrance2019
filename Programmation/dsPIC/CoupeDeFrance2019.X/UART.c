@@ -362,6 +362,14 @@ void CheckMessages(){
                 success = 1;
                 break; // </editor-fold>
 
+                // <editor-fold defaultstate="collapsed" desc="Reset">
+            case RX_CODE_RESET:
+                if (size != RX_SIZE_RESET)
+                    return;
+                sendLog(("RESET !\n"));
+                asm ("RESET");
+                break; // </editor-fold>
+
                 // <editor-fold defaultstate="collapsed" desc="Set">
             case RX_CODE_SET:
             {

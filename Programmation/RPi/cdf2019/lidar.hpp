@@ -44,18 +44,16 @@
 #include <pthread.h>
 
 #include "SPI.hpp"
+#include "web.hpp"
 
-struct pointFloat2d{
-  float x;
-  float y;
-};
+
 
 void* thread_Lidar(void *threadid);
 
 class Lidar
 {
     public:
-        Lidar(SPI *pSpi,uint8_t id);
+        Lidar(SPI *pSpi,uint8_t id, Web *pWeb);
         virtual ~Lidar();
 		
 		void start();
@@ -96,6 +94,7 @@ class Lidar
 		bool m_continueThread;
 		//int fd;
 		SPI *m_pSpi;	//pointer to SPI instance
+		Web *m_pWeb;	//pointer to SPI instance
 		std::queue<pointFloat2d> m_qDetectedPoints;
     private:
 };
