@@ -57,14 +57,6 @@
   #define MAP_WHITE_MAX 60
 #endif
 
-//limite des couleurs 40-135(6)-420(1)-3000
-#define LIM_RED_MIN     15
-#define LIM_RED_MAX     39
-#define LIM_GREEN_MIN   39
-#define LIM_GREEN_MAX   100
-#define LIM_BLUE_MIN    195
-#define LIM_BLUE_MAX    350
-
 #define LIM_CUR_MIN     100 //+1mA ~ +1bit
 #define LIM_CUR_MAX     250 //450
 
@@ -136,6 +128,14 @@
 #define CURENT_SPI_FULL_0 16
 #define CURENT_SPI_FULL_1 17
 #define CURENT_SPI_FULL_2 18
+#define COLOR_SPI_FULL    19
+#define SEUIL_R_BAS       20
+#define SEUIL_R_HAUT      21
+#define SEUIL_G_BAS       22
+#define SEUIL_G_HAUT      23
+#define SEUIL_B_BAS       24
+#define SEUIL_B_HAUT      25
+#define SEUIL_W           26
 
 #define PUMP_LAUNCH_0   0
 #define PUMP_LAUNCH_1   1
@@ -156,6 +156,16 @@ void Sequence(unsigned char nb_bras);
 Servo Servo0;
 Servo Servo1;
 Servo Servo2;
+
+//limite des couleurs 40-135(6)-420(1)-3000
+int LIM_RED_MIN = 15;
+int LIM_RED_MAX = 39;
+int LIM_GREEN_MIN = 39;
+int LIM_GREEN_MAX = 100;
+int LIM_BLUE_MIN = 195;
+int LIM_BLUE_MAX = 350;
+int LIM_WHITE_MAX = 32;
+int Hg = 0;
 
 //spi
 char EtatSpi = SPI_IDLE;              //etat de la machine à état spi
@@ -390,7 +400,7 @@ char GetColor(unsigned char nb_bras) {
   #endif
   Affiche("H="+String(H), DEBUG_COL_NB);
   // Déduction de la couleur à partir du HSL 
-  if(white > 32) {
+  if(white > LIM_WHITE_MAX) {
     col = 0;
     Affiche("pas de palet", DEBUG_COL_NB);
   } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
@@ -725,7 +735,7 @@ ISR(SPI_STC_vect) {
     case SPI_NUM_VAR:
       //gestion du type
       TypeVarSpi = data_spi;
-      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2) {
+      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2 || TypeVarSpi == COLOR_SPI_FULL) {
         EtatSpi = SPI_CHECKSUM; //pas de message utile
       } else {
         EtatSpi = SPI_MSG_UTILE;
@@ -841,6 +851,35 @@ ISR(SPI_STC_vect) {
             CptPile++;
             CptPile %= TAILLE_SEND;
           break;
+          case  COLOR_SPI_FULL:
+            TabPileSend[CptPile] = COLOR_SPI_FULL;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case SEUIL_R_BAS:
+            LIM_RED_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_R_HAUT:
+            LIM_RED_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_R_BAS:
+            LIM_RED_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_G_BAS:
+            LIM_GREEN_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_G_HAUT:
+            LIM_GREEN_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_B_BAS:
+            LIM_BLUE_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_B_HAUT:
+            LIM_BLUE_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_W:
+            LIM_WHITE_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
           default:
             //do nothing
           break;
@@ -858,7 +897,7 @@ ISR(SPI_STC_vect) {
     CptSpiSend++;
     switch(CptSpiSend) {
       case 1:
-        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile]) {
+        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile] || COLOR_SPI_FULL == TabPileSend[CptReadPile]) {
           SPDR = 0x04;
         } else {
           SPDR = 0x03;
@@ -880,6 +919,9 @@ ISR(SPI_STC_vect) {
           case COLOR_SPI_2:
             SendNbSpi = Color2;
             CptSpiSend++;
+          break;
+          case COLOR_SPI_FULL:
+            SendNbSpi = (unsigned char)(Hg/256);
           break;
           case CURENT_SPI_0:
             SendNbSpi = Cur0;
@@ -916,11 +958,14 @@ ISR(SPI_STC_vect) {
           case CURENT_SPI_FULL_2:
             SendNbSpi_1 = (Cur_full_2%256);
           break;
+          case COLOR_SPI_FULL:
+            SendNbSpi_1 = (Hg%256);
+          break;
         }
         SPDR = SendNbSpi_1;
       break;
       case 5:
-        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile]) {
+        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile] || COLOR_SPI_FULL == TabPileSend[CptReadPile]) {
           SPDR = (0x04 + TabPileSend[CptReadPile] + SendNbSpi + SendNbSpi_1)%256;
         } else {
           SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
