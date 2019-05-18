@@ -35,7 +35,7 @@ std::vector<std::vector<int>> mapVector; // the robot's map
 bool obstacleDetection {false}; 
 bool pointReached {false}; 
  
-Node startNode = {infinity,infinity,0,std::pair<int,int>(0,0)};
+Node startNode = {infinity,infinity,0,std::pair<int,int>(75,250)};
 Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
@@ -109,14 +109,14 @@ int main()
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
     //dspic.initPos(1200,2550,-3.14159/2);
-    dspic.initPos(1200-155,2550+124,-3.14159/2);
+    dspic.initPos(startNode.coord.first,startNode.coord.second,-3.14159/2);
     //dspic.initPos(1000,1500,-3.14159/2);
     //dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
 	
     std::cout << "Press enter to dspic.start() " << std::endl; 
     getchar();
-    dspic.start(); */
+    dspic.start(); 
     std::cout << "Press enter to start the D*" << std::endl; 
     getchar(); 
 
@@ -133,19 +133,20 @@ int main()
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
-    createRectangle(160,0,39 ,199, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(160,0,25 ,299, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(0,0,25,299, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
 
-    /*Ensemble palets*/
-    createRectangle(90,85,30,30,mapVector); 
-    createRectangle(90,185,30,30,mapVector); 
-    
-    /* Palets*/
-    createRectangle(41,41,7,7,mapVector); 
-    createRectangle(71,41,7,7,mapVector); 
-    createRectangle(103,41,7,7,mapVector); 
-    createRectangle(41,246,7,7,mapVector); 
-    createRectangle(71,246,7,7,mapVector); 
-    createRectangle(103,246,7,7,mapVector); 
+   // /*Ensemble palets*/
+   // createRectangle(90,85,30,30,mapVector); 
+   // createRectangle(90,185,30,30,mapVector); 
+   // 
+   // /* Palets*/
+   // createRectangle(41,41,7,7,mapVector); 
+   // createRectangle(71,41,7,7,mapVector); 
+   // createRectangle(103,41,7,7,mapVector); 
+   // createRectangle(41,246,7,7,mapVector); 
+   // createRectangle(71,246,7,7,mapVector); 
+   // createRectangle(103,246,7,7,mapVector); 
      
     std::cout << "MAP GENERATED" << std::endl; 
     //printMap(mapRows, mapColumns, mapVector);
@@ -171,7 +172,7 @@ int main()
       std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
       std::vector<Node> simplifiedPath = pathTreatment(completePath);
       simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
-      printPath(simplifiedPath,mapVector); 
+      //printPath(simplifiedPath,mapVector); 
 
       int counter=0; 
 
@@ -187,7 +188,7 @@ int main()
           startNode = simplifiedPath.at(counter); 
           counter++;
           std::cout << "PRINTING PATH" << std::endl; 
-          findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
+          //findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
 
           int xSetpoint = startNode.coord.first *1; 
           int ySetpoint = startNode.coord.second *1; 
@@ -229,13 +230,13 @@ int main()
 
           // Debug 
           std::cout << "Press enter to continue to the next point" << std::endl; 
-          getchar();
+          //getchar();
       }
 
       /*=============DStarImplementation END===================*/
       startNode = goalNode; 
       std::cout << "Press enter for next action"  << std::endl; 
-      getchar(); 
+      //getchar(); 
       //strategyTour.erase(strategyTour.begin()+i); // We remove the action
     }
 
