@@ -690,6 +690,9 @@ window.onload = function () {
 		$("#Button_ClearChart").click(function(event){
 			clearChart();
 		});
+		$("#ButtonClearChartsPID").click(function(event){
+			clearChartPID();
+		});
 		$("#button_go").click(function(event){
 			var xDest = Number(document.getElementById("inputText_destX").value);
 			var yDest = Number(document.getElementById("inputText_destY").value);
@@ -1106,7 +1109,8 @@ window.onload = function () {
 			dps7.length = 0;
 			dps8.length = 0;
 			dps9.length = 0;
-			
+		}
+		function clearChartPID() {
 			dps11.length = 0;
 			dps12.length = 0;
 			dps13.length = 0;
