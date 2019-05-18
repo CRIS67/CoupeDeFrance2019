@@ -16,6 +16,10 @@
 #define RX_CODE_MOTOR_VOLTAGE   10
 #define RX_CODE_SET_MOT_LIN   	11
 
+
+
+#define RX_CODE_RESET           66
+
 #define RX_SIZE_START 2
 #define RX_SIZE_STOP 2
 #define RX_SIZE_SET       // var,type,value
@@ -30,6 +34,8 @@
 #define RX_SIZE_AX12    5 // id,value_H,value_L
 #define RX_SIZE_GO      7 // option,x_H,x_L,y_H,y_L
 #define RX_SIZE_TURN    5 // option,t_H,t_L
+
+#define RX_SIZE_RESET           2
 
 #define MASK_OPTION_RELATIVE    0x2
 #define MASK_OPTION_REVERSE     0x1
@@ -144,6 +150,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <mutex>
 
 struct microswitch{
   unsigned int ass0 : 1;
@@ -157,6 +164,14 @@ struct microswitch{
   unsigned int act4 : 1;
   unsigned int act5 : 1;
 };
+struct US{
+  uint16_t US0;
+  uint16_t US1;
+  uint16_t US2;
+  uint16_t US3;
+  uint16_t US4;
+  uint16_t US5;
+};
 struct point{
   uint8_t id;
   uint32_t x;
@@ -167,7 +182,7 @@ struct pid{
   uint32_t Ki;
   uint32_t Kd;
 };
-
+void *print(void *ptr);
 class DsPIC
 {
     public:
@@ -191,28 +206,108 @@ class DsPIC
 		void setVarDouble64b(uint8_t varCode, double Var);
 		void loadPID();
 		void getVar(uint8_t varCode);
+
 		std::string async_read();
         std::vector<uint8_t> readMsg();
-		int16_t x = 1500,y = 1000, t = 45;
-		int16_t US[6];
+
+		//int16_t x = 1500,y = 1000, t = 45;
+		//int16_t US[6];
+		//std::queue<std::string> logs;
+		//std::queue<point> plots;
+
+		//uint16_t nbUpdatePID = 0;
+		/*double coef_dissymetry = 0;
+		double mm_per_tick = 0;
+		double rad_per_tick = 0;*/
+
+		void setX(double x);
+		double getX();
+		bool isUpdatedX();
+
+		void setY(double y);
+		double getY();
+		bool isUpdatedY();
+
+		void setT(double t);
+		double getT();
+		bool isUpdatedT();
+
+		void setPos(double x, double y, double t);
+
+		void setArrived(bool arrived);
+		bool getArrived();
+		bool isUpdatedArrived();
+
+		void setRupt(microswitch rupt);
+		microswitch getRupt();
+		bool isUpdatedRupt();
+
+		void setBat(float bat);
+		float getBat();
+		bool isUpdatedBat();
+
+		void setUS(US us);
+        US getUS();
+        bool isUpdatedUS();
+
+        void setPidSpeedLeft(pid p);
+        pid getPidSpeedLeft();
+        bool isUpdatedPidSpeedLeft();
+
+        void setPidSpeedRight(pid p);
+        pid getPidSpeedRight();
+        bool isUpdatedPidSpeedRight();
+
+        void setPidDistance(pid p);
+        pid getPidDistance();
+        bool isUpdatedPidDistance();
+
+        void setPidAngle(pid p);
+        pid getPidAngle();
+        bool isUpdatedPidAngle();
+
+        void setUpdatedAllPid(bool val);
+        bool isUpdatedAllPid();
+
+        void addLog(std::string);
+        void clearLogs();
+        std::queue<std::string> getLogs();
+        bool isUpdatedLogs();
+
+        void addPlot(point p);
+        void clearPlots();
+        std::queue<point> getPlots();
+        bool isUpdatedPlots();
+
+    protected:
+		double x_ld = 0;
+		double y_ld = 0;
+		double t_ld = 0;
+		float bat = 0;
 		microswitch rupt;
-		std::queue<std::string> logs;
-		std::queue<point> plots;
+		US us;
 		pid pidSpeedLeft = {0,0,0};
 		pid pidSpeedRight = {0,0,0};
 		pid pidDistance = {0,0,0};
 		pid pidAngle = {0,0,0};
-		//uint16_t nbUpdatePID = 0;
-		bool isPIDUpdated = false;
-		float bat = 0;
-		double x_ld = 0;
-		double y_ld = 0;
-		double t_ld = 0;
-		double coef_dissymetry = 0;
-		double mm_per_tick = 0;
-		double rad_per_tick = 0;
-    protected:
+		std::queue<std::string> logs;
+		std::queue<point> plots;
 		int fd;
+        pthread_t m_threadReception;
+		std::mutex m_mutex;
+		bool updatedX = false;
+		bool updatedY = false;
+		bool updatedT = false;
+		bool updatedBat = false;
+		bool updatedRupt = false;
+		bool updatedUS = false;
+		bool updatedPidSpeedLeft = false;
+		bool updatedPidSpeedRight = false;
+		bool updatedPidDistance = false;
+		bool updatedPidAngle = false;
+		bool updatedAllPid = false;
+		bool updatedPlots = false;
+		bool updatedLogs = false;
     private:
 };
 

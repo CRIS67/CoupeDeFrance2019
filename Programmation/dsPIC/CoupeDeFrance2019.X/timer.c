@@ -88,8 +88,10 @@ volatile uint8_t nearPointAngle = 0;
 volatile uint16_t nplot = 0;
 
 extern volatile uint8_t arrived;
-extern uint8_t trajMode;
+extern volatile uint8_t trajMode;
 extern uint8_t cmdTraj;
+volatile uint8_t countTransition = 0;
+extern volatile uint8_t directionTraj;
 
 volatile long double distanceMax = 10;  //The robot is arrived at its destination if its distance to the destination point is less than this value
 // <editor-fold defaultstate="collapsed" desc="Trajectory generation">
@@ -347,9 +349,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         errorD = -errorD * myCos(thetaRobotPoint - (double)theta);
         //plot(1,(uint32_t)(int32_t)(1000*myCos(thetaRobotPoint - (double)theta)));
         //plot(2,(uint32_t)(int32_t)(1000*errorD));
-        /*
+        
         // <editor-fold defaultstate="collapsed" desc="gestion marche arrière">
-        double thetaDiff = (double)theta - thetaRobotPoint;
+        /*double thetaDiff = (double)theta - thetaRobotPoint;
         while (thetaDiff > PI) {
             thetaDiff -= 2 * PI;
         }
@@ -358,10 +360,11 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         }
         if (thetaDiff > -PI / 2 && thetaDiff < PI / 2) {
             errorD = -errorD;
-        }// </editor-fold>
-        */
+        }*/
+        // </editor-fold>
+        
 
-        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && trajMode == TRAJ_MODE_LIN)
+        if ( (distFinal > DIST_AIM_POINT || distFinal < -DIST_AIM_POINT) && (trajMode == TRAJ_MODE_LIN))
             setSetPoint(&pidAngle, thetaRobotPointFinal);
         else
             setSetPoint(&pidAngle, thetac);
@@ -597,6 +600,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                             thetac = theta0 + angle * sign;
                             prevAngularVelocity = angularVelocity;
                         } else {
+                            trajMode = TRAJ_MODE_LIN;
                             if(cmdTraj == CMD_TRAJ_ROT_AND_LIN){ // next state is linear motion
                                 statePathGeneration = 2;
                                 stateTrap = 1;
@@ -626,7 +630,6 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                         }
                         break;
                 }
-                trajMode = TRAJ_MODE_LIN;
                 break; // </editor-fold>
             // <editor-fold defaultstate="collapsed" desc="Translation">
             case 2: //Translation
@@ -680,6 +683,46 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
 
                 }
                 break; // </editor-fold>
+            // <editor-fold defaultstate="collapsed" desc="Transition">
+            case 3: //transition go
+                countTransition = 0;
+                xc = x;
+                yc = y;
+                xf = x;
+                yf = y;
+                thetac = theta;
+                finalPoint = 1;
+                trajMode = TRAJ_MODE_LIN;
+                statePathGeneration = 4;
+                break;
+            case 4:
+                if(countTransition < 50){
+                    countTransition++;
+                    //testSendToMotor(0,0);
+                }
+                else{
+                    finalPoint = 0;
+                    theta0 = theta;
+                    phi = atan2(cy-y,cx-x) - theta;
+                    if(directionTraj == BACKWARD){
+                        phi -= PI;
+                    }
+                    while(phi < -PI)
+                        phi += 2*PI;
+                    while(phi > PI){
+                        phi -= 2*PI;
+                    }
+                    if(phi > 0)
+                        sign = 1;
+                    else{
+                        sign = -1;
+                        phi = -phi;
+                    }
+                    xf = x;
+                    yf = y;
+                    statePathGeneration = 1;
+                }
+                break;// </editor-fold>
 
         }
         // </editor-fold>

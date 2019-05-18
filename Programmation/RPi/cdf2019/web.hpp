@@ -17,6 +17,11 @@
 
 #define DEBUG_PID	0
 
+struct pointFloat2d{
+  float x;
+  float y;
+};
+
 void* thread_HandleConnnection(void *threadid);
 std::string simulateResponse(double i);
 class Web
@@ -29,9 +34,19 @@ class Web
         bool sendMsg(std::string message);
 		std::string receiveMsg();
         bool startThread();
+		
         std::string s;
 		DsPIC *dspic;
 		bool waitingResponsePID = false;
+		
+		void addLidarPoints(float x, float y);
+		void addLidarPoints(pointFloat2d fp);
+		void addLidarPoints(std::vector<pointFloat2d> vect_fp);
+		void clearLidarPoints();
+		bool m_clearLidarPoints = false;
+		bool m_radarScan = true;
+		std::queue<pointFloat2d> lidarPoints;
+		
     protected:
         int socket_listen;
         int socket_client;

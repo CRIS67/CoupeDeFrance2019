@@ -1,5 +1,5 @@
-CDF: web.o dspic.o SPI.o lidar.o actuators.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o  
-	g++ -O3 -o cdf web.o dspic.o SPI.o lidar.o actuators.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread 
+CDF: web.o dspic.o SPI.o lidar.o actuators.o hmi.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o  
+	g++ -O3 -o cdf web.o dspic.o SPI.o lidar.o actuators.o hmi.o mapGeneration.o dStarLite.o trajectoryHandle.o LK.o main.o -Wall -lwiringPi -pthread 
 
 web.o: web.cpp
 	g++ -O3 -o web.o -c web.cpp -Wall -lwiringPi -pthread 
@@ -27,6 +27,9 @@ trajectoryHandle.o : trajectoryHandle.cpp
 
 LK.o: LK.cpp
 	g++ -O3 -o LK.o -c LK.cpp -Wall -lwiringPi -pthread
+	
+hmi.o: hmi.cpp 
+	g++ -O3 -o hmi.o -c hmi.cpp -Wall -lwiringPi -pthread 
 
-main.o: main.cpp web.hpp dspic.hpp SPI.hpp lidar.hpp actuators.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
+main.o: main.cpp web.hpp dspic.hpp SPI.hpp lidar.hpp actuators.hpp hmi.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
 	g++ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread 

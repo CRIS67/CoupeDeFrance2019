@@ -4,13 +4,17 @@ int Send(int in){
 	buffer[0] = (unsigned char)in;
 	wiringPiSPIDataRW(SPI_CHANNEL, buffer, 1);
 	//std::cout << "entree = " << in << "   /   " << " reponse = " << (int)buffer[0] << std::endl;
-	delayMicroseconds(SPI_DELAY);
+	//delay(SPI_DELAY_MS);
+	delayMicroseconds(SPI_DELAY_US);
 	return (int)buffer[0];
 	
 }
 Actuators::Actuators(SPI *pSpi,uint8_t id){
     m_pSpi = pSpi;
 	m_id = id;
+	
+	flush(255);
+	//ajouter ping();
 }
 Actuators::~Actuators(){
 
@@ -248,7 +252,7 @@ void Actuators::flush(uint16_t nb){
 	}
 	m_pSpi->unlock();
 }
-int Actuators::DebugGetCurrent(int nb_bras){
+int Actuators::debugGetCurrent(int nb_bras){
 	m_pSpi->lock();
 	if(m_pSpi->getSlaveId() != m_id){	
 		m_pSpi->setSlave(m_id);		//change Chip select
@@ -272,10 +276,12 @@ int Actuators::DebugGetCurrent(int nb_bras){
 		if(buffer[1] != (nb_bras)){
 			std::cout << "erreur fonction DebugGetCurrent : nb du bras" << std::endl;
 		}
-		if(buffer[3] != (buffer[0] + buffer[1] + buffer[2])){
+		uint8_t CS = buffer[0] + buffer[1] + buffer[2] + buffer[3];
+		if(buffer[3] != CS){
 			std::cout << "erreur fonction DebugGetCurrent : Checksum" << std::endl;
 		}
 		ret = buffer[2];
+		std::cout << " debug current : " << (int)buffer[0] << " / " << (int)buffer[1] << " / " << (int)buffer[2] << " / " << (int)buffer[3] << std::endl;
 	}
 	m_pSpi->unlock();
 	return ret;
@@ -306,10 +312,47 @@ int Actuators::debugGetCurrentFull(int nb_bras){
 		if(buffer[1] != (nb_bras)){
 			std::cout << "erreur fonction DebugGetCurrent : nb du bras" << std::endl;
 		}
-		if(buffer[4] != (buffer[0] + buffer[1] + buffer[2] + buffer[3])){
+		uint8_t CS = buffer[0] + buffer[1] + buffer[2] + buffer[3];
+		if(buffer[4] != CS){
 			std::cout << "erreur fonction DebugGetCurrent : Checksum" << std::endl;
 		}
 		ret = (buffer[2] << 8) + buffer[3];
+		std::cout << " debug current : " << (int)buffer[0] << " / " << (int)buffer[1] << " / " << (int)buffer[2] << " / " << (int)buffer[3] << " / " << (int)buffer[4] << std::endl;
+	}
+	m_pSpi->unlock();
+	return ret;
+}
+int Actuators::debugGetColor(int nb_bras){
+	m_pSpi->lock();
+	int ret = -1;
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+
+	if(nb_bras < 0 || nb_bras > 2) {
+		std::cout << "erreur nb_bras" << std::endl;
+	} else {
+		nb_bras += 10;
+		Send(2);
+		Send(nb_bras);
+		Send(2+nb_bras);
+		unsigned char buffer[4];
+		buffer[0] = Send(0);
+		buffer[1] = Send(0);
+		buffer[2] = Send(0);
+		buffer[3] = Send(0);
+		if(buffer[0] != 3){
+			std::cout << "erreur fonction DebugGetCurrent : taille du message != 3" << std::endl;
+		}
+		if(buffer[1] != (nb_bras)){
+			std::cout << "erreur fonction DebugGetCurrent : nb du bras" << std::endl;
+		}
+		uint8_t CS = buffer[0] + buffer[1] + buffer[2];
+		if(buffer[3] != CS){
+			std::cout << "erreur fonction DebugGetCurrent : Checksum" << std::endl;
+		}
+		std::cout << " debug color : " << (int)buffer[0] << " / " << (int)buffer[1] << " / " << (int)buffer[2] << " / " << (int)buffer[3] << std::endl;
+
 	}
 	m_pSpi->unlock();
 	return ret;

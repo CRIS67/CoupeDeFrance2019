@@ -1,3 +1,14 @@
+var COEF_SCALE_COEF_DISSYMETRY = 10000;
+var COEF_SCALE_MM_PER_TICKS = 1000;
+var COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS = 1000;
+var COEF_SCALE_PID = 1000000;
+
+var SIZE_LIDAR_POINTS_CIRCULAR = 20;
+
+var lidarPoints = [];
+var lidarPointsCircular = [];
+var iLidar = 0;
+
 window.onload = function () {
 		/*variables*/
 		var dps = [];   //dataPoints. 
@@ -616,6 +627,15 @@ window.onload = function () {
 			]
 		});
 
+		document.addEventListener('keypress', (event) => {
+		  if(event.key == 32 || event.key === ' '){
+			  sendCmd('stop=1');
+			  alert('Emergency stop pressed');
+		  }
+		//alert('Évènement keypress\n\n' + 'touche : ' + nomTouche);
+
+		  
+		});
 		/*INIT ONGLET 1*/
 		if(document.getElementById("checkbox_canvas").checked){
 			var intervalCanvas = Number(document.getElementById("inputText_canvasRrefreshRate").value);
@@ -670,6 +690,9 @@ window.onload = function () {
 		$("#Button_ClearChart").click(function(event){
 			clearChart();
 		});
+		$("#ButtonClearChartsPID").click(function(event){
+			clearChartPID();
+		});
 		$("#button_go").click(function(event){
 			var xDest = Number(document.getElementById("inputText_destX").value);
 			var yDest = Number(document.getElementById("inputText_destY").value);
@@ -700,18 +723,18 @@ window.onload = function () {
 			downloadLogTerminal();
 		});
 		$("#ButtonSendPID").click(function(event){
-			var cmd = "p1=" + parseInt(document.getElementById("numberP1").value * 1000);
-			cmd += "&i1=" + parseInt(document.getElementById("numberI1").value * 1000);
-			cmd += "&d1=" + parseInt(document.getElementById("numberD1").value * 1000);
-			cmd += "&p2=" + parseInt(document.getElementById("numberP2").value * 1000);
-			cmd += "&i2=" + parseInt(document.getElementById("numberI2").value * 1000);
-			cmd += "&d2=" + parseInt(document.getElementById("numberD2").value * 1000);
-			cmd += "&p3=" + parseInt(document.getElementById("numberP3").value * 1000);
-			cmd += "&i3=" + parseInt(document.getElementById("numberI3").value * 1000);
-			cmd += "&d3=" + parseInt(document.getElementById("numberD3").value * 1000);
-			cmd += "&p4=" + parseInt(document.getElementById("numberP4").value * 1000);
-			cmd += "&i4=" + parseInt(document.getElementById("numberI4").value * 1000);
-			cmd += "&d4=" + parseInt(document.getElementById("numberD4").value * 1000);
+			var cmd = "p1=" + parseInt(document.getElementById("numberP1").value * COEF_SCALE_PID);
+			cmd += "&i1=" + parseInt(document.getElementById("numberI1").value * COEF_SCALE_PID);
+			cmd += "&d1=" + parseInt(document.getElementById("numberD1").value * COEF_SCALE_PID);
+			cmd += "&p2=" + parseInt(document.getElementById("numberP2").value * COEF_SCALE_PID);
+			cmd += "&i2=" + parseInt(document.getElementById("numberI2").value * COEF_SCALE_PID);
+			cmd += "&d2=" + parseInt(document.getElementById("numberD2").value * COEF_SCALE_PID);
+			cmd += "&p3=" + parseInt(document.getElementById("numberP3").value * COEF_SCALE_PID);
+			cmd += "&i3=" + parseInt(document.getElementById("numberI3").value * COEF_SCALE_PID);
+			cmd += "&d3=" + parseInt(document.getElementById("numberD3").value * COEF_SCALE_PID);
+			cmd += "&p4=" + parseInt(document.getElementById("numberP4").value * COEF_SCALE_PID);
+			cmd += "&i4=" + parseInt(document.getElementById("numberI4").value * COEF_SCALE_PID);
+			cmd += "&d4=" + parseInt(document.getElementById("numberD4").value * COEF_SCALE_PID);
 			sendCmd(cmd);
 		});
 		$("#ButtonLoadPID").click(function(event){
@@ -821,16 +844,11 @@ window.onload = function () {
 		});
 		$('.outputText').attr('disabled', 'disabled');
 		$('#canvasPlayingArea').click(function(evt){
-			/*var x = evt.pageX - $('#canvasPlayingArea').offset().left;
-			var y = evt.pageY - $('#canvasPlayingArea').offset().top;*/
 			var offset = $('#canvasPlayingArea').offset();
 			// Then refer to 
 			var x = evt.pageX - offset.left;
 			var y = evt.pageY - offset.top;
-			//var ctx = document.getElementById('canvasPlayingArea').getContext('2d');
-			//ctx.clearRect(0,0,873,588);
-			//ctx.fillText("x = " + x + " & y = " + y,10,50);
-			//ctx.drawImage(img, 0, 0);
+			
 			var saveX = x;
 			x = y * 3000 / $("#canvasPlayingArea").width();
 			y = saveX * 2000 / $("#canvasPlayingArea").height();
@@ -838,7 +856,9 @@ window.onload = function () {
 			$("#inputText_destX").val(x);
 			$("#inputText_destY").val(y);
 			sendCmd("x=" + x + "&y=" + y + "&go");
-			//alert("W = " + $("#canvasPlayingArea").width());
+			
+			lidarPoints.push({x: x,y: y});
+			
 		});
 		$(".radioMotor").click(function(event){
 			var motorId = event.target.name.replace("motor","");
@@ -1038,15 +1058,15 @@ window.onload = function () {
 		});*/
 
 		$("#ButtonSendOdo1").click(function(event){
-			var cmd = "odo1=" + parseFloat(document.getElementById("numberOdo1").value);
+			var cmd = "odo1=" + parseInt(document.getElementById("numberOdo1").value * COEF_SCALE_COEF_DISSYMETRY);
 			sendCmd(cmd);
 		});
 		$("#ButtonSendOdo2").click(function(event){
-			var cmd = "odo2=" + parseFloat(document.getElementById("numberOdo2").value);
+			var cmd = "odo2=" + parseInt(document.getElementById("numberOdo2").value * COEF_SCALE_MM_PER_TICKS);
 			sendCmd(cmd);
 		});
 		$("#ButtonSendOdo3").click(function(event){
-			var cmd = "odo3=" + parseFloat(document.getElementById("numberOdo3").value);
+			var cmd = "odo3=" + parseInt(document.getElementById("numberOdo3").value * COEF_SCALE_DISTANCE_BETWEEN_ENCODER_WHEELS);
 			sendCmd(cmd);
 		});
 		
@@ -1089,6 +1109,47 @@ window.onload = function () {
 			dps7.length = 0;
 			dps8.length = 0;
 			dps9.length = 0;
+		}
+		function clearChartPID() {
+			dps11.length = 0;
+			dps12.length = 0;
+			dps13.length = 0;
+			dps14.length = 0;
+			dps15.length = 0;
+			dps16.length = 0;
+			dps17.length = 0;
+			dps18.length = 0;
+			dps19.length = 0;
+			
+			dps21.length = 0;
+			dps22.length = 0;
+			dps23.length = 0;
+			dps24.length = 0;
+			dps25.length = 0;
+			dps26.length = 0;
+			dps27.length = 0;
+			dps28.length = 0;
+			dps29.length = 0;
+			
+			dps31.length = 0;
+			dps32.length = 0;
+			dps33.length = 0;
+			dps34.length = 0;
+			dps35.length = 0;
+			dps36.length = 0;
+			dps37.length = 0;
+			dps38.length = 0;
+			dps39.length = 0;
+			
+			dps41.length = 0;
+			dps42.length = 0;
+			dps43.length = 0;
+			dps44.length = 0;
+			dps45.length = 0;
+			dps46.length = 0;
+			dps47.length = 0;
+			dps48.length = 0;
+			dps49.length = 0;
 		}
 		function download(data, filename, type) {
 			var file = new Blob([data], {type: type});
@@ -1226,6 +1287,37 @@ window.onload = function () {
 			ctx.restore();
 
 		}
+		function drawPoint(ctx, x, y, style) {
+			var width = 5;
+			var height = 5;
+			var degrees = 45;
+			x = x / 3000 * $("#canvasPlayingArea").width();
+			y = y / 2000 * $("#canvasPlayingArea").height();
+			var save = x;
+			x = y;
+			y = save;
+			// first save the untranslated/unrotated context
+			ctx.save();
+
+			ctx.beginPath();
+			// move the rotation point to the center of the rect
+			//ctx.translate(x + width / 2, y + height / 2);
+			ctx.translate(x, y);
+			// rotate the rect
+			ctx.rotate(-degrees * Math.PI / 180);
+
+			// draw the rect on the transformed context
+			// Note: after transforming [0,0] is visually [x,y]
+			//       so the rect needs to be offset accordingly when drawn
+			ctx.rect(-width / 2, -height / 2, width, height);
+
+			ctx.fillStyle = style;
+			ctx.fill();
+			// restore the context to its untranslated/unrotated state
+			ctx.restore();
+
+
+		}
 		function drawRobot(ctx, x, y, width, height, degrees, style, text) {
 
 			x = x / 3000 * $("#canvasPlayingArea").width();
@@ -1250,7 +1342,13 @@ window.onload = function () {
 
 			ctx.fillStyle = style;
 			ctx.fill();
-			ctx.clearRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			//ctx.clearRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			ctx.fillStyle = 'orange';
+			ctx.fillRect(-width / 2 + 5,-height / 2 + 5,width - 10,height - 10);
+			ctx.fillStyle = 'black';
+			//ctx.fillStyle = 'style';
+			//ctx.fill();
+
 			ctx.fillText(text,-width / 2 + 20,-height / 2 + 25);
 			/*ctx.beginPath();
 			ctx.moveTo(width/2,height/2);
@@ -1323,10 +1421,16 @@ window.onload = function () {
 							yRobot1 = y;
 							updateChart = 1;
 						}
-						else if(subString[i].charAt(0) == 't'){
+						else if(subString[i].charAt(0) == 't'){	//theta
 							t = Number(subString[i].slice(2));
 							tRobot1 = t;
 							updateChart = 1;
+						}
+						else if(subString[i].charAt(0) == 'b'){ //battery
+							vbat = Number(subString[i].slice(2));
+							vbat = Math.round(vbat*100)/100;
+							document.getElementById('outputText_BatteryVoltage').value = vbat;
+							document.getElementById('outputText_BatteryPercentage').value = voltageToPercentage(vbat);
 						}
 						
 						else if(subString[i].charAt(0) == 'c'){	//curve
@@ -1502,7 +1606,7 @@ window.onload = function () {
 							var jsId = "led_rupt" + id;
 							document.getElementById(jsId).className = val;
 						}
-						else if(subString[i].charAt(0) == 'e'){	//distance
+						else if(subString[i].charAt(0) == 'e'){	//erase
 							clearChart();
 						}
 						else if(subString[i].charAt(0) == 'l'){	//log
@@ -1514,16 +1618,16 @@ window.onload = function () {
 							subString[i] = subString[i].slice(3);	//remove px=
 							switch(nb){
 								case 1:
-									document.getElementById("numberP1").value = Number(subString[i]) / 1000;
+									document.getElementById("numberP1").value = Number(subString[i]);
 									break;
 								case 2:
-									document.getElementById("numberP2").value = Number(subString[i]) / 1000;
+									document.getElementById("numberP2").value = Number(subString[i]);
 									break;
 								case 3:
-									document.getElementById("numberP3").value = Number(subString[i]) / 1000;
+									document.getElementById("numberP3").value = Number(subString[i]);
 									break;
 								case 4:
-									document.getElementById("numberP4").value = Number(subString[i]) / 1000;
+									document.getElementById("numberP4").value = Number(subString[i]);
 									break;
 							}
 						}
@@ -1532,16 +1636,16 @@ window.onload = function () {
 							subString[i] = subString[i].slice(3);	//remove px=
 							switch(nb){
 								case 1:
-									document.getElementById("numberI1").value = Number(subString[i]) / 1000;
+									document.getElementById("numberI1").value = Number(subString[i]);
 									break;
 								case 2:
-									document.getElementById("numberI2").value = Number(subString[i]) / 1000;
+									document.getElementById("numberI2").value = Number(subString[i]);
 									break;
 								case 3:
-									document.getElementById("numberI3").value = Number(subString[i]) / 1000;
+									document.getElementById("numberI3").value = Number(subString[i]);
 									break;
 								case 4:
-									document.getElementById("numberI4").value = Number(subString[i]) / 1000;
+									document.getElementById("numberI4").value = Number(subString[i]);
 									break;
 							}
 						}
@@ -1550,18 +1654,45 @@ window.onload = function () {
 							subString[i] = subString[i].slice(3);	//remove px=
 							switch(nb){
 								case 1:
-									document.getElementById("numberD1").value = Number(subString[i]) / 1000;
+									document.getElementById("numberD1").value = Number(subString[i]);
 									break;
 								case 2:
-									document.getElementById("numberD2").value = Number(subString[i]) / 1000;
+									document.getElementById("numberD2").value = Number(subString[i]);
 									break;
 								case 3:
-									document.getElementById("numberD3").value = Number(subString[i]) / 1000;
+									document.getElementById("numberD3").value = Number(subString[i]);
 									break;
 								case 4:
-									document.getElementById("numberD4").value = Number(subString[i]) / 1000;
+									document.getElementById("numberD4").value = Number(subString[i]);
 									break;
 							}
+						}
+						else if(subString[i].charAt(0) == 's'){	//scan lidar
+							subString[i]= subString[i].slice(2);	//remove s=
+							
+							var subSubString = subString[i].split(";");
+							var xVal = Number(subSubString[0]);
+							var yVal = Number(subSubString[1]);
+							lidarPoints.push({x: xVal,y: yVal});
+							//alert('push x : ' + xVal + ' & y : ' + yVal + '\n' );
+						}
+						else if(subString[i].charAt(0) == 'z'){	//scan lidar
+							subString[i]= subString[i].slice(2);	//remove z=
+							
+							var subSubString = subString[i].split(";");
+							var xVal = Number(subSubString[0]);
+							var yVal = Number(subSubString[1]);
+							lidarPointsCircular[iLidar] = {x: xVal,y: yVal};
+							iLidar++;
+							if(iLidar == SIZE_LIDAR_POINTS_CIRCULAR){
+								iLidar = 0;
+							}
+							//alert('push x : ' + xVal + ' & y : ' + yVal + '\n' );
+						}
+						else if(subString[i].charAt(0) == 'w'){	//erase lidar points
+							lidarPoints.length = 0;
+							lidarPointsCircular.length = 0;
+							iLidar = 0;
 						}
 					}
 					/*if(updateChart){	//attention ne change pas si les capteurs bougent mais pas le robot
@@ -1611,7 +1742,13 @@ window.onload = function () {
 		}
 		function drawCanvas(){
 			ctx.drawImage(img, 0, 0);
-			drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "blue", "GR");
+			drawRobot(ctx, xRobot1, yRobot1, 50, 50, tRobot1 + 180, "black", "GR");
+			for(var i = 0; i < lidarPoints.length;i++){
+				drawPoint(ctx, lidarPoints[i].x, lidarPoints[i].y, "red");
+			}
+			for(var i = 0; i < lidarPointsCircular.length;i++){
+				drawPoint(ctx, lidarPointsCircular[i].x, lidarPointsCircular[i].y, "red");
+			}
 			//drawRobot(ctx, xRobot2, yRobot2, 50, 50, tRobot2, "red", "PR");
 		}
 		function updateUI(){
@@ -1619,5 +1756,49 @@ window.onload = function () {
 			document.getElementById("outputText_posY").value = yRobot1;
 			document.getElementById("outputText_posT").value = tRobot1;
 		}
-	
+		function voltageToPercentage(voltage){
+			var percentage = 0;
+			if(voltage < 12){
+				percentage = 0;
+			}
+			else if(voltage <= 13.2){
+				percentage = (voltage - 12) / 1.2 * 5;
+			}
+			else if(voltage <= 14.4){
+				percentage = 5 + (voltage - 13.2) / 1.2 * 5;					
+			}
+			else if(voltage <= 14.8){
+				percentage = 10 + (voltage - 14.4) / 0.4 * 10;					
+			}
+			else if(voltage <= 15){
+				percentage = 20 + (voltage - 14.8) / 0.2 * 10;					
+			}
+			else if(voltage <= 15.16){
+				percentage = 30 + (voltage - 15) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.32){
+				percentage = 40 + (voltage - 15.16) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.48){
+				percentage = 50 + (voltage - 15.32) / 0.16 * 10;					
+			}
+			else if(voltage <= 15.68){
+				percentage = 60 + (voltage - 15.48) / 0.2 * 10;					
+			}
+			else if(voltage <= 15.88){
+				percentage = 70 + (voltage - 15.68) / 0.2 * 10;					
+			}
+			else if(voltage <= 16.4){
+				percentage = 80 + (voltage - 15.88) / 0.62 * 10;					
+			}
+			else if(voltage <= 16.8){
+				percentage = 90 + (voltage - 16.4) / 0.4 * 10;					
+			}
+			else{
+				percentage = 100;
+			}
+			
+			percentage = Math.round(percentage * 100)/100;
+			return percentage;
+		}
 }

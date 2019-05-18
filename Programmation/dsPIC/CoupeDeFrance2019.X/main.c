@@ -163,8 +163,9 @@ volatile long double kahanErrorY;
 volatile long double kahanErrorT;
 
 volatile uint8_t arrived = 1;
-uint8_t trajMode = TRAJ_MODE_LIN;
+volatile uint8_t trajMode = TRAJ_MODE_LIN;
 uint8_t cmdTraj;
+volatile uint8_t directionTraj = 0;
 
 int main(){
     initClock(); //Clock 140 MHz
@@ -334,318 +335,24 @@ int main(){
        //plot(2,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_ASS_1,200,0.005))));
         //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
         //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
+        plot(1,statePathGeneration);
+        plot(2,stateTrap);
+       /* plot(3,finalPoint);
+        plot(4,arrived);*/
+        plot(5,trajMode);
+        plot(11,(uint32_t)(int32_t)(theta*1800/PI));
+        plot(12,(uint32_t)(int32_t)(thetac*1800/PI));
+        plot(13,(uint32_t)(int32_t)(pidAngle.setPoint*1800/PI));
+        
+        
+        plot(21,(uint32_t)(int32_t)(phi*1800/PI));
+        plot(22,(uint32_t)(int32_t)(angle*1800/PI));
+        plot(23,(uint32_t)(int32_t)((atan2(cy-y,cx-x)-theta)*1800/PI));
     }
     return 0;
 }
 
-void testAccMax(){
-    double commandeL = 12;
-    double prevCommandeL = 0;
-    double delta = 0.1;
-    double newCL;
-    while(1){
-        if(commandeL - prevCommandeL > delta)
-            newCL = prevCommandeL + delta;
-        else if(commandeL - prevCommandeL < -delta)
-            newCL = prevCommandeL - delta;
-        else
-            newCL = commandeL;
-        prevCommandeL = newCL;
-        sendToMotor(0,newCL);
-        delay_ms(30);
-    }
-}
-void reglageDiametre(){
-    IEC0bits.T1IE = 0;
-    POS1CNTL = 0x8000;
-    POS2CNTL = 0x8000;
-    double l,r,l2,r2;
-    double D1,D2;
-    while(1){
-        l = (double)(POS1CNTL - 0x8000) * PI * 2 * ENCODER_WHEEL_RADIUS / 4096;
-        r = (POS2CNTL - 0x8000) * PI * 2 * ENCODER_WHEEL_RADIUS / 4096;
-        l2 = (double)(POS1CNTL - 0x8000) * PI * 2 / 4096;
-        r2 = (double)(POS2CNTL - 0x8000) * PI * 2 / 4096;
-        D1 = 300/l2;
-        D2 = 300/r2;
-        
-        /*print("l : ");
-        print(itoa((int)l));
-        print("      r : ");
-        print(itoa((int)r));
-        print("      D1 : ");
-        print(itoa((int)(D1)));
-        print("      D1*100 : ");
-        print(itoa((int)(D1*100)));
-        print("      D2 : ");
-        print(itoa((int)(D2)));
-        print("      D2*100 : ");
-        print(itoa((int)(D2*100)));
-       
-        print("\r\n");*/
-        delay_ms(200);
-    }   
-}
-void straightPath(double cx, double cy, double ct, double speedMax, double accMax){
-    double i;
-    double thetaRobotPoint = atan2(cy-y,cx-x);
-    double phi = thetaRobotPoint - theta;
-    while(phi < -PI)
-        phi += 2*PI;
-    while(phi > PI){
-        phi -= 2*PI;
-    }
-    /*Phase 1 : rotation */
-    xf = x;
-    yf = y;
-    tf = theta;
-    double theta0 = theta;
-    double AngularAcceleration = 10;
-    double maxAngularVelocity = 10;
-    double angularVelocity = 0;
-    double prevAngularVelocity = 0;
-    double angle = 0;
-    
-    double sign;
-    if(phi > 0)
-        sign = 1;
-    else
-        sign = -1;
-    while(angularVelocity < maxAngularVelocity && angle < phi/2){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    double angle1 = angle;
-    while(angle < phi - angle1){
-		angle += TE * angularVelocity;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    AngularAcceleration = -AngularAcceleration;
-    while(angularVelocity > 0 && angle < phi){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    thetac = theta0 + phi*sign;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
- 
-    delay_ms(500);
-    /* Phase 2 : straight line */
-    xf = cx;
-    yf = cy;
-    tf = ct;
-    if(speedMax < 0)
-        speedMax = 0;
-    else if(speedMax > SPEED_MAX)
-        speedMax = SPEED_MAX;
-    if(accMax < 0)
-        accMax = 0;
-    else if(accMax > ACCELERATION_MAX)
-        accMax = ACCELERATION_MAX;
-    
-    double y0 = y;
-	double x0 = x;
-	double dx = cx - x0;
-	double dy = cy - y0;
-	double alpha = atan2(dy,dx);
-	double totalDistance = sqrt(dx*dx+dy*dy);
-    
-    double acc = accMax;
-	double speed = 0;
-	double precSpeed = 0;
-	double dist = 0;
-	while(speed < speedMax && dist < totalDistance/2){
-		speed += acc * TE;
-		dist += TE * (precSpeed + speed) / 2;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-    double dist1 = dist;
-	//2
-	if(speed > speedMax)
-        speed = speedMax;
-	while(dist < totalDistance - dist1){               //Condition
-		dist += TE * speed;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-	//3
-	acc = -acc;
-	while(speed > 0 && dist < totalDistance){				//Condition		//v > 0			/		d < totalDistance
-		speed += acc * TE;
-		dist += TE * (precSpeed + speed) / 2;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-    xc = cx;
-    yc = cy;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
-    
-    delay_ms(500);
-    //while(!arrived);
-    
-    /*Phase 3 : rotation */
-    if(ct > theta){
-        for(i = theta; i <= ct; i+= ROTATION_SPEED){
-            thetac = i;
-            delay_ms(DELAY_SPEED);
-        }
-    }
-    else{
-        for(i = theta; i >= ct; i-= ROTATION_SPEED){
-            thetac = i;
-            delay_ms(DELAY_SPEED);
-        }
-    }
-    //print("Phase 3 OK\n");
-    thetac = ct;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
-    
-    delay_ms(500);
-    //while(!arrived);
-}
 
-void go(double cx, double cy, double speedMax, double accMax){
-    //arrived_2 = 0;
-    double thetaRobotPoint = atan2(cy-y,cx-x);
-    double phi = thetaRobotPoint - theta;
-    while(phi < -PI)
-        phi += 2*PI;
-    while(phi > PI){
-        phi -= 2*PI;
-    }
-    /*Phase 1 : rotation */
-    xf = x;
-    yf = y;
-    tf = theta;
-    double theta0 = theta;
-    double AngularAcceleration = 3;//1;//10; envoie du steak
-    double maxAngularVelocity = 3;//1;//10;
-    double angularVelocity = 0;
-    double prevAngularVelocity = 0;
-    double angle = 0;
-    
-    double sign;
-    if(phi > 0){
-        sign = 1;
-    }
-    else{
-        sign = -1;
-        phi = -phi;
-    }
-    while(angularVelocity < maxAngularVelocity && angle < phi/2){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    double angle1 = angle;
-    while(angle < phi - angle1){
-		angle += TE * angularVelocity;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    AngularAcceleration = -AngularAcceleration;
-    while(angularVelocity > 0 && angle < phi){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    thetac = theta0 + phi*sign;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
- 
-    //delay_ms(100);
-    /* Phase 2 : straight line */
-    xf = cx;
-    yf = cy;
-    if(speedMax < 0)
-        speedMax = 0;
-    else if(speedMax > SPEED_MAX)
-        speedMax = SPEED_MAX;
-    if(accMax < 0)
-        accMax = 0;
-    else if(accMax > ACCELERATION_MAX)
-        accMax = ACCELERATION_MAX;
-    
-    double y0 = y;
-	double x0 = x;
-	double dx = cx - x0;
-	double dy = cy - y0;
-	double alpha = atan2(dy,dx);
-	double totalDistance = sqrt(dx*dx+dy*dy);
-    
-    double acc = accMax;
-	double speed = 0;
-	double precSpeed = 0;
-	double dist = 0;
-	while(speed < speedMax && dist < totalDistance/2){
-		speed += acc * TE;
-		dist += TE * (precSpeed + speed) / 2;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-    double dist1 = dist;
-	//2
-	if(speed > speedMax)
-        speed = speedMax;
-	while(dist < totalDistance - dist1){               //Condition
-		dist += TE * speed;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-	//3
-	acc = -acc;
-	while(speed > 0 && dist < totalDistance){				//Condition		//v > 0			/		d < totalDistance
-		speed += acc * TE;
-		dist += TE * (precSpeed + speed) / 2;
-        xc = x0 + dist * cos(alpha);
-        yc = y0 + dist * sin(alpha);
-        precSpeed = speed;
-		delay_ms(TE * 1000);
-	}
-    xc = cx;
-    yc = cy;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
-    
-    //delay_ms(100);
-    //while(!arrived);
-}
 void goBack(double cx, double cy, double speedMax, double accMax){
     //arrived_2 = 0;
     //printRpi("DEBUG begin of goBack()");
@@ -769,66 +476,6 @@ void goBack(double cx, double cy, double speedMax, double accMax){
     //printRpi("DEBUG end of goBack()\n");
     //while(!arrived);
 }
-void turn(double ct){
-    //double thetaRobotPoint = atan2(cy-y,cx-x);
-    double phi = ct - theta;
-    /*while(phi < -PI)
-        phi += 2*PI;
-    while(phi > PI){
-        phi -= 2*PI;
-    }*/
-    /*Phase 1 : rotation */
-    xf = x;
-    yf = y;
-    tf = theta;
-    double theta0 = theta;
-    double AngularAcceleration = 3;//1;//10; envoie du steak
-    double maxAngularVelocity = 3;//1;//10;
-    double angularVelocity = 0;
-    double prevAngularVelocity = 0;
-    double angle = 0;
-    
-    double sign;
-    if(phi > 0){
-        sign = 1;
-    }
-    else{
-        sign = -1;
-        phi = -phi;
-    }
-    finalPoint = 0; 
-    while(angularVelocity < maxAngularVelocity && angle < phi/2){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    double angle1 = angle;
-    while(angle < phi - angle1){
-		angle += TE * angularVelocity;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    AngularAcceleration = -AngularAcceleration;
-    while(angularVelocity > 0 && angle < phi){
-		angularVelocity += AngularAcceleration * TE;
-		angle += TE * (prevAngularVelocity + angularVelocity) / 2;
-        thetac = theta0 + angle * sign;
-        prevAngularVelocity = angularVelocity;
-		delay_ms(TE * 1000);
-	}
-    finalPoint = 1;
-    thetac = theta0 + phi*sign;
-    /*arrived = 0;
-    while(!arrived){
-        printPos();
-    }*/
- 
-    delay_ms(500);
-    
-}
 void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, double accMax, uint8_t direction){
     /*INIT*/
     
@@ -843,6 +490,7 @@ void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, doubl
     if(direction == BACKWARD){
         phi -= PI;
     }
+    directionTraj = direction;
     while(phi < -PI)
         phi += 2*PI;
     while(phi > PI){
@@ -885,12 +533,21 @@ void modif_straightPath(double arg_cx, double arg_cy, double arg_speedMax, doubl
     
     cmdTraj = CMD_TRAJ_ROT_AND_LIN;
 
-    statePathGeneration = 1;
-    stateTrap = 1;
+    if(statePathGeneration == 0){
+    //if(1){
+        statePathGeneration = 1;
+        stateTrap = 1;
+    }
+    else{
+        statePathGeneration = 3;
+        stateTrap = 1;
+    }
+    
+    
 }
 void testModif_turn(double arg_ct, double arg_angularSpeedMax, double arg_angularAccMax){
     /*INIT*/
-    phi = arg_ct;
+    phi = arg_ct - theta;
     /*Phase 1 : rotation */
     finalPoint = 0;
     theta0 = theta;

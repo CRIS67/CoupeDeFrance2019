@@ -9,6 +9,11 @@
 
 #include "SPI.hpp"
 
+#define SERVO_VALUE_HIGH	700
+#define SERVO_VALUE_MIDDLE	1000
+#define SERVO_VALUE_DROP	1500
+#define SERVO_VALUE_LOW		1600
+
 class Actuators
 {
     public:
@@ -25,8 +30,9 @@ class Actuators
 		void SetTxt(void);*/
 		void Launchtest();
 		void flush(uint16_t nb);
-		int DebugGetCurrent(int nb_bras);
+		int debugGetCurrent(int nb_bras);
 		int debugGetCurrentFull(int nb_bras);
+		int debugGetColor(int nb_bras);
     protected:
     private:
 		uint8_t m_id;	//id of this SPI slave

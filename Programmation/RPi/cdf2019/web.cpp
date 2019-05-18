@@ -29,13 +29,14 @@ Web::Web(DsPIC *ds){
 		perror("bind");
 		exit(EXIT_FAILURE);
     }
-    puts("bind done");
+    //puts("bind done");
 
     //Listen
     listen(socket_listen , 3);
 
     //Accept and incoming connection
-    puts("Waiting for incoming connections...");
+    //puts("Waiting for incoming connections...");
+
     socket_client = -1;
 }
 Web::~Web(){
@@ -86,18 +87,38 @@ std::string Web::receiveMsg(){
 }
 bool Web::startThread(){
    int rc;
-    std::cout << "Web::ctor() : creating thread, " << std::endl;
+    //std::cout << "Web::ctor() : creating thread, " << std::endl;
     rc = pthread_create(&threads, NULL, thread_HandleConnnection, (void*)this);
 
     if (rc) {
-    std::cout << "Error:unable to create thread," << rc << std::endl;
-    return false;
+		std::cout << "Error:unable to create thread," << rc << std::endl;
+		return false;
     }
     return true;
 }
+
+void Web::addLidarPoints(float x, float y){
+	pointFloat2d fp;
+	fp.x = x;
+	fp.y = y;
+	addLidarPoints(fp);
+}
+void Web::addLidarPoints(pointFloat2d fp){
+	lidarPoints.push(fp);
+}
+void Web::addLidarPoints(std::vector<pointFloat2d> vect_fp){
+	for(unsigned int i = 0; i < vect_fp.size(); i++){
+		pointFloat2d fp = vect_fp[i];
+		addLidarPoints(fp);
+	}
+}
+void Web::clearLidarPoints(){
+	m_clearLidarPoints = true;
+}
+
 void* thread_HandleConnnection(void *threadid){
    Web *w = (Web*)threadid;
-   std::cout << "Hello World!" << std::endl;
+   //std::cout << "Web thread >Hello World!" << std::endl;
    double i = 0;
    char msg_arr[100];
    while(1){
@@ -148,7 +169,7 @@ void* thread_HandleConnnection(void *threadid){
 				if(atoi(val) == 1){
 					w->dspic->stop();
 				}
-				
+
 			}
 			else if(!strcmp(cmd,"x")){
 				if(val == NULL){
@@ -521,7 +542,7 @@ void* thread_HandleConnnection(void *threadid){
 			else if(!strcmp(cmd,"loadPID")){
 				w->dspic->loadPID();
 				w->waitingResponsePID = true;
-				w->dspic->isPIDUpdated = false;
+				w->dspic->setUpdatedAllPid(false);
 			}
 			else if(!strcmp(cmd,"odo1")){
 				if(val == NULL){
@@ -613,84 +634,150 @@ std::string realResponse(Web *w){
 	DsPIC *dspic = w->dspic;
 	std::ostringstream myString;
 	myString << "x=";
-	myString << dspic->x_ld;
+	myString << dspic->getX();
 	myString << "&y=";
-	myString << dspic->y_ld;
+	myString << dspic->getY();
 	myString << "&t=";
-	myString << dspic->t_ld*180/3.14159;
-	
+	myString << dspic->getT()*180/3.14159;
+
 	myString << "&b=";
-	myString << dspic->bat;
+	myString << dspic->getBat();
+
+	microswitch rupt = dspic->getRupt();
 
 	myString << "&r1=";
-	myString << dspic->rupt.ass0;
+	myString << rupt.ass0;
 	myString << "&r2=";
-	myString << dspic->rupt.ass1;
+	myString << rupt.ass1;
 	myString << "&r3=";
-	myString << dspic->rupt.ass2;
+	myString << rupt.ass2;
 	myString << "&r4=";
-	myString << dspic->rupt.ass3;
+	myString << rupt.ass3;
 	myString << "&r5=";
-	myString << dspic->rupt.act0;
+	myString << rupt.act0;
 	myString << "&r6=";
-	myString << dspic->rupt.act1;
+	myString << rupt.act1;
 	myString << "&r7=";
-	myString << dspic->rupt.act2;
+	myString << rupt.act2;
 	myString << "&r8=";
-	myString << dspic->rupt.act3;
+	myString << rupt.act3;
 	myString << "&r9=";
-	myString << dspic->rupt.act4;
+	myString << rupt.act4;
 	myString << "&r10=";
-	myString << dspic->rupt.act5;
+	myString << rupt.act5;
 
-	for(int i = 0; i < 6; i++){
+	/*for(int i = 0; i < 6; i++){
         myString << "&d" << i + 1 << "=";
-	myString << dspic->US[i];
+        myString << dspic->US[i];
+	}*/
+
+	US us = dspic->getUS();
+	myString << "&d1=";
+	myString << us.US0;
+	myString << "&d2=";
+	myString << us.US1;
+	myString << "&d3=";
+	myString << us.US2;
+	myString << "&d4=";
+	myString << us.US3;
+	myString << "&d5=";
+	myString << us.US4;
+	myString << "&d6=";
+	myString << us.US5;
+
+	if(dspic->isUpdatedLogs()){
+        std::queue<std::string> logs = dspic->getLogs();
+        while(logs.size() > 0){
+            myString << "&l=";
+            std::string qs = logs.front();
+            logs.pop();
+            myString << qs;
+            //std::cout << "log sent to web -> " << qs << std::endl;
+            //myString << qs;
+        }
+        dspic->clearLogs();
 	}
-	while(dspic->logs.size() > 0){
-        myString << "&l=";
-        std::string qs = dspic->logs.front();
-        dspic->logs.pop();
-        myString << qs;
+
+	if(dspic->isUpdatedPlots()){
+        std::queue<point> plots = dspic->getPlots();
+        while(plots.size() > 0){
+            point p = plots.front();
+            plots.pop();
+            myString << "&c" << (int)p.id << "=" << p.x << ";" << p.y;
+            //std::cout << "plot : " << (int)p.id << "=" << p.x << ";" << p.y << std::endl;
+            //myString << qs;
+        }
+        dspic->clearPlots();
+	}
+
+	if(w->m_clearLidarPoints){
+		w->m_clearLidarPoints = false;
+		myString << "&w=";
+	}
+	
+	while(w->lidarPoints.size() > 0){
+		if(!w->m_radarScan){
+			myString << "&s=";
+		}
+        else{
+			myString << "&z=";
+		}
+        pointFloat2d fp = w->lidarPoints.front();
+        w->lidarPoints.pop();
+        myString << fp.x << ";" << fp.y;
         //std::cout << "log sent to web -> " << qs << std::endl;
         //myString << qs;
 	}
-	while(dspic->plots.size() > 0){
-        point p = dspic->plots.front();
-        dspic->plots.pop();
-        myString << "&c" << (int)p.id << "=" << p.x << ";" << p.y;
-        //std::cout << "plot : " << (int)p.id << "=" << p.x << ";" << p.y << std::endl;
-        //myString << qs;
-	}
-	if(w->waitingResponsePID && w->dspic->isPIDUpdated){
-        w->waitingResponsePID = false;
+	/*std::queue<pointFloat2d> points  = w->lidar->getAndClearDetectedPoints();
+    while(points.size()){
+        pointFloat2d fp = points.front();
+        if(!w->m_radarScan){
+			myString << "&s=";
+		}
+        else{
+			myString << "&z=";
+		}
+		myString << fp.x << ";" << fp.y;
+        points.pop();
+    }*/
+	
+	//if(w->waitingResponsePID && w->dspic->isPIDUpdated){
+    //if(dspic->isPIDUpdated){
+    if(dspic->isUpdatedAllPid()){
+        dspic->setUpdatedAllPid(false);
+        //dspic->isPIDUpdated = false;
+        pid p = dspic->getPidSpeedLeft();
 		myString << "&p1=";
-		myString << dspic->pidSpeedLeft.Kp;
+		//myString << dspic->pidSpeedLeft.Kp;
+		myString << p.Kp;
 		myString << "&i1=";
-		myString << dspic->pidSpeedLeft.Ki;
+		myString << p.Ki;
 		myString << "&a1=";
-		myString << dspic->pidSpeedLeft.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidSpeedRight();
 		myString << "&p2=";
-		myString << dspic->pidSpeedRight.Kp;
+		myString << p.Kp;
 		myString << "&i2=";
-		myString << dspic->pidSpeedRight.Ki;
+		myString << p.Ki;
 		myString << "&a2=";
-		myString << dspic->pidSpeedRight.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidDistance();
 		myString << "&p3=";
-		myString << dspic->pidDistance.Kp;
+		myString << p.Kp;
 		myString << "&i3=";
-		myString << dspic->pidDistance.Ki;
+		myString << p.Ki;
 		myString << "&a3=";
-		myString << dspic->pidDistance.Kd;
+		myString << p.Kd;
 
+		p = dspic->getPidAngle();
 		myString << "&p4=";
-		myString << dspic->pidAngle.Kp;
+		myString << p.Kp;
 		myString << "&i4=";
-		myString << dspic->pidAngle.Ki;
+		myString << p.Ki;
 		myString << "&a4=";
-		myString << dspic->pidAngle.Kd;
+		myString << p.Kd;
 	}
 	/*myString << "&c1=";
 	myString << i;

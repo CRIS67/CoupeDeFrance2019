@@ -9,6 +9,7 @@
 #include "SPI.hpp"
 #include "lidar.hpp"
 #include "actuators.hpp"
+#include "hmi.hpp"
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
@@ -58,43 +59,61 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
-    /*	
     wiringPiSetup();
+	
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    Lidar lidar(&spi,SPI_ID_LIDAR);
 	
-    int valueH = 700;
-    int valueL = 1600;
-    int valueDrop = 1500;
-    int valueMiddle = 1000;
-
-    DsPIC dspic;
-    pthread_t thread_print;
-
+	DsPIC dspic;
     dspic.async_read(); //flush rx buffer
     
     Web web(&dspic);
     web.startThread();
 
-    int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-    
-    if (rc) {
-		std::cout << "Error:unable to create thread," << rc << std::endl;
-		exit(-1);
-    }
+    Lidar lidar(&spi, SPI_ID_LIDAR, &web);
+    //lidar.flush(255);
+    lidar.setSpeed(150);
+    lidar.start();
+    //lidar.stop();
+    lidar.startThreadDetection();
 
+    puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
+
+    /*
+	getchar();
+	//lidar.start();
+    //getchar();
+	lidar.startThreadDetection();
+    getchar();
+	actFront.MoveServo(0,valueL);
+    actFront.MoveServo(1,valueL);
+    actFront.MoveServo(2,valueL);
+    actBack.MoveServo(0,valueL);
+    actBack.MoveServo(1,valueL);
+    actBack.MoveServo(2,valueL);
+	delay(500);
+	actFront.MoveServo(0,valueH);
+    actFront.MoveServo(1,valueH);
+    actFront.MoveServo(2,valueH);
+    actBack.MoveServo(0,valueH);
+    actBack.MoveServo(1,valueH);
+    actBack.MoveServo(2,valueH);
+	getchar();
+	lidar.stopThreadDetection();
+	//lidar.stop();
+	*/
     getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
-    //dspic.initPos(1000,1500,0);
-    dspic.initPos(0,0,0);
+    //dspic.initPos(1200,2550,-3.14159/2);
+    dspic.initPos(1200-155,2550+124,-3.14159/2);
+    //dspic.initPos(1000,1500,-3.14159/2);
+    //dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
+	
     std::cout << "Press enter to dspic.start() " << std::endl; 
     getchar();
     dspic.start(); */
@@ -505,6 +524,9 @@ void *print(void *ptr) {
    std::cout << "Hello World!" << std::endl;
    pthread_exit(NULL);
 }
+	lidar.stop();
+    return 0;
+}
 void debugAct(){
 
     wiringPiSetup();
@@ -513,23 +535,9 @@ void debugAct(){
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
 
     DsPIC dspic;
-    pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
-    Web web(&dspic);
-    web.startThread();
-
-    int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-
-    if (rc) {
-        std::cout << "Error:unable to create thread," << rc << std::endl;
-        exit(-1);
-    }
-
-    getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
@@ -547,7 +555,9 @@ void debugAct(){
             int id = choice;
             std::cout << "Press 1 to start pump" << std::endl;
             std::cout << "Press 2 to stop pump" << std::endl;
-            std::cout << "Press 3 to set servo" << std::endl;
+            std::cout << "Press 3 to measure current" << std::endl;
+            std::cout << "Press 4 to set servo" << std::endl;
+            std::cout << "Press 5 to testMeasure" << std::endl;
             std::cin >> choice;
             switch(choice){
                 case 1:
@@ -567,6 +577,14 @@ void debugAct(){
                     }
                     break;
                 case 3:
+                    if(id < 3){
+                        std::cout << "current : " << actFront.debugGetCurrent(id) << std::endl;
+                    }
+                    else{
+                        std::cout << "current : " << actBack.debugGetCurrent(id-3) << std::endl;
+                    }
+                    break;
+                case 4:
                     std::cout << "enter duty cycle" << std::endl;
                     int dutyCycle;
                     std::cin >> dutyCycle;
@@ -575,6 +593,30 @@ void debugAct(){
                     }
                     else{
                         actBack.MoveServo(id-3,dutyCycle);
+                    }
+                    break;
+                case 5:
+                    if(id < 3){
+                        actFront.SetPump(id,1);
+                        delay(2000);
+                        std::cout << "current : " << actFront.debugGetCurrent(id) << std::endl;
+                        std::cout << "currentFull : " << actFront.debugGetCurrentFull(id) << std::endl;
+                        actFront.SetPump(id,0);
+                    }
+                    else{
+                        actBack.SetPump(id-3,1);
+                        delay(500);
+                        std::cout << "current : " << actBack.debugGetCurrent(id-3) << std::endl;
+                        std::cout << "currentFull : " << actBack.debugGetCurrentFull(id-3) << std::endl;
+                        actBack.SetPump(id-3,0);
+                    }
+                    break;
+                case 6:
+                    if(id < 3){
+                        std::cout << "color : " << actFront.debugGetColor(id) << std::endl;
+                    }
+                    else{
+                        std::cout << "color : " << actBack.debugGetColor(id-3) << std::endl;
                     }
                     break;
             }
@@ -594,12 +636,14 @@ void debugAct(){
         }
 
     }
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
+    puts("verbose set to 0");
 }
 void debugTestAllDelay(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
@@ -686,7 +730,7 @@ void debugTestAllInstant(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
@@ -764,7 +808,7 @@ void debugBN(){
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
     /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-    
+
     //int valueH = 800;
     int valueL = 1600;
     int valueDrop = 1500;
@@ -787,21 +831,9 @@ void debugBN(){
 }
 void debugGoldenium(){
     DsPIC dspic;
-    pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
 
-    Web web(&dspic);
-    web.startThread();
-
-    int rc;
-    //std::cout << "main() : creating thread, " << std::endl;
-    rc = pthread_create(&thread_print, NULL, print, &web);
-
-    if (rc) {
-        std::cout << "Error:unable to create thread," << rc << std::endl;
-        exit(-1);
-    }
     std::cout << "Press enter to continue"  << std::endl;
     getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);

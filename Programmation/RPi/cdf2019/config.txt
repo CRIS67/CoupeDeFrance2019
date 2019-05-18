@@ -16,11 +16,11 @@ PidAngleKp=1000
 PidAngleKi=0
 PidAngleKd=1
 #Odometrie
-coefDissymetry=0.9843
-mmPerTick=0.0337908
+coefDissymetry=0.98392
+mmPerTick=0.03362291183834880
 radPerTick=0.00011546425301540300
 #Acceleration et vitesse (génération de trajectoire)
-linSpeed=1000
+linSpeed=500
 linAcc=1000
 rotSpeed=10
-rotAcc=1
+rotAcc=5
