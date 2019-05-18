@@ -2,11 +2,20 @@
 
 void generateMap(std::vector<std::vector<int>>& mapVector, int mapRows, int mapColumns) {
 
-	mapVector.resize(mapRows);
+/*	mapVector.resize(mapRows);
 
 	for(int i =0; i<mapColumns; i++){
 		mapVector[i].resize(mapColumns);
-	}
+	}*/
+        for( int i = 0; i< mapRows; i++)
+        {
+          std::vector<int> tmp; 
+          mapVector.push_back(tmp); 
+          for(int j =0; j< mapColumns; j++) 
+          {
+            mapVector.at(i).push_back(0);  
+          }
+        }
 }
 
 /*
@@ -16,7 +25,8 @@ void createRectangle(uint startX, uint startY, int width, int length, std::vecto
 
 	if( ( (startX + width) >=  mapVector.size()  ) || ( (startY + length)  >= mapVector[0].size() ) )
 	{
-		std::cerr << "Too big of rectangle :( " << std::endl; 
+		std::cerr << "Rectangle creation fail : Too big of rectangle :( " << std::endl; 
+		std::cerr << "X : " << startX << " Y " << startY << " W " << width << " L " << length << std::endl; 
 		return; 
 	}
 	

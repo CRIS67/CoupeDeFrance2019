@@ -25,8 +25,8 @@
 #include "trajectoryHandle.hpp"
 
 //DStarGlobal 
-int mapRows {2000};  
-int mapColumns {3000};  
+int mapRows {200};  
+int mapColumns {300};  
 float km {0}; // variable for the D*
 
 std::vector<std::vector<int>> mapVector; // the robot's map 
@@ -58,10 +58,9 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
-	
+    /*	
     wiringPiSetup();
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
-    /*A AJOUTER : FLUSH tous les slaves*/
     Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     Lidar lidar(&spi,SPI_ID_LIDAR);
 	
@@ -74,14 +73,14 @@ int main()
     pthread_t thread_print;
 
     dspic.async_read(); //flush rx buffer
-
+    
     Web web(&dspic);
     web.startThread();
 
     int rc;
     //std::cout << "main() : creating thread, " << std::endl;
     rc = pthread_create(&thread_print, NULL, print, &web);
-
+    
     if (rc) {
 		std::cout << "Error:unable to create thread," << rc << std::endl;
 		exit(-1);
@@ -98,9 +97,9 @@ int main()
     //dspic.initPos(1000,3000,-3.14159/2);
     std::cout << "Press enter to dspic.start() " << std::endl; 
     getchar();
-    dspic.start();
+    dspic.start(); */
     std::cout << "Press enter to start the D*" << std::endl; 
-    getchar();
+    getchar(); 
 
     /*=============Strategy  START===================*/
     
@@ -115,22 +114,22 @@ int main()
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
-    createRectangle(1600,0,400 ,2000, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(160,0,39 ,199, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
 
     /*Ensemble palets*/
-    createRectangle(900,850,300,300,mapVector); 
-    createRectangle(900,1850,300,300,mapVector); 
+    createRectangle(90,85,30,30,mapVector); 
+    createRectangle(90,185,30,30,mapVector); 
     
     /* Palets*/
-    createRectangle(412,412,76,76,mapVector); 
-    createRectangle(712,412,76,76,mapVector); 
-    createRectangle(1032,412,76,76,mapVector); 
-    createRectangle(412,2462,76,76,mapVector); 
-    createRectangle(712,2462,76,76,mapVector); 
-    createRectangle(1032,2462,76,76,mapVector); 
+    createRectangle(41,41,7,7,mapVector); 
+    createRectangle(71,41,7,7,mapVector); 
+    createRectangle(103,41,7,7,mapVector); 
+    createRectangle(41,246,7,7,mapVector); 
+    createRectangle(71,246,7,7,mapVector); 
+    createRectangle(103,246,7,7,mapVector); 
      
     std::cout << "MAP GENERATED" << std::endl; 
-    printMap(mapRows, mapColumns, mapVector);
+    //printMap(mapRows, mapColumns, mapVector);
 
     /* For all actions we do a D* run */
 
@@ -138,7 +137,6 @@ int main()
     {
 
       /*=============DStarImplementation START===================*/
-
 
       goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
       //DStarLite first run
@@ -148,6 +146,8 @@ int main()
       computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
       startNode = knownNodes.at(startNode.coord); // we update the start node
       goalNode = knownNodes.at(goalNode.coord); // we update the goal node
+      std::cout << "Start Node coord " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
+      std::cout << " Goal Node coord " << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 
       std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
       std::vector<Node> simplifiedPath = pathTreatment(completePath);
@@ -222,11 +222,13 @@ int main()
 
 
     /*=============Strategy  END ===================*/
-
+    
+    /*
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
     puts("verbose set to 0");
     puts("exiting ...");
+    */
 
     return 0;
 }

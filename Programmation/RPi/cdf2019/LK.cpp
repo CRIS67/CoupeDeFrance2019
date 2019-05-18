@@ -382,7 +382,7 @@ double LK::calculateDistance(std::vector<Node> solution){
 }
 
 void LK::readNodes(std::vector<Node>& initialTour){
-  std::ifstream data("entree.txt"); 
+  std::ifstream data("entreeDroite.txt"); 
 
   if(!data){
     std::cerr << "Problem opening file" << std::endl; 
