@@ -627,6 +627,38 @@ bool DsPIC::isUpdatedT(){
 	return updated;
 }
 
+void DsPIC::setPos(double x, double y, double t){
+	m_mutex.lock();
+	this->x_ld = x;
+	this->y_ld = y;
+	this->t_ld = t;
+	
+	this->updatedX = true;
+	this->updatedY = true;
+	this->updatedT = true;
+	m_mutex.unlock();
+}
+
+void DsPIC::setArrived(bool arrived){
+	m_mutex.lock();
+	this->arrived = arrived;
+	this->updatedArrived = true;
+	m_mutex.unlock();
+}
+bool DsPIC::getArrived(){
+	m_mutex.lock();
+	bool arrived = this->arrived;
+	this->updatedArrived = false;
+	m_mutex.unlock();
+	return arrived;
+}
+bool DsPIC::isUpdatedArrived(){
+	m_mutex.lock();
+	bool updated = this->updatedArrived;
+	m_mutex.unlock();
+	return updated;
+}
+
 void DsPIC::setBat(float bat){
 	m_mutex.lock();
 	this->bat = bat;
@@ -944,6 +976,9 @@ void *print(void *ptr) {
                                     std::cout.precision(6);*/
                                     //dspic->bat = vbat;
                                 }
+							case CODE_VAR_ARRIVED:
+                                dspic->setArrived(msg[3]);
+                                break;
                                 break;
                             case CODE_VAR_RUPT :
                                 if(msg.size() > 4){

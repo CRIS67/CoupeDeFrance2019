@@ -60,6 +60,8 @@
 
 #define CODE_VAR_VERBOSE    5
 
+#define CODE_VAR_ARRIVED    6
+
 /*#define CODE_VAR_X_LD       6
 #define CODE_VAR_Y_LD       7
 #define CODE_VAR_T_LD       8*/
@@ -295,6 +297,8 @@ class DsPIC
 		int fd;
         pthread_t m_threadReception;
 		std::mutex m_mutex;
+		bool arrived = false;
+		bool updatedArrived = false;
 		bool updatedX = false;
 		bool updatedY = false;
 		bool updatedT = false;
