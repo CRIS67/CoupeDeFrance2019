@@ -138,6 +138,8 @@
 #define SEUIL_B_BAS       26
 #define SEUIL_B_HAUT      27
 #define SEUIL_W           28
+#define RESET_COLOR_ERR   29
+#define MCLR              30
 
 #define PUMP_LAUNCH_0   0
 #define PUMP_LAUNCH_1   1
@@ -145,6 +147,7 @@
 
 #define TAILLE_SEND     10
 
+#define MAX_WAIT_COLOR  2
 
 void Affiche(String txt, unsigned char state);
 unsigned char MesureCourant(unsigned char nb_pump);
@@ -154,6 +157,7 @@ void MoveServo(unsigned char nb_servo, int temps);
 unsigned char GetRuptState(unsigned char nb_servo);
 unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille);
 void Sequence(unsigned char nb_bras);
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 Servo Servo0;
 Servo Servo1;
@@ -200,6 +204,11 @@ int Cur_full_2 = 0;
 boolean Rupt0 = 0;
 boolean Rupt1 = 0;
 boolean Rupt2 = 0;
+
+//capteur couleur
+int cpt_capt_0 = 0;
+int cpt_capt_1 = 0;
+int cpt_capt_2 = 0;
 
 int test = 0;
 
@@ -325,118 +334,139 @@ char GetColor(unsigned char nb_bras) {
       return WRONG_CHANNEL;
     break;
   }
-  digitalWrite(TCS_ENABLE, LOW);
-  // temps d'exec : 400-800us
-  
-  // Lecture de la composante rouge
-  digitalWrite(TCS_S2,LOW);
-  digitalWrite(TCS_S3,LOW);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_RED_MIN >= period) {Affiche("erreur lecture basse rouge"+String(period), DEBUG_ERR_NB);}
-  if(MAP_RED_MAX <= period) {Affiche("erreur lecture haute rouge"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pr="+String(period), DEBUG_COL_NB);
-  red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
-  
-  // Lecture de la composante verte
-  digitalWrite(TCS_S2,HIGH);
-  digitalWrite(TCS_S3,HIGH);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_GREEN_MIN >= period) {Affiche("erreur lecture basse vert"+String(period), DEBUG_ERR_NB);}
-  if(MAP_GREEN_MAX <= period) {Affiche("erreur lecture haute vert"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pg="+String(period), DEBUG_COL_NB);
-  green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
-  
-  // Lecture de la composante bleue
-  digitalWrite(TCS_S2,LOW);
-  digitalWrite(TCS_S3,HIGH);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_BLUE_MIN >= period) {Affiche("erreur lecture basse bleu"+String(period), DEBUG_ERR_NB);}
-  if(MAP_BLUE_MAX <= period) {Affiche("erreur lecture haute bleu"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pb="+String(period), DEBUG_COL_NB);
-  blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
+  if(cpt_capt_0 < MAX_WAIT_COLOR && nb_bras == 0 || cpt_capt_1 < MAX_WAIT_COLOR && nb_bras == 1 || cpt_capt_2 < MAX_WAIT_COLOR && nb_bras == 2) {
 
-  // Lecture de la composante blanche
-  digitalWrite(TCS_S2,HIGH);
-  digitalWrite(TCS_S3,LOW);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_WHITE_MIN >= period) {Affiche("erreur lecture basse blanche"+String(period), DEBUG_ERR_NB);}
-  if(MAP_WHITE_MAX <= period) {Affiche("erreur lecture haute blanche"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pwh="+String(period), DEBUG_COL_NB);
-  white = period;
-  //adaptation de la luminosité
-  white = -0.2*white+45; //test avec 40 ou 30 (45)
+    digitalWrite(TCS_ENABLE, LOW);
+    // temps d'exec : 400-800us
   
-  Affiche("R="+String(red), DEBUG_COL_NB);
-  Affiche("G="+String(green), DEBUG_COL_NB);
-  Affiche("B="+String(blue), DEBUG_COL_NB);
-  Affiche("W="+String(white), DEBUG_COL_NB);
-  Affiche("", DEBUG_COL_NB);
+    // Lecture de la composante rouge
+    digitalWrite(TCS_S2,LOW);
+    digitalWrite(TCS_S3,LOW);
+    delayMicroseconds(10);
+    period = pulseIn(TCS_ARM, LOW);
+    if(MAP_RED_MIN >= period) {
+      Affiche("erreur lecture basse rouge"+String(period), DEBUG_ERR_NB);
+      switch(nb_bras) {
+        case 0:
+          cpt_capt_0++;
+        break;
+        case 1:
+          cpt_capt_1++;
+        break;
+        case 2:
+          cpt_capt_2++;
+        break;
+      }
+    } else {
+      cpt_capt_0 = 0;
+      cpt_capt_1 = 0;
+      cpt_capt_2 = 0;
+      
+      if(MAP_RED_MAX <= period) {Affiche("erreur lecture haute rouge"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pr="+String(period), DEBUG_COL_NB);
+      red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
+  
+      // Lecture de la composante verte
+      digitalWrite(TCS_S2,HIGH);
+      digitalWrite(TCS_S3,HIGH);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_GREEN_MIN >= period) {Affiche("erreur lecture basse vert"+String(period), DEBUG_ERR_NB);}
+      if(MAP_GREEN_MAX <= period) {Affiche("erreur lecture haute vert"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pg="+String(period), DEBUG_COL_NB);
+      green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
+  
+      // Lecture de la composante bleue
+      digitalWrite(TCS_S2,LOW);
+      digitalWrite(TCS_S3,HIGH);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_BLUE_MIN >= period) {Affiche("erreur lecture basse bleu"+String(period), DEBUG_ERR_NB);}
+      if(MAP_BLUE_MAX <= period) {Affiche("erreur lecture haute bleu"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pb="+String(period), DEBUG_COL_NB);
+      blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
 
-  // Conversion de la couleur RGB en couleur HSL
-  //prérequis
-  M = max(max(red, green), blue);
-  m = min(min(red, green), blue);
-  C = M - m;
-  //HSL
-  if(C!=0){
-    if(M == red){
-      H = green-blue;
-      H /= C;
+      // Lecture de la composante blanche
+      digitalWrite(TCS_S2,HIGH);
+      digitalWrite(TCS_S3,LOW);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_WHITE_MIN >= period) {Affiche("erreur lecture basse blanche"+String(period), DEBUG_ERR_NB);}
+      if(MAP_WHITE_MAX <= period) {Affiche("erreur lecture haute blanche"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pwh="+String(period), DEBUG_COL_NB);
+      white = period;
+      //adaptation de la luminosité
+      white = -0.2*white+45; //test avec 40 ou 30 (45)
+  
+      Affiche("R="+String(red), DEBUG_COL_NB);
+      Affiche("G="+String(green), DEBUG_COL_NB);
+      Affiche("B="+String(blue), DEBUG_COL_NB);
+      Affiche("W="+String(white), DEBUG_COL_NB);
+      Affiche("", DEBUG_COL_NB);
+
+      // Conversion de la couleur RGB en couleur HSL
+      //prérequis
+      M = max(max(red, green), blue);
+      m = min(min(red, green), blue);
+      C = M - m;
+      //HSL
+      if(C!=0){
+        if(M == red) {
+          H = green-blue;
+          H /= C;
+        } else if(M == green) {
+          H = blue-red;
+          H/= C;
+          H += 2;
+        } else {
+          H = red-green;
+          H /= C;
+          H += 4;
+        }
+      } else {
+        H = -1;
+        Affiche("erreur calcul", DEBUG_ERR_NB);
+      }
+      H *= 60;
+      if(H < 0) {H *= -1;}
+      #ifdef CORRECTION_LUM
+        H += white;
+      #endif
+      Affiche("H="+String(H), DEBUG_COL_NB);
+      // Déduction de la couleur à partir du HSL 
+      switch(nb_bras) {
+        case 0:
+          Hg_0 = H;
+        break;
+        case 1:
+          Hg_1 = H;
+        break;
+        case 2:
+          Hg_2 = H;
+        break;
+      }
+      if(white > LIM_WHITE_MAX) {
+        col = 4;
+        Affiche("pas de palet", DEBUG_COL_NB);
+      } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
+        Affiche("Rouge", DEBUG_COL_NB);
+        col = 1;
+      } else if(LIM_GREEN_MIN < H && H < LIM_GREEN_MAX) {
+        Affiche("Vert", DEBUG_COL_NB);
+        col = 2;
+      } else if(LIM_BLUE_MIN < H && H < LIM_BLUE_MAX) {
+        Affiche("Bleu", DEBUG_COL_NB);
+        col = 3;
+      } else {
+        Affiche("Aucune couleur", DEBUG_COL_NB);
+        col = 0;
+      }
+      //digitalWrite(TCS_ENABLE, HIGH);
+      return col;
     }
-    else if(M == green){
-      H = blue-red;
-      H/= C;
-      H += 2;
-    }
-    else{
-      H = red-green;
-      H /= C;
-      H += 4;
-    }
-  }else{
-    H = -1;
-    Affiche("erreur calcul", DEBUG_ERR_NB);
-  }
-  H *= 60;
-  if(H < 0) {H *= -1;}
-  #ifdef CORRECTION_LUM
-    H += white;
-  #endif
-  Affiche("H="+String(H), DEBUG_COL_NB);
-  // Déduction de la couleur à partir du HSL 
-  switch(nb_bras) {
-    case 0:
-      Hg_0 = H;
-    break;
-    case 1:
-      Hg_1 = H;
-    break;
-    case 2:
-      Hg_2 = H;
-    break;
-  }
-  if(white > LIM_WHITE_MAX) {
-    col = 0;
-    Affiche("pas de palet", DEBUG_COL_NB);
-  } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
-    Affiche("Rouge", DEBUG_COL_NB);
-    col = 1;
-  } else if(LIM_GREEN_MIN < H && H < LIM_GREEN_MAX) {
-    Affiche("Vert", DEBUG_COL_NB);
-    col = 2;
-  } else if(LIM_BLUE_MIN < H && H < LIM_BLUE_MAX) {
-    Affiche("Bleu", DEBUG_COL_NB);
-    col = 3;
   } else {
-    Affiche("Aucune couleur", DEBUG_COL_NB);
-    col = 0;
+    return 5;
   }
-  //digitalWrite(TCS_ENABLE, HIGH);
-  return col;
 }
 
 /*******************************************************************/
@@ -603,7 +633,7 @@ unsigned char MesureCourant(unsigned char nb_pump) {
 //                              
 /*******************************************************************/
 unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
-  int i, R = 0, G = 0, B = 0, E = 0, test;
+  int i, R = 0, G = 0, B = 0, E = 0, C = 0, W = 0, test;
   double mini = GetColor(nb_bras), maxi = GetColor(nb_bras);
   Affiche("Bras = "+String(nb_bras), DEBUG_RATIO_NB);
   for(i=0;i<taille;i++) {
@@ -623,6 +653,12 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
       case 3:
         B++;
       break;
+      case 4:
+        W++;
+      break;
+      case 5:
+        C++;
+      break;  
     }
   }
   if(minmax) {
@@ -638,7 +674,11 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
     Affiche("Ratio Erreur = "+String(E), DEBUG_RATIO_NB);
     Affiche("", DEBUG_RATIO_NB);
     if(E >= int(taille/2)) {
+      return 0;
+    } else if(W >= int(taille/2)) {
       return 4;
+    } else if(C >= int(taille/2)) {
+      return 5;
     } else if(max(E,max(R,max(B,G))) == R) {
       return 1;
     } else if(max(E,max(B,G)) == G) {
@@ -646,7 +686,7 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
     } else if(max(E,B) == B) {
       return 3;
     } else {
-      return 4;
+      return 0;
     }
   }
 }
@@ -754,7 +794,8 @@ ISR(SPI_STC_vect) {
     case SPI_NUM_VAR:
       //gestion du type
       TypeVarSpi = data_spi;
-      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2 || TypeVarSpi == COLOR_SPI_FULL_0 || TypeVarSpi == COLOR_SPI_FULL_1 || TypeVarSpi == COLOR_SPI_FULL_2) {
+      //if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2 || TypeVarSpi == COLOR_SPI_FULL_0 || TypeVarSpi == COLOR_SPI_FULL_1 || TypeVarSpi == COLOR_SPI_FULL_2 || TypeVarSpi == RESET_COLOR_ERR) {
+      if(TailleMsgSpi == 2) {
         EtatSpi = SPI_CHECKSUM; //pas de message utile
       } else {
         EtatSpi = SPI_MSG_UTILE;
@@ -905,6 +946,14 @@ ISR(SPI_STC_vect) {
           break;
           case SEUIL_W:
             LIM_WHITE_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case RESET_COLOR_ERR:
+            cpt_capt_0 = 0;
+            cpt_capt_1 = 0;
+            cpt_capt_2 = 0;
+          break;
+          case MCLR:
+            resetFunc();  //call reset
           break;
           default:
             //do nothing
