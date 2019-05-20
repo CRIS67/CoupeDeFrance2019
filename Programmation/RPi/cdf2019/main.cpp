@@ -152,6 +152,7 @@ int main()
     //printMap(mapRows, mapColumns, mapVector);
 
     /* For all actions we do a D* run */
+    bool firstRun=true; 
 
     for(uint i = 0; i< strategyTour.size(); i++)
     {
@@ -161,7 +162,11 @@ int main()
       goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
       //DStarLite first run
       Node lastNode = startNode;
-      initialize(mapVector, knownNodes, uList, startNode, goalNode);
+      if(firstRun)
+      {
+        initialize(mapVector, knownNodes, uList, startNode, goalNode);
+        firstRun = false; 
+      }
       goalNode = knownNodes.at(goalNode.coord);
       computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
       startNode = knownNodes.at(startNode.coord); // we update the start node
