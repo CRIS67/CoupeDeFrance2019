@@ -23,7 +23,7 @@ Creates an obstacle rectangle at (startX, startY)
 */
 void createRectangle(uint startX, uint startY, int width, int length, std::vector<std::vector<int>>& mapVector){
 
-	if( ( (startX + width) >=  mapVector.size()  ) || ( (startY + length)  >= mapVector[0].size() ) )
+	if( ( (startX + width) >  mapVector.size()  ) || ( (startY + length)  > mapVector[0].size() ) )
 	{
 		std::cerr << "Rectangle creation fail : Too big of rectangle :( " << std::endl; 
 		std::cerr << "X : " << startX << " Y " << startY << " W " << width << " L " << length << std::endl; 
