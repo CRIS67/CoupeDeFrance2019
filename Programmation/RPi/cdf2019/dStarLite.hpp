@@ -49,7 +49,7 @@ void computeShortestPath(priorityList& uList, mappedNodes& knownNodes, std::pair
 float minSuccessor(Node node, mappedNodes& knownNodes);
 void updateAdjacents(Node currentNode, priorityList& uList, mappedNodes& knownNodes, std::pair<int,int> startCoord, Node goalNode);
 void findPath(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNodes, Node currentNode, Node goalNode);
-Node bestNode(Node currentNode ,mappedNodes& knownNodes);
+Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode);
 void updateMap(mappedNodes& knownNodes, std::vector<std::vector<int>>& randomMap, priorityList& priorList, std::pair<int,int> startCoord, Node goalNode);
 std::vector<Node> getPath(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNodes, Node currentNode, Node goalNode);
 

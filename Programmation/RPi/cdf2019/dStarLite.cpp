@@ -246,7 +246,7 @@ void findPath(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNodes,
     std::vector<std::vector<int>> printedMap = randomMap; // we copy the map in order to print the path
 
     while(tmp.coord != goalNode.coord){
-        tmp = bestNode(tmp, knownNodes);
+        tmp = bestNode(tmp, knownNodes, goalNode);
         path.push_back(tmp);
     }
 
@@ -272,7 +272,7 @@ std::vector<Node> getPath(std::vector<std::vector<int>>& randomMap, mappedNodes&
     std::vector<std::vector<int>> printedMap = randomMap; // we copy the map in order to print the path
 
     while(tmp.coord != goalNode.coord){
-        tmp = bestNode(tmp, knownNodes);
+        tmp = bestNode(tmp, knownNodes, goalNode);
         path.push_back(tmp);
     }
 
@@ -282,7 +282,7 @@ std::vector<Node> getPath(std::vector<std::vector<int>>& randomMap, mappedNodes&
 /*
 Finds the best successors that minimzes c(s,s') + g(s')
 */
-Node bestNode(Node currentNode ,mappedNodes& knownNodes){
+Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode){
 
     Node tmp; // temporary Node used to find the best one
     tmp.costG = infinity;
@@ -322,6 +322,17 @@ Node bestNode(Node currentNode ,mappedNodes& knownNodes){
                 bestOne = tmp;
                 bestOneCost = tmpCost;
             }
+            else if (tmpCost == bestOneCost) 
+            {
+              double dst1 = distance2(bestOne, goalNode); 
+              double dst2 = distance2(tmp, goalNode); 
+              if( dst2 < dst1) 
+              {
+                bestOne = tmp; 
+                bestOneCost = tmpCost; 
+              }
+            }
+
         }
     }
     return bestOne;
