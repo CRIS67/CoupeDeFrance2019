@@ -221,12 +221,16 @@ void Lidar::checkMessages(){
 						//addDetectedPoint(p);
 						double angle = atan2(p.y,p.x);
 						double distance = sqrt(p.x*p.x + p.y*p.y);
-						angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						angle += m_pWeb->dspic->getT() + 3.14159/4;
 						p.x = distance*cos(angle);
 						p.y = distance*sin(angle);
 						p.x += m_pWeb->dspic->getX();
 						p.y += m_pWeb->dspic->getY();
 						m_pWeb->addLidarPoints(p);
+						if(getFillBuffer()){
+							addDetectedPoint(p);
+						}
 					}
 					
 					break;}
@@ -302,6 +306,18 @@ std::queue<pointFloat2d> Lidar::getAndClearDetectedPoints(){
 	std::swap(m_qDetectedPoints,q);
 	m_mutex.unlock();
 	return q;
+}
+
+void Lidar::setFillBuffer(bool b){
+	m_mutex.lock();
+	m_fillBuffer = b;
+	m_mutex.unlock();
+}
+bool Lidar::getFillBuffer(){
+	m_mutex.lock();
+	bool b = m_fillBuffer;
+	m_mutex.unlock();
+	return b;
 }
 		
 /*void Lidar::initPos(double x, double y, double t){

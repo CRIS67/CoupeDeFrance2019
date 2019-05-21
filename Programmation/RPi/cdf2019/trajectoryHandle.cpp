@@ -78,7 +78,7 @@ bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path
 		int yA = path.at(i).coord.second;
 		int xB = path.at(i).coord.first;
 		int yB = path.at(i).coord.second;*/
-		std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
+		//std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
 		if(detectCollisionLine(path.at(i).coord.first, path.at(i).coord.second, path.at(i+1).coord.first, path.at(i+1).coord.second,map))
             return true;
 
@@ -87,7 +87,7 @@ bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path
 	}
 	return false;
 }
-void optimizePath(std::vector<std::vector<int> > &map, std::vector<Node> path){
+std::vector<Node> optimizePath(std::vector<std::vector<int> > &map, std::vector<Node> path, Node &start){
     unsigned int lastIndex = path.size()-1;
 	
 	std::vector<Node> newPath;
@@ -96,20 +96,24 @@ void optimizePath(std::vector<std::vector<int> > &map, std::vector<Node> path){
     std::vector<int> vX2;
     std::vector<int> vY2;*/
 
-    unsigned int ind = 0;
+    unsigned int ind = -1;
     
-	int x = path.at(ind).coord.first;
-    int y = path.at(ind).coord.second;
+	/*int x = path.at(ind).coord.first;
+    int y = path.at(ind).coord.second;*/
+	int x = start.coord.first;
+    int y = start.coord.second;
 	/*
     vX2.push_back(x);
     vY2.push_back(y);*/
 	
-	Node n = path.at(ind);
-	newPath.push_back(n);
+	/*Node n = path.at(ind);
+	newPath.push_back(n);*/
+	
+	Node n;
 
     while(ind != lastIndex){
         bool shortcut = false;
-        for(unsigned int i = lastIndex; i > ind+1;i--){
+        for(int i = lastIndex; i > ind+1;i--){
             if(!detectCollisionLine(x,y,path.at(i).coord.first,path.at(i).coord.second,map)){
                 shortcut = true;
                 ind = i;
@@ -144,7 +148,7 @@ void optimizePath(std::vector<std::vector<int> > &map, std::vector<Node> path){
         drawLine(vX2.at(i),vY2.at(i),vX2.at(i+1),vY2.at(i+1),map);
     }*/
 
-
+	return newPath;
 }
 bool detectCollisionLine( float x1, float y1, float x2, float y2 , std::vector<std::vector<int> >& mapVector){
         // Bresenham's line algorithm
@@ -177,11 +181,15 @@ bool detectCollisionLine( float x1, float y1, float x2, float y2 , std::vector<s
     {
         if(mapVector.at(y).at(x) == 1)
             return true;
+		else	//debug to see the path on the map
+			mapVector.at(y).at(x) = 2;
     }
     else
     {
         if(mapVector.at(x).at(y) == 1)
             return true;
+		else
+			mapVector.at(x).at(y) = 2;
     }
 
     error -= dy;
