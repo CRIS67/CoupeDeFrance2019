@@ -25,6 +25,11 @@
 #include "dStarLite.hpp"
 #include "trajectoryHandle.hpp"
 
+
+#include <fstream>
+
+#define MAP_MM_PER_ARRAY_ELEMENT 	10
+#define SIZE_ENNEMY					40	//4 element in array map -> (here 40cm)WARNING depends of map resolution
 //DStarGlobal 
 int mapRows {200};  
 int mapColumns {300};  
@@ -66,42 +71,27 @@ int main()
 	
 	DsPIC dspic;
     dspic.async_read(); //flush rx buffer
+	
+    dspic.setVar8(CODE_VAR_VERBOSE,0);
+    dspic.stop();
+	delay(50);
+    dspic.async_read(); //flush rx buffer
+	
     
     Web web(&dspic);
     web.startThread();
 
     Lidar lidar(&spi, SPI_ID_LIDAR, &web);
-    //lidar.flush(255);
     lidar.setSpeed(150);
-    //lidar.start();
-    //lidar.stop();
-    //lidar.startThreadDetection();
+	lidar.stop();
+	std::cout << ">DEBUG : stop dspic & lidar" << std::endl;
+	std::cout << "Press <ENTER> to start" << std::endl;
+	getchar();
+    lidar.start();
+    lidar.startThreadDetection();
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
 
-    /*
-	getchar();
-	//lidar.start();
-    //getchar();
-	lidar.startThreadDetection();
-    getchar();
-	actFront.MoveServo(0,valueL);
-    actFront.MoveServo(1,valueL);
-    actFront.MoveServo(2,valueL);
-    actBack.MoveServo(0,valueL);
-    actBack.MoveServo(1,valueL);
-    actBack.MoveServo(2,valueL);
-	delay(500);
-	actFront.MoveServo(0,valueH);
-    actFront.MoveServo(1,valueH);
-    actFront.MoveServo(2,valueH);
-    actBack.MoveServo(0,valueH);
-    actBack.MoveServo(1,valueH);
-    actBack.MoveServo(2,valueH);
-	getchar();
-	lidar.stopThreadDetection();
-	//lidar.stop();
-	*/
     getchar();
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
@@ -133,8 +123,8 @@ int main()
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
-    createRectangle(0,0,30,299, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
-    createRectangle(170,0,25,299, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(0,0,30,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(170,0,25,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
 
    // /*Ensemble palets*/
@@ -150,65 +140,144 @@ int main()
    // createRectangle(103,246,7,7,mapVector); 
      
     std::cout << "MAP GENERATED" << std::endl; 
-    //printMap(mapRows, mapColumns, mapVector);
+    //printMap(mapRows, mapColumns, mapVector); 
 
-    /* For all actions we do a D* run */
-    bool firstRun=true; 
-
+	
+	/*save map in a file*/
+	std::ofstream file;
+	file.open("out_map.txt");
+	for(unsigned int i = 0; i < mapRows;i++){
+		for(unsigned int j = 0; j < mapColumns; j++){
+			file << mapVector.at(i).at(j) << " ";
+		}
+		file << std::endl;
+	}
+	file.close();
+	
     for(uint i = 0; i< strategyTour.size(); i++)
     {
 
-      /*=============DStarImplementation START===================*/
+		/*=============DStarImplementation START===================*/
 
-      goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
-      //DStarLite first run
-      Node lastNode = startNode;
-      if(firstRun)
-      {
-        initialize(mapVector, knownNodes, uList, startNode, goalNode);
-        firstRun = false; 
-      }
-      goalNode = knownNodes.at(goalNode.coord);
-      computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
-      startNode = knownNodes.at(startNode.coord); // we update the start node
-      goalNode = knownNodes.at(goalNode.coord); // we update the goal node
-      std::cout << "Start Node coord " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
-      std::cout << " Goal Node coord " << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
+		goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
+		//DStarLite first run
+		Node lastNode = startNode;
+		initialize(mapVector, knownNodes, uList, startNode, goalNode);
+		goalNode = knownNodes.at(goalNode.coord);
+		computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+		startNode = knownNodes.at(startNode.coord); // we update the start node
+		goalNode = knownNodes.at(goalNode.coord); // we update the goal node
+		std::cout << "Start Node coord " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
+		std::cout << " Goal Node coord " << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 
-      std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the hole path 
-      std::vector<Node> simplifiedPath = pathTreatment(completePath);
-      simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
-      //printPath(simplifiedPath,mapVector); 
+		std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the whole path 
+	  
+		//std::cout << "debug1" << std::endl;
+		/* <modifié*/
+		
+		std::vector<Node> tempSimplifiedPath = pathTreatment(completePath);
+		tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
+		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);
+		
+		/*std::cout << "tempSimplified path : " << std::endl;
+		for(unsigned int i = 0 ; i < tempSimplifiedPath.size(); i++){
+			std::cout << i << " : (" << tempSimplifiedPath.at(i).coord.first << " ; "  << tempSimplifiedPath.at(i).coord.second << ")" << std::endl;
+		}
+		
+		std::cout << "optimized path" << std::endl;
+		for(unsigned int i = 0 ; i < simplifiedPath.size(); i++){
+			std::cout << i << " : (" << simplifiedPath.at(i).coord.first << " ; "  << tempSimplifiedPath.at(i).coord.second << ")" << std::endl;
+		}*/
+		/*modifié>*/
+		/*<original*/
+		
+		/*std::vector<Node> simplifiedPath = pathTreatment(completePath);
+		
+		//std::cout << "debug2" << std::endl;
+		simplifiedPath.push_back(goalNode); // we need to add the last node manually :(
+		//std::cout << "debug3" << std::endl;
+		*/
+		/*original>*/
+		 
 
-      int counter=0; 
+		int counter=0; 
 
-      /* Dstar Loop*/
-      while(startNode.coord != goalNode.coord){
+		/* Dstar Loop*/
+		while(startNode.coord != goalNode.coord){
 
-          if(startNode.costG == infinity){
-              std::cerr << "NOT KNOWN PATH" << std::endl;
-              break;
-          }
+			if(startNode.costG == infinity){
+				std::cerr << "NOT KNOWN PATH" << std::endl;
+				break;
+			}
 
-          //startNode = bestNode(startNode, knownNodes); // we "move" the robot
-          startNode = simplifiedPath.at(counter); 
-          counter++;
-          std::cout << "PRINTING PATH" << std::endl; 
-          //findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
+			//startNode = bestNode(startNode, knownNodes); // we "move" the robot
+			startNode = simplifiedPath.at(counter); 
+			counter++;
+			std::cout << "PRINTING PATH" << std::endl; 
+			//findPath(mapVector,knownNodes,startNode,goalNode); // prints the path in the terminal 
 
-          int xSetpoint = startNode.coord.first *10; 
-          int ySetpoint = startNode.coord.second *10; 
-          dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
-          delay(200);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
+			int xSetpoint = startNode.coord.first * MAP_MM_PER_ARRAY_ELEMENT; 
+			int ySetpoint = startNode.coord.second * MAP_MM_PER_ARRAY_ELEMENT; 
+			dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
+			delay(200);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
 
-          // Wait until the robot reaches the point
+			// Wait until the robot reaches the point
           
-           //while(!dspic.getArrived()){
-			while( (dspic.getX() - xSetpoint)*(dspic.getX() - xSetpoint) + (dspic.getY() - ySetpoint)*(dspic.getY() - ySetpoint) > 400){
+			//while(!dspic.getArrived()){
+			/*while( (dspic.getX() - xSetpoint)*(dspic.getX() - xSetpoint) + (dspic.getY() - ySetpoint)*(dspic.getY() - ySetpoint) > 400){
                delay(50);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
                dspic.getVar(CODE_VAR_ARRIVED); //send a request to update the arrived variable
                delay(50); 
-           }
+			}*/
+			/*while((dspic.getX() - xSetpoint)*(dspic.getX() - xSetpoint) + (dspic.getY() - ySetpoint)*(dspic.getY() - ySetpoint) > 400){
+				delay(50);
+			}*/
+			
+			lidar.setFillBuffer(true);	//keep track of the points detected by lidar in a member buffer
+			while((dspic.getX() - xSetpoint)*(dspic.getX() - xSetpoint) + (dspic.getY() - ySetpoint)*(dspic.getY() - ySetpoint) > 400){
+				//get lidar points
+				std::queue<pointFloat2d> points = lidar.getAndClearDetectedPoints();	//get detected points and clear internal buffer
+				unsigned int nbPoints = points.size();
+				//std::cout << "nbPoints" << nbPoints << std::endl;
+				//add on binary map
+				std::vector<std::vector<int>> newMap(mapVector);
+				for(unsigned int i = 0; i < nbPoints;i++){
+					pointFloat2d p = points.front();
+					points.pop();
+					unsigned int x = (unsigned int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+					unsigned int y = (unsigned int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+					//std::cout << "(" << x << " ; " << y << ") ";
+					for(unsigned int j = x - SIZE_ENNEMY; j < x + SIZE_ENNEMY;j++){
+						for(unsigned int k = y - SIZE_ENNEMY; k < y + SIZE_ENNEMY;k++){
+							if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
+								newMap.at(j).at(k) = 1;
+								//std::cout << "(" << j << " ; " << k << ") ";
+							}
+						}
+					}
+					//std::cout << std::endl;
+				}
+				//detect Collision
+				bool obstacleDetection = detectCollision(newMap,simplifiedPath);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
+				if(obstacleDetection){
+					std::cout << " WARNING : collision !" << std::endl;
+				}
+				//std::cout << "collision = " << obstacleDetection << std::endl;
+				//std::cout << "collision = " << detectCollisionLine(100,100,100,250,newMap) << std::endl;
+				//std::ofstream file;
+				//file.open("out_map.txt");
+				//for(unsigned int i = 0; i < mapRows;i++){
+				//	for(unsigned int j = 0; j < mapColumns; j++){
+				//		file << newMap.at(i).at(j) << " ";
+				//	}
+				//	file << std::endl;
+				//}
+				//file.close();	
+				//printMap(mapRows,mapColumns,newMap);
+				delay(50);
+			}
+			lidar.setFillBuffer(false);	//stop keeping lidar points to avoid running out of memory
+			
           /*
           while(!pointReached)
           {
@@ -237,13 +306,13 @@ int main()
           }*/
 
           // Debug 
-          std::cout << "Press enter to continue to the next point" << std::endl; 
+          std::cout << "Press nothing to continue to the next point" << std::endl; 
           //getchar();
       }
 
       /*=============DStarImplementation END===================*/
       startNode = goalNode; 
-      std::cout << "Press enter for next action"  << std::endl; 
+      std::cout << "Press nothing for next action"  << std::endl; 
       //getchar(); 
       //strategyTour.erase(strategyTour.begin()+i); // We remove the action
     }
@@ -251,13 +320,16 @@ int main()
 
     /*=============Strategy  END ===================*/
     
-    /*
+    lidar.stopThreadDetection();
+	lidar.stop();
+	
     dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
     puts("verbose set to 0");
     puts("exiting ...");
-    */
 
+	delay(50);
+	
     return 0;
 }
 

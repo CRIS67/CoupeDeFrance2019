@@ -78,6 +78,9 @@ class Lidar
 		std::queue<pointFloat2d> getDetectedPoints();
 		std::queue<pointFloat2d> getAndClearDetectedPoints();
 		
+		void setFillBuffer(bool b);
+		bool getFillBuffer();
+		
 		int16_t x = 1500,y = 1000, t = 45;
 		uint8_t bufferRx[SIZE_BUFFER_RX];
 		uint8_t iRxIn = 0;
@@ -96,6 +99,7 @@ class Lidar
 		SPI *m_pSpi;	//pointer to SPI instance
 		Web *m_pWeb;	//pointer to SPI instance
 		std::queue<pointFloat2d> m_qDetectedPoints;
+		bool m_fillBuffer = false;
     private:
 };
 
