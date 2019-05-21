@@ -140,7 +140,7 @@ int main()
    // createRectangle(103,246,7,7,mapVector); 
      
     std::cout << "MAP GENERATED" << std::endl; 
-    //printMap(mapRows, mapColumns, mapVector); 
+    //printMap(mapRows, mapColumns, mapVector);
 
 	
 	/*save map in a file*/
@@ -156,7 +156,6 @@ int main()
 	
     for(uint i = 0; i< strategyTour.size(); i++)
     {
-
 		/*=============DStarImplementation START===================*/
 
 		goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
@@ -319,11 +318,9 @@ int main()
 
 
     /*=============Strategy  END ===================*/
-    
+
     lidar.stopThreadDetection();
 	lidar.stop();
-	
-    dspic.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
     puts("verbose set to 0");
     puts("exiting ...");
