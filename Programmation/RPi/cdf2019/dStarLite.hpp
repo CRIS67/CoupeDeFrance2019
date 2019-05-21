@@ -25,6 +25,7 @@ struct Node
 	std::pair<float, float> key {-1,-1}; // default node key
         int rank;
         int id;
+        double actionCoeff; // Coefficient for the action 
 
 };
 

@@ -390,14 +390,20 @@ void LK::readNodes(std::vector<Node>& initialTour){
   }
 
   uint counter {0}; 
-  int rank, id, coordx, coordy, info ; 
+  int rank, id, coordx, coordy, info , coeff; 
   while (data)
   {
       std::string strInput;
       data >> strInput; 
       counter++; 
       if(strInput.length() != 0 ){
-        info  = std::stoi(strInput) ; 
+        if(counter == 5){
+          info = std::stod(strInput); 
+        }
+        else 
+        {
+          info  = std::stoi(strInput) ; 
+        }
       }
       else 
         return; 
@@ -411,13 +417,17 @@ void LK::readNodes(std::vector<Node>& initialTour){
         case 3: 
            coordx=info;   
            break;
-
         case 4: 
-           coordy=info;   
+          coordy = info;  
+          break 
+
+        case 5: 
+           coeff=info;   
            Node n ; //{rank ,id, std::make_pair(coordx, coordy) }; 
            n.rank = rank; 
            n.id = id; 
            n.coord = std::make_pair(coordx, coordy); 
+           n.actionCoeff = coeff; 
            initialTour.push_back(n); 
            counter = 0; 
            break;
