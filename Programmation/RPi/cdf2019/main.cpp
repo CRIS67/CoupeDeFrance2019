@@ -27,9 +27,10 @@
 
 
 #include <fstream>
+#include <sstream>
 
 #define MAP_MM_PER_ARRAY_ELEMENT 	10
-#define SIZE_ENNEMY					40	//4 element in array map -> (here 40cm)WARNING depends of map resolution
+#define SIZE_ENNEMY					20	//size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
 //DStarGlobal 
 int mapRows {200};  
 int mapColumns {300};  
@@ -40,7 +41,7 @@ std::vector<std::vector<int>> mapVector; // the robot's map
 bool obstacleDetection {false}; 
 bool pointReached {false}; 
  
-Node startNode = {infinity,infinity,0,std::pair<int,int>(75,250)};
+Node startNode = {infinity,infinity,0,std::pair<int,int>(100,250)};
 Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
@@ -172,7 +173,7 @@ int main()
 
 		std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the whole path 
 	  
-		//std::cout << "debug1" << std::endl;
+		std::cout << "getPath ended" << std::endl;
 		/* <modifié*/
 		
 		std::vector<Node> tempSimplifiedPath = pathTreatment(completePath);
@@ -201,7 +202,7 @@ int main()
 		 
 
 		int counter=0; 
-
+		unsigned int nb = 0;
 		/* Dstar Loop*/
 		while(startNode.coord != goalNode.coord){
 
@@ -218,8 +219,9 @@ int main()
 
 			int xSetpoint = startNode.coord.first * MAP_MM_PER_ARRAY_ELEMENT; 
 			int ySetpoint = startNode.coord.second * MAP_MM_PER_ARRAY_ELEMENT; 
+			std::cout << "send go " << xSetpoint << " ; " << ySetpoint << std::endl;
 			dspic.go(xSetpoint, ySetpoint,0,0); // we move the robot to the next point
-			delay(200);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
+			//delay(200);  //wait before asking so the dspic can start the movement /  and don't SPAM the UART channel
 
 			// Wait until the robot reaches the point
           
@@ -237,6 +239,7 @@ int main()
 			while((dspic.getX() - xSetpoint)*(dspic.getX() - xSetpoint) + (dspic.getY() - ySetpoint)*(dspic.getY() - ySetpoint) > 400){
 				//get lidar points
 				std::queue<pointFloat2d> points = lidar.getAndClearDetectedPoints();	//get detected points and clear internal buffer
+				std::queue<pointFloat2d> savePoints = points;
 				unsigned int nbPoints = points.size();
 				//std::cout << "nbPoints" << nbPoints << std::endl;
 				//add on binary map
@@ -258,21 +261,68 @@ int main()
 					//std::cout << std::endl;
 				}
 				//detect Collision
-				bool obstacleDetection = detectCollision(newMap,simplifiedPath);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
+				Node nRobot;
+				nRobot.coord.first = (int)(dspic.getX()/10);
+				nRobot.coord.second = (int)(dspic.getY()/10);
+				bool obstacleDetection = detectCollision(newMap,simplifiedPath, nRobot);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
+				//bool obstacleDetection = detectCollisionLine(100,50,100,250,newMap);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
 				if(obstacleDetection){
+					
+					std::vector<std::vector<int>> augmentedMap(mapVector);
+					for(unsigned int i = 0; i < nbPoints;i++){
+						pointFloat2d p = savePoints.front();
+						savePoints.pop();
+						unsigned int x = (unsigned int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+						unsigned int y = (unsigned int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+						//std::cout << "(" << x << " ; " << y << ") ";
+						for(unsigned int j = x - (SIZE_ENNEMY+20); j < x + (SIZE_ENNEMY+20);j++){
+							for(unsigned int k = y - (SIZE_ENNEMY+20); k < y + (SIZE_ENNEMY+20);k++){
+								if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
+									augmentedMap.at(j).at(k) = 1;
+									//std::cout << "(" << j << " ; " << k << ") ";
+								}
+							}
+						}
+						//std::cout << std::endl;
+					}
+				
+					startNode.coord.first = nRobot.coord.first;
+					startNode.coord.second = nRobot.coord.second;
 					std::cout << " WARNING : collision !" << std::endl;
+					km = km + distance2(lastNode, startNode);
+					lastNode = startNode;
+					updateMap(knownNodes, augmentedMap, uList, startNode.coord, goalNode); // we update all the changed nodes
+					std::cout << "computing new path" << std::endl;
+					computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+					std::cout << "new path found ! =)" << std::endl;
+					startNode = knownNodes.at(startNode.coord); // we update the start node
+					goalNode = knownNodes.at(goalNode.coord);	
+					std::cout << "debug1" << std::endl;
+					completePath = getPath(augmentedMap, knownNodes, startNode, goalNode); // get the whole path 	
+					std::cout << "debug2" << std::endl;
+					tempSimplifiedPath = pathTreatment(completePath);
+					std::cout << "debug2.1" << std::endl;
+					tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
+					std::cout << "debug2.2" << std::endl;
+					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);
+					std::cout << "debug2.3" << std::endl;	
+					counter=0;
+					std::cout << "debug3" << std::endl;
+					break;
 				}
 				//std::cout << "collision = " << obstacleDetection << std::endl;
 				//std::cout << "collision = " << detectCollisionLine(100,100,100,250,newMap) << std::endl;
-				//std::ofstream file;
-				//file.open("out_map.txt");
-				//for(unsigned int i = 0; i < mapRows;i++){
-				//	for(unsigned int j = 0; j < mapColumns; j++){
-				//		file << newMap.at(i).at(j) << " ";
-				//	}
-				//	file << std::endl;
-				//}
-				//file.close();	
+				std::ofstream file;
+				std::ostringstream ss;
+				ss << "out_map" << nb++ << ".txt";
+				file.open(ss.str());
+				for(unsigned int i = 0; i < mapRows;i++){
+					for(unsigned int j = 0; j < mapColumns; j++){
+						file << newMap.at(i).at(j) << " ";
+					}
+					file << std::endl;
+				}
+				file.close();	
 				//printMap(mapRows,mapColumns,newMap);
 				delay(50);
 			}
@@ -323,6 +373,7 @@ int main()
     lidar.stopThreadDetection();
 	lidar.stop();
     dspic.setVar8(CODE_VAR_VERBOSE,0);
+	dspic.stop();
     puts("verbose set to 0");
     puts("exiting ...");
 
