@@ -7,9 +7,11 @@ simplifies the trajectory
 std::vector<Node> pathTreatment(std::vector<Node> path)
 {	
 	std::vector<Node> simplifiedPath;
-
+	if(path.size() < 3)
+		return path;
 	for(uint i = 0; i<path.size()-2; i++)
 	{
+		//std::cout << "debug pathTreatment : " << i << " & " << path.size() << std::endl;
 		Node tmpNode = path.at(i); 
 		Node nextNode = path.at(i+1); 
 		Node furtherNode = path.at(i+2); 
@@ -72,13 +74,15 @@ void printPath(std::vector<Node> path, std::vector<std::vector<int>>& mapVector)
     printMap(tmpMap.size(), tmpMap[0].size(), tmpMap);
 }
 
-bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path){
+bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path, Node start){
+	path.insert(path.begin(),start);
+	std::cout << "debug detectCollision : size of path = " << path.size() <<std::endl;
 	for(unsigned int i = 0; i < path.size() -1; i++){
 		/*int xA = path.at(i).coord.first;
 		int yA = path.at(i).coord.second;
 		int xB = path.at(i).coord.first;
 		int yB = path.at(i).coord.second;*/
-		//std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
+		std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
 		if(detectCollisionLine(path.at(i).coord.first, path.at(i).coord.second, path.at(i+1).coord.first, path.at(i+1).coord.second,map))
             return true;
 
