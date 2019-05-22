@@ -126,6 +126,8 @@ int main()
     createRectangle(0,0,30,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     createRectangle(170,0,25,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    std::vector<std::vector<int>> debugMap(mapVector); 
+    createRectangle(80,150,40,40, debugMap); 
 
    // /*Ensemble palets*/
    // createRectangle(90,85,30,30,mapVector); 
@@ -153,7 +155,6 @@ int main()
 		file << std::endl;
 	}
 	file.close();
-	
     for(uint i = 0; i< strategyTour.size(); i++)
     {
 		/*=============DStarImplementation START===================*/

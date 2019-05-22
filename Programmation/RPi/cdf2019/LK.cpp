@@ -419,7 +419,7 @@ void LK::readNodes(std::vector<Node>& initialTour){
            break;
         case 4: 
           coordy = info;  
-          break 
+          break; 
 
         case 5: 
            coeff=info;   
