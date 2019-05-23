@@ -114,12 +114,15 @@ file.close()
 
 
 # region Aquisition de l'image
-camera = PiCamera()
-rawCapture = PiRGBArray(camera)
-camera.resolution = (1024, 1000)  # (3280,2464)
-camera.capture(rawCapture, format="bgr")
-sleep(0.1)
-image = rawCapture.array
+try:
+	camera = PiCamera()
+	rawCapture = PiRGBArray(camera)
+	camera.resolution = (1024, 1000)  # (3280,2464)
+	camera.capture(rawCapture, format="bgr")
+	sleep(0.1)
+	image = rawCapture.array
+except:
+	image = cv2.imread("palet13.jpg")
 # endregion aquisition image
 cv2.imwrite('./outVision/original.jpg', image)
 if image is None:
@@ -170,8 +173,8 @@ colors_string = ('b', 'g', 'r')
 for i in range(3):
 	mask = cv2.inRange(thresh, masks_colors[i], masks_colors[i])  # On conserve uniquement la couleur
 	# peut provoquer une erreur selon la version d'openCV
-	_,contours, _ = cv2.findContours(mask, cv2.RETR_TREE,
-								   cv2.CHAIN_APPROX_SIMPLE)  # On prend les countours des formes
+	_, contours, _ = cv2.findContours(mask, cv2.RETR_TREE,
+									  cv2.CHAIN_APPROX_SIMPLE)  # On prend les countours des formes
 	mask = np.zeros(np.shape(mask), np.uint8)  # Creation du masque final pour l'instant vierge
 
 	for c in contours:
