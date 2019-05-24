@@ -119,10 +119,12 @@ try:
 	rawCapture = PiRGBArray(camera)
 	camera.resolution = (1024, 1000)  # (3280,2464)
 	camera.capture(rawCapture, format="bgr")
-	sleep(0.1)
+	sleep(0.2)
 	image = rawCapture.array
-except:
-	image = cv2.imread("palet13.jpg")
+
+except :
+	raise Exception("Erreur dans l'init de la cam")
+
 # endregion aquisition image
 cv2.imwrite('./outVision/original.jpg', image)
 if image is None:
@@ -131,14 +133,26 @@ if image is None:
 ##################
 
 
-# region resize
+# region resize et rotation
+angle_rot=180
 largeur_init, hauteur_init, _ = np.shape(image)
+
+#rotation
+M = cv2.getRotationMatrix2D((hauteur_init/2,largeur_init/2),180,1)#180 degres
+image=cv2.warpAffine(image,M,(hauteur_init,largeur_init))
+
+#resize
 image = cv2.resize(image, (int(hauteur_init * resize_rate), int(largeur_init * resize_rate)),
 				   interpolation=cv2.INTER_AREA)
+
+
 # endregion
 cv2.imwrite('./outVision/resized.jpg', image)
 
 ###################
+
+
+
 
 
 # region redressement
