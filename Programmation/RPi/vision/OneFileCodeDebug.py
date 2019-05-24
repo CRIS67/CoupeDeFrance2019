@@ -224,10 +224,6 @@ zero = (int(largeur_pix / 2), hauteur_pix)
 for i in range(len(data)):
 	data[i] = conversion(data[i])
 
-# def dY(h):
-#    return -int(54.6 + 0.0827 * h)
-# def correction_lineaire(h):
-#    return 0.1134 * h + 2.3975
 # endregion
 
 
