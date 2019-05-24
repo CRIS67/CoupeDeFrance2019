@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
-from picamera.array import PiRGBArray
-from picamera import PiCamera
 from time import sleep
 import os
+import subprocess
 
 
 # region Fonctions
@@ -115,18 +114,15 @@ file.close()
 
 # region Aquisition de l'image
 try:
-	camera = PiCamera()
-	rawCapture = PiRGBArray(camera)
-	camera.resolution = (1024, 1000)  # (3280,2464)
-	camera.capture(rawCapture, format="bgr")
-	sleep(0.2)
-	image = rawCapture.array
+	cmd = "raspstill -vf -hf -h 1000 -w 1024 -o /home/pi/Desktop/vision/outVision/original.jpg"
+	subprocess.call(cmd,shell=True)
+	sleep(0.25)
+	image = cv2.imread('./outVision/original.jpg')
 
 except :
 	raise Exception("Erreur dans l'init de la cam")
 
 # endregion aquisition image
-cv2.imwrite('./outVision/original.jpg', image)
 if image is None:
 	raise Exception("Erreur dans l'import. de l'image.    image==None")
 
