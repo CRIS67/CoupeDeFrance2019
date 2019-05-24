@@ -357,3 +357,68 @@ int Actuators::debugGetColor(int nb_bras){
 	m_pSpi->unlock();
 	return ret;
 }
+void Actuators::ChangeColorLevel(int in, int val) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+	if(in < 0 || in > 6) {
+		std::cout << "Actuators::ChangeColorLevel>in range error" << std::endl;
+		return;
+	}
+	if(val < 0 || val > 900) {
+		std::cout << "Actuators::ChangeColorLevel>val range error" << std::endl;
+		return;
+	}
+	int lsb = val%256, msb = int(val/256);
+	in += 22;
+	Send(4);
+	Send(in);
+	Send(msb);
+	Send(lsb);
+	Send(in+4+lsb+msb);
+	m_pSpi->unlock();
+}
+uint16_t Actuators::GetColorFull(int in) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+	while(in < 0 || in > 2) {
+		std::cout << "Actuators::GetColorFull> in error range" << std::endl; 
+		return 0;
+	}
+	in += 19;
+	uint8_t buffer[5];
+	Send(2);
+	Send(in);
+	Send(2+in);
+	buffer [0] = Send(0);
+	buffer [1] = Send(0);
+	buffer [2] = Send(0);
+	buffer [3] = Send(0);
+	buffer [4] = Send(0);
+	m_pSpi->unlock();
+	uint16_t val = (buffer[2] << 8) + buffer[3];
+	return val;
+}
+void Actuators::ResetColorDefault(void) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+	Send(2);
+	Send(29);
+	Send(31);
+	m_pSpi->unlock();
+}
+void Actuators::ResetAtmega(void) {
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){	
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+	Send(2);
+	Send(30);
+	Send(32);
+	m_pSpi->unlock();
+}

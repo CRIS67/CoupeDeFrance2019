@@ -180,6 +180,15 @@ int main(){
     initADC();
     initSPI();
     
+    /*TRISFbits.TRISF7 = 0;
+    int iLedStart = 0;
+    for(iLedStart = 0; iLedStart < 10; iLedStart++){
+        LATFbits.LATF7 = 1;
+        delay_ms(50);
+        LATFbits.LATF7 = 0;
+        delay_ms(50);
+    }*/
+    
     
     x = 0;
     y = 0;
