@@ -28,6 +28,7 @@ class HMI
 		void SetTxtFull(std::string txt_in);
 		void EraseScreen(int in_era);
 		void flush(uint16_t nb);
+		void resetPic(void);
 
     protected:
     private:
