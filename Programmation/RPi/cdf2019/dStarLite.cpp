@@ -1,13 +1,20 @@
 #include "dStarLite.hpp"
 
-extern float km;
+extern int km;
 extern int mapRows, mapColumns, obstaclesNumber;
-float distance(int x1, int y1, int x2, int y2) {
-	return std::sqrt((x1-x2)*(x1-x2)+ (y1-y2)*(y1-y2));
+int distance(int x1, int y1, int x2, int y2) {
+	//return static_cast<int>(std::sqrt((x1-x2)*(x1-x2)+ (y1-y2)*(y1-y2)));
+	//return (x1-x2)*(x1-x2)+ (y1-y2)*(y1-y2);
+	//return std::abs(x1-x2) + std::abs(y1-y2); // Manhattan
+	//return std::max(std::abs(x1-x2),std::abs(y1-y2)); // Norme infinie
+
+	int dx = std::abs(x1-x2);
+	int dy = std::abs(y1-y2);
+	return linearCost * (dx + dy) + (diagonalCost - 2 * linearCost) * std::min(dx, dy);
 }
 
 // Compare the keys of two nodes and returns true if k1<k2
-bool compareKeys(std::pair<float, float> k1, std::pair<float,float> k2){
+bool compareKeys(std::pair<int, int> k1, std::pair<int,int> k2){
 
 	if(k1.first < k2.first)
 		return true;
@@ -19,18 +26,17 @@ bool compareKeys(std::pair<float, float> k1, std::pair<float,float> k2){
 		else
 			return false;
 	}
-	return false; 
 }
 
 
 // returns the smallest priority of all vertices in priority queue
-std::pair<float,float> topKey(priorityList& uList){
+std::pair<int,int> topKey(priorityList& uList){
 
     if( uList.size() == 0 ){
-        std::pair<float, float> key(infinity,infinity);
+        std::pair<int, int> key(infinity,infinity);
         return key;
     }
-	std::pair<float,float> nodeKey = uList.begin()->first;
+	std::pair<int,int> nodeKey = uList.begin()->first;
 
 	for(priorityList::iterator i = uList.begin(); i!= uList.end(); i++){
 
@@ -44,20 +50,20 @@ std::pair<float,float> topKey(priorityList& uList){
 // returns a vertex with the smallest priority of all vertices in priority queue
 Node top(priorityList& uList){
 
-	std::pair<float,float> nodeKey= topKey(uList);
+	std::pair<int,int> nodeKey= topKey(uList);
 	return uList[nodeKey];
 }
 
 // deletes the vertex with the smallest priority in priority queue and returns-it
 Node pop(priorityList& uList){
-	std::pair<float,float>  nodeKey = topKey(uList);
+	std::pair<int,int>  nodeKey = topKey(uList);
 	Node tmp  = uList[nodeKey];
 	uList.erase(nodeKey);
 	return tmp;
 }
 
 // Updates the priority of a node in the priorityList
-void update( std::pair<float,float> oldKey, std::pair<float,float> newKey, priorityList& uList){
+void update( std::pair<int,int> oldKey, std::pair<int,int> newKey, priorityList& uList){
 	priorityList::iterator itr = uList.find(oldKey);
 
 	if(itr != uList.end()){
@@ -67,14 +73,14 @@ void update( std::pair<float,float> oldKey, std::pair<float,float> newKey, prior
 	}
 }
 
-float distance2(Node node1, Node node2){
+int distance2(Node node1, Node node2){
 	return distance(node1.coord.first, node1.coord.second, node2.coord.first, node2.coord.second);
 }
 
 
-std::pair<float, float> calculateKey(Node node, Node startNode){
-	std::pair<float,float> key;
-	float k1, k2;
+std::pair<int, int> calculateKey(Node node, Node startNode){
+	std::pair<int,int> key;
+	int k1, k2;
 
 	k1 = std::min(node.costG, node.costRHS) + distance2(node, startNode) + km;
 	k2 = std::min(node.costG, node.costRHS);
@@ -132,11 +138,11 @@ void updateNode( Node node, priorityList& uList, mappedNodes& knownNodes, std::p
     }
 
 	if( node.costG != node.costRHS){ // if the node is localy inconsistent, we added-it to the priorityList
-		std::pair<float,float> newKey = calculateKey(node, knownNodes.at(startCoord));
+		std::pair<int,int> newKey = calculateKey(node, knownNodes.at(startCoord));
 		node.key = newKey;
 		knownNodes.at(node.coord) = node; // we update the node in the knownNodes list
 		//uList[newKey] = node;
-		uList.insert(std::pair<std::pair<float, float>, Node>(newKey,node));
+		uList.insert(std::pair<std::pair<int, int>, Node>(newKey,node));
 	}
 
 
@@ -144,20 +150,26 @@ void updateNode( Node node, priorityList& uList, mappedNodes& knownNodes, std::p
 
 void computeShortestPath(priorityList& uList, mappedNodes& knownNodes, std::pair<int,int> startCoord, Node goalNode) {
 
+    std::cout << "topKey ";
+    printKey(topKey(uList));
+    std::cout << "Calculate key start ";
+    printKey(calculateKey(knownNodes.at(startCoord), knownNodes.at(startCoord)));
+    std::cout << "StartNode RHS " << knownNodes.at(startCoord).costRHS << "  StartNode G " << knownNodes.at(startCoord).costG << std::endl;
+
 	while( ( compareKeys(topKey(uList), calculateKey(knownNodes.at(startCoord), knownNodes.at(startCoord)))  ) ||
                                             ( knownNodes.at(startCoord).costRHS != knownNodes.at(startCoord).costG) ) {
 
-		std::pair<float, float> oldKey = topKey(uList);
+		std::pair<int, int> oldKey = topKey(uList);
 		Node uNode = pop(uList);
 
         //printNodesAndKeys(knownNodes);
 		//std::cout << "uNode Coord " << uNode.coord.first << ","<< uNode.coord.second << "\t" << "IsObstacle : " << uNode.isObstacle << std::endl;
 
 		if(compareKeys(oldKey, calculateKey(uNode, knownNodes.at(startCoord)))){
-                std::pair<float,float> newKey = calculateKey(uNode, knownNodes.at(startCoord));// calculate new key
+                std::pair<int,int> newKey = calculateKey(uNode, knownNodes.at(startCoord));// calculate new key
                 uNode.key = newKey;
                 knownNodes.at(uNode.coord) = uNode; // update the map
-                uList.insert(std::pair<std::pair<float, float>, Node>(newKey,uNode)); // inserts uNode to the priorityList
+                uList.insert(std::pair<std::pair<int, int>, Node>(newKey,uNode)); // inserts uNode to the priorityList
                 //uList[calculateKey(uNode, knownNodes.at(startCoord))] = uNode; // inserts uNode to the priorityList
             }
 
@@ -179,9 +191,9 @@ void computeShortestPath(priorityList& uList, mappedNodes& knownNodes, std::pair
 }
 
 // finds the best successor and returns the RHS value
-float minSuccessor(Node node, mappedNodes& knownNodes){
+int minSuccessor(Node node, mappedNodes& knownNodes){
 
-	std::vector<float> rhsValues;
+	std::vector<int> rhsValues;
 	// Search the possible successors
 	for (int i = node.coord.first -1 ; i <= node.coord.first +1 ; i++)
 	{
@@ -198,9 +210,14 @@ float minSuccessor(Node node, mappedNodes& knownNodes){
 			std::pair<int,int> nodeCoord(i,j);
 
 			if(knownNodes.at(nodeCoord).isObstacle)
-				rhsValues.push_back( infinity + knownNodes.at(nodeCoord).costG);
-			else
-				rhsValues.push_back(2.0+knownNodes.at(nodeCoord).costG);
+				rhsValues.push_back( infinity );
+			else{
+
+				if(knownNodes.at(nodeCoord).costG == infinity)
+					rhsValues.push_back(knownNodes.at(nodeCoord).costG);
+				else
+					rhsValues.push_back(nodeCost+knownNodes.at(nodeCoord).costG);
+			}
         }
 
 	}
@@ -246,7 +263,7 @@ void findPath(std::vector<std::vector<int>>& randomMap, mappedNodes& knownNodes,
     std::vector<std::vector<int>> printedMap = randomMap; // we copy the map in order to print the path
 
     while(tmp.coord != goalNode.coord){
-        tmp = bestNode(tmp, knownNodes, goalNode);
+        tmp = bestNode(tmp, knownNodes,goalNode);
         path.push_back(tmp);
     }
 
@@ -279,6 +296,7 @@ std::vector<Node> getPath(std::vector<std::vector<int>>& randomMap, mappedNodes&
     return path; 
 }
 
+
 /*
 Finds the best successors that minimzes c(s,s') + g(s')
 */
@@ -288,8 +306,8 @@ Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode){
     tmp.costG = infinity;
     Node bestOne = tmp;
 
-    float bestOneCost = infinity;
-    float tmpCost;
+    int bestOneCost = infinity;
+    int tmpCost;
 
 //    std::cout << std::endl << "=================================" << std::endl ;
 //    std::cout << "Current Node Coord : " << currentNode.coord.first << ","<< currentNode.coord.second << std::endl;
@@ -311,9 +329,13 @@ Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode){
             tmp = knownNodes.at(nodeCoord);
 
             if(tmp.isObstacle)
-                tmpCost = tmp.costG + infinity;
-            else
-                tmpCost = tmp.costG +2.0;
+                tmpCost =  infinity;
+            else{
+            	if(tmp.costG == infinity)
+            		tmpCost = infinity;
+            	else
+            		tmpCost = tmp.costG +nodeCost;
+            }
 
 //            std::cout << "Tmp Node Coord : " << tmp.coord.first << "," << tmp.coord.second << "\tCost : " << tmpCost << "\tIsObstacle " << tmp.isObstacle << std::endl;
 //            std::cout << "Best Node Coord : " << bestOne.coord.first << "," << bestOne.coord.second << "\tCost : " << bestOneCost << std::endl;
@@ -322,17 +344,20 @@ Node bestNode(Node currentNode ,mappedNodes& knownNodes, Node goalNode){
                 bestOne = tmp;
                 bestOneCost = tmpCost;
             }
-            else if (tmpCost == bestOneCost) 
-            {
-              double dst1 = distance2(bestOne, goalNode); 
-              double dst2 = distance2(tmp, goalNode); 
-              if( dst2 < dst1) 
-              {
-                bestOne = tmp; 
-                bestOneCost = tmpCost; 
-              }
-            }
+            else if ( tmpCost == bestOneCost){
 
+                int distanceOne = distance2(bestOne,goalNode);
+                int distanceTwo = distance2(tmp, goalNode);
+//                std::cout << "=======================================" << std::endl;
+//                std::cout << "Tmp Node Coord : " << tmp.coord.first << "," << tmp.coord.second << "\tCost : " << tmpCost << "\tDistance " << distanceTwo << std::endl;
+//                std::cout << "Best Node Coord : " << bestOne.coord.first << "," << bestOne.coord.second << "\tCost : " << bestOneCost << "\tDistance " << distanceOne << std::endl;
+//                std::cout << "=======================================" << std::endl;
+
+                if(distanceOne > distanceTwo){
+                    bestOne = tmp;
+                    bestOneCost = tmpCost;
+                }
+            }
         }
     }
     return bestOne;
@@ -416,4 +441,7 @@ void printNodesAndKeys(mappedNodes& knownNodes){
     std::cout << std::endl << std::endl << "============================DEBUG_END==========================" << std::endl;
 }
 
+void printKey(std::pair<int,int> key){
+    std::cout << "K1 " << key.first << " K2 " << key.second << std::endl;
+}
 

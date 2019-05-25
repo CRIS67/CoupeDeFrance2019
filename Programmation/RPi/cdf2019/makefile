@@ -20,16 +20,16 @@ mapGeneration.o : mapGeneration.cpp
 	g++ -O3 -o mapGeneration.o -c mapGeneration.cpp -Wall -lwiringPi -pthread
 
 dStarLite.o : dStarLite.cpp 
-	g++ -O3 -o dStarLite.o -c dStarLite.cpp -Wall -lwiringPi -pthread
+	g++ -I /home/pi/boost_1_68_0/ -O3 -o dStarLite.o -c dStarLite.cpp -Wall -lwiringPi -pthread
 
 trajectoryHandle.o : trajectoryHandle.cpp 
-	g++ -O3 -o trajectoryHandle.o -c trajectoryHandle.cpp -Wall -lwiringPi -pthread
+	g++ -I /home/pi/boost_1_68_0/ -O3 -o trajectoryHandle.o -c trajectoryHandle.cpp -Wall -lwiringPi -pthread
 
 LK.o: LK.cpp
-	g++ -O3 -o LK.o -c LK.cpp -Wall -lwiringPi -pthread
+	g++ -I /home/pi/boost_1_68_0/ -O3 -o LK.o -c LK.cpp -Wall -lwiringPi -pthread
 	
 hmi.o: hmi.cpp 
 	g++ -O3 -o hmi.o -c hmi.cpp -Wall -lwiringPi -pthread 
 
 main.o: main.cpp web.hpp dspic.hpp SPI.hpp lidar.hpp actuators.hpp hmi.hpp mapGeneration.hpp dStarLite.hpp trajectoryHandle.hpp LK.h
-	g++ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread 
+	g++ -I /home/pi/boost_1_68_0/ -O3 -o main.o -c main.cpp -Wall -lwiringPi -pthread 
