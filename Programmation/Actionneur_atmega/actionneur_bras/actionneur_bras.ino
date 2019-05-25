@@ -57,14 +57,6 @@
   #define MAP_WHITE_MAX 60
 #endif
 
-//limite des couleurs 40-135(6)-420(1)-3000
-#define LIM_RED_MIN     15
-#define LIM_RED_MAX     39
-#define LIM_GREEN_MIN   39
-#define LIM_GREEN_MAX   100
-#define LIM_BLUE_MIN    195
-#define LIM_BLUE_MAX    350
-
 #define LIM_CUR_MIN     100 //+1mA ~ +1bit
 #define LIM_CUR_MAX     250 //450
 
@@ -101,12 +93,12 @@
 #define OK              1
 
 //plage des servo moteurs
-#define SERVO_0_MIN     900
-#define SERVO_0_MAX     1500
-#define SERVO_1_MIN     900
-#define SERVO_1_MAX     1500
-#define SERVO_2_MIN     900
-#define SERVO_2_MAX     1500
+#define SERVO_0_MIN     700
+#define SERVO_0_MAX     1600
+#define SERVO_1_MIN     700
+#define SERVO_1_MAX     1600
+#define SERVO_2_MIN     700
+#define SERVO_2_MAX     1600
 
 #define TAILLE_SPI      5
 
@@ -117,22 +109,37 @@
 #define SPI_CHECKSUM    3
 
 //definition des varaibles pouvant être recu en spi
-#define AUCUNE          0
-#define PUMP_0_SPI      1
-#define PUMP_1_SPI      2
-#define PUMP_2_SPI      3
-#define MOVE_0_SPI      4
-#define MOVE_1_SPI      5
-#define MOVE_2_SPI      6
-#define MOVE_POS_0_SPI  7
-#define MOVE_POS_1_SPI  8
-#define MOVE_POS_2_SPI  9
-#define COLOR_SPI_0     10
-#define COLOR_SPI_1     11
-#define COLOR_SPI_2     12
-#define CURENT_SPI_0    13
-#define CURENT_SPI_1    14
-#define CURENT_SPI_2    15
+#define AUCUNE            0
+#define PUMP_0_SPI        1
+#define PUMP_1_SPI        2
+#define PUMP_2_SPI        3
+#define MOVE_0_SPI        4
+#define MOVE_1_SPI        5
+#define MOVE_2_SPI        6
+#define MOVE_POS_0_SPI    7
+#define MOVE_POS_1_SPI    8
+#define MOVE_POS_2_SPI    9
+#define COLOR_SPI_0       10
+#define COLOR_SPI_1       11
+#define COLOR_SPI_2       12
+#define CURENT_SPI_0      13
+#define CURENT_SPI_1      14
+#define CURENT_SPI_2      15
+#define CURENT_SPI_FULL_0 16
+#define CURENT_SPI_FULL_1 17
+#define CURENT_SPI_FULL_2 18
+#define COLOR_SPI_FULL_0  19
+#define COLOR_SPI_FULL_1  20
+#define COLOR_SPI_FULL_2  21
+#define SEUIL_R_BAS       22
+#define SEUIL_R_HAUT      23
+#define SEUIL_G_BAS       24
+#define SEUIL_G_HAUT      25
+#define SEUIL_B_BAS       26
+#define SEUIL_B_HAUT      27
+#define SEUIL_W           28
+#define RESET_COLOR_ERR   29
+#define MCLR              30
 
 #define PUMP_LAUNCH_0   0
 #define PUMP_LAUNCH_1   1
@@ -140,20 +147,33 @@
 
 #define TAILLE_SEND     10
 
+#define MAX_WAIT_COLOR  2
 
 void Affiche(String txt, unsigned char state);
 unsigned char MesureCourant(unsigned char nb_pump);
-unsigned char MesureCourantState(unsigned char nb_pump);
 char GetColor(unsigned char nb_bras);
 void StatePump(unsigned char nb_pump, boolean state);
 void MoveServo(unsigned char nb_servo, int temps);
 unsigned char GetRuptState(unsigned char nb_servo);
 unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille);
 void Sequence(unsigned char nb_bras);
+void(* resetFunc) (void) = 0; //declare reset function @ address 0
 
 Servo Servo0;
 Servo Servo1;
 Servo Servo2;
+
+//limite des couleurs 40-135(6)-420(1)-3000
+int LIM_RED_MIN = 15;
+int LIM_RED_MAX = 39;
+int LIM_GREEN_MIN = 39;
+int LIM_GREEN_MAX = 100;
+int LIM_BLUE_MIN = 195;
+int LIM_BLUE_MAX = 350;
+int LIM_WHITE_MAX = 32;
+int Hg_0 = 0;
+int Hg_1 = 0;
+int Hg_2 = 0;
 
 //spi
 char EtatSpi = SPI_IDLE;              //etat de la machine à état spi
@@ -164,6 +184,7 @@ unsigned char CptSpi = 0;             //compteur de d'octets recu
 unsigned char TypeVarSpi = AUCUNE;    //type de variable recu
 unsigned char TextSpi[TAILLE_SPI];    //message recu
 unsigned char SendNbSpi = 0;          //message envoyer
+unsigned char SendNbSpi_1 = 0;        //message envoyer 1
 boolean FlagReceiveSpi = 0;           //drapeau de récéption d'un message spi
 char TabPileSend[TAILLE_SEND];        //pile de récéption pour stocker les réponse à donner
 int CptPile = 0;                      //compteur de la pile de remplissage
@@ -177,9 +198,17 @@ unsigned char Color2 = 0;
 unsigned char Cur0 = 0;
 unsigned char Cur1 = 0;
 unsigned char Cur2 = 0;
+int Cur_full_0 = 0;
+int Cur_full_1 = 0;
+int Cur_full_2 = 0;
 boolean Rupt0 = 0;
 boolean Rupt1 = 0;
 boolean Rupt2 = 0;
+
+//capteur couleur
+int cpt_capt_0 = 0;
+int cpt_capt_1 = 0;
+int cpt_capt_2 = 0;
 
 int test = 0;
 
@@ -224,48 +253,9 @@ void setup() {
     TabPileSend[i] = AUCUNE;
   }
 
-  /*
-  //Timers, a faire
-  //set timer0 interrupt at 16kHz
-  TCCR0A = 0;// set entire TCCR0A register to 0
-  TCCR0B = 0;// same for TCCR0B
-  TCNT0  = 0;//initialize counter value to 0
-  // set compare match register for 2khz increments
-  OCR0A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256)
-  // turn on CTC mode (Clear Timer on Compare)
-  TCCR0A |= (1 << WGM01);
-  // Set CS01 and CS00 bits for 1 prescaler
-  TCCR0B |= (1 << CS00);   
-  // enable timer compare interrupt
-  TIMSK0 |= (1 << OCIE0A);
-  
-  //set timer1 interrupt at 16Hz
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for 1hz increments
-  OCR1A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256) (must be <65536)
-  // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS10 and CS12 bits for 1024 prescaler
-  TCCR1B |= (1 << CS10);  
-  // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
-
-  //set timer2 interrupt at 16kHz
-  TCCR2A = 0;// set entire TCCR2A register to 0
-  TCCR2B = 0;// same for TCCR2B
-  TCNT2  = 0;//initialize counter value to 0
-  // set compare match register for 8khz increments
-  OCR2A = 0;// = (16*10^6) / (16Mhz*1) - 1 (must be <256) (must be <256)
-  // turn on CTC mode
-  TCCR2A |= (1 << WGM21);
-  // Set CS21 bit for 8 prescaler
-  TCCR2B |= (1 << CS20);   
-  // enable timer compare interrupt
-  TIMSK2 |= (1 << OCIE2A);
-
-  sei();*/
+  MoveServo(0, SERVO_0_MIN);
+  MoveServo(1, SERVO_1_MIN);
+  MoveServo(2, SERVO_2_MIN);
   
   Affiche("FIN INIT", DEBUG_NORM_NB);
 }
@@ -295,22 +285,19 @@ void loop() {
     }
     Affiche("Checksum = "+String((int)(Checksum/2)), DEBUG_SPI_NB);
   }
-  /*Sequence(0);
-  Sequence(1);
-  Sequence(2);*/
-  /*int br = 1;
-  MoveServo(br, SERVO_0_MAX);
-  delay(2000);
+  /*digitalWrite(MULT_A, 1);
+  delay(500);
+  digitalWrite(MULT_A, 0);
+  delay(500);*/
+  /*int br = 2;
+  //MoveServo(br, SERVO_0_MAX);
   StatePump(br, 1);
-  delay(1000);
+  delay(100);
   MoveServo(br, SERVO_0_MIN);
-  delay(6000);
-  MoveServo(br, SERVO_0_MAX);
-  delay(2000);
+  //MesureCourant(br);
   StatePump(br, 0);
-  delay(2000);
-  MoveServo(br, SERVO_0_MIN);
-  delay(2000);*/
+  delay(100);*/
+  //MesureCourant(br);
 }
 
 /*******************************************************************/
@@ -347,107 +334,139 @@ char GetColor(unsigned char nb_bras) {
       return WRONG_CHANNEL;
     break;
   }
-  digitalWrite(TCS_ENABLE, LOW);
-  // temps d'exec : 400-800us
-  
-  // Lecture de la composante rouge
-  digitalWrite(TCS_S2,LOW);
-  digitalWrite(TCS_S3,LOW);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_RED_MIN >= period) {Affiche("erreur lecture basse rouge"+String(period), DEBUG_ERR_NB);}
-  if(MAP_RED_MAX <= period) {Affiche("erreur lecture haute rouge"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pr="+String(period), DEBUG_COL_NB);
-  red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
-  
-  // Lecture de la composante verte
-  digitalWrite(TCS_S2,HIGH);
-  digitalWrite(TCS_S3,HIGH);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_GREEN_MIN >= period) {Affiche("erreur lecture basse vert"+String(period), DEBUG_ERR_NB);}
-  if(MAP_GREEN_MAX <= period) {Affiche("erreur lecture haute vert"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pg="+String(period), DEBUG_COL_NB);
-  green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
-  
-  // Lecture de la composante bleue
-  digitalWrite(TCS_S2,LOW);
-  digitalWrite(TCS_S3,HIGH);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_BLUE_MIN >= period) {Affiche("erreur lecture basse bleu"+String(period), DEBUG_ERR_NB);}
-  if(MAP_BLUE_MAX <= period) {Affiche("erreur lecture haute bleu"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pb="+String(period), DEBUG_COL_NB);
-  blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
+  if(cpt_capt_0 < MAX_WAIT_COLOR && nb_bras == 0 || cpt_capt_1 < MAX_WAIT_COLOR && nb_bras == 1 || cpt_capt_2 < MAX_WAIT_COLOR && nb_bras == 2) {
 
-  // Lecture de la composante blanche
-  digitalWrite(TCS_S2,HIGH);
-  digitalWrite(TCS_S3,LOW);
-  delayMicroseconds(10);
-  period = pulseIn(TCS_ARM, LOW);
-  if(MAP_WHITE_MIN >= period) {Affiche("erreur lecture basse blanche"+String(period), DEBUG_ERR_NB);}
-  if(MAP_WHITE_MAX <= period) {Affiche("erreur lecture haute blanche"+String(period), DEBUG_ERR_NB);}
-  Affiche("Pwh="+String(period), DEBUG_COL_NB);
-  white = period;
-  //adaptation de la luminosité
-  white = -0.2*white+45; //test avec 40 ou 30 (45)
+    digitalWrite(TCS_ENABLE, LOW);
+    // temps d'exec : 400-800us
   
-  Affiche("R="+String(red), DEBUG_COL_NB);
-  Affiche("G="+String(green), DEBUG_COL_NB);
-  Affiche("B="+String(blue), DEBUG_COL_NB);
-  Affiche("W="+String(white), DEBUG_COL_NB);
-  Affiche("", DEBUG_COL_NB);
+    // Lecture de la composante rouge
+    digitalWrite(TCS_S2,LOW);
+    digitalWrite(TCS_S3,LOW);
+    delayMicroseconds(10);
+    period = pulseIn(TCS_ARM, LOW);
+    if(MAP_RED_MIN >= period) {
+      Affiche("erreur lecture basse rouge"+String(period), DEBUG_ERR_NB);
+      switch(nb_bras) {
+        case 0:
+          cpt_capt_0++;
+        break;
+        case 1:
+          cpt_capt_1++;
+        break;
+        case 2:
+          cpt_capt_2++;
+        break;
+      }
+    } else {
+      cpt_capt_0 = 0;
+      cpt_capt_1 = 0;
+      cpt_capt_2 = 0;
+      
+      if(MAP_RED_MAX <= period) {Affiche("erreur lecture haute rouge"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pr="+String(period), DEBUG_COL_NB);
+      red = map(period, MAP_RED_MIN, MAP_RED_MAX,MAX_RGB,0);
+  
+      // Lecture de la composante verte
+      digitalWrite(TCS_S2,HIGH);
+      digitalWrite(TCS_S3,HIGH);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_GREEN_MIN >= period) {Affiche("erreur lecture basse vert"+String(period), DEBUG_ERR_NB);}
+      if(MAP_GREEN_MAX <= period) {Affiche("erreur lecture haute vert"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pg="+String(period), DEBUG_COL_NB);
+      green = map(period, MAP_GREEN_MIN,MAP_GREEN_MAX,MAX_RGB,0);
+  
+      // Lecture de la composante bleue
+      digitalWrite(TCS_S2,LOW);
+      digitalWrite(TCS_S3,HIGH);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_BLUE_MIN >= period) {Affiche("erreur lecture basse bleu"+String(period), DEBUG_ERR_NB);}
+      if(MAP_BLUE_MAX <= period) {Affiche("erreur lecture haute bleu"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pb="+String(period), DEBUG_COL_NB);
+      blue = map(period, MAP_BLUE_MIN,MAP_BLUE_MAX,MAX_RGB,0);
 
-  // Conversion de la couleur RGB en couleur HSL
-  //prérequis
-  M = max(max(red, green), blue);
-  m = min(min(red, green), blue);
-  C = M - m;
-  //HSL
-  if(C!=0){
-    if(M == red){
-      H = green-blue;
-      H /= C;
+      // Lecture de la composante blanche
+      digitalWrite(TCS_S2,HIGH);
+      digitalWrite(TCS_S3,LOW);
+      delayMicroseconds(10);
+      period = pulseIn(TCS_ARM, LOW);
+      if(MAP_WHITE_MIN >= period) {Affiche("erreur lecture basse blanche"+String(period), DEBUG_ERR_NB);}
+      if(MAP_WHITE_MAX <= period) {Affiche("erreur lecture haute blanche"+String(period), DEBUG_ERR_NB);}
+      Affiche("Pwh="+String(period), DEBUG_COL_NB);
+      white = period;
+      //adaptation de la luminosité
+      white = -0.2*white+45; //test avec 40 ou 30 (45)
+  
+      Affiche("R="+String(red), DEBUG_COL_NB);
+      Affiche("G="+String(green), DEBUG_COL_NB);
+      Affiche("B="+String(blue), DEBUG_COL_NB);
+      Affiche("W="+String(white), DEBUG_COL_NB);
+      Affiche("", DEBUG_COL_NB);
+
+      // Conversion de la couleur RGB en couleur HSL
+      //prérequis
+      M = max(max(red, green), blue);
+      m = min(min(red, green), blue);
+      C = M - m;
+      //HSL
+      if(C!=0){
+        if(M == red) {
+          H = green-blue;
+          H /= C;
+        } else if(M == green) {
+          H = blue-red;
+          H/= C;
+          H += 2;
+        } else {
+          H = red-green;
+          H /= C;
+          H += 4;
+        }
+      } else {
+        H = -1;
+        Affiche("erreur calcul", DEBUG_ERR_NB);
+      }
+      H *= 60;
+      if(H < 0) {H *= -1;}
+      #ifdef CORRECTION_LUM
+        H += white;
+      #endif
+      Affiche("H="+String(H), DEBUG_COL_NB);
+      // Déduction de la couleur à partir du HSL 
+      switch(nb_bras) {
+        case 0:
+          Hg_0 = H;
+        break;
+        case 1:
+          Hg_1 = H;
+        break;
+        case 2:
+          Hg_2 = H;
+        break;
+      }
+      if(white > LIM_WHITE_MAX) {
+        col = 4;
+        Affiche("pas de palet", DEBUG_COL_NB);
+      } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
+        Affiche("Rouge", DEBUG_COL_NB);
+        col = 1;
+      } else if(LIM_GREEN_MIN < H && H < LIM_GREEN_MAX) {
+        Affiche("Vert", DEBUG_COL_NB);
+        col = 2;
+      } else if(LIM_BLUE_MIN < H && H < LIM_BLUE_MAX) {
+        Affiche("Bleu", DEBUG_COL_NB);
+        col = 3;
+      } else {
+        Affiche("Aucune couleur", DEBUG_COL_NB);
+        col = 0;
+      }
+      //digitalWrite(TCS_ENABLE, HIGH);
+      return col;
     }
-    else if(M == green){
-      H = blue-red;
-      H/= C;
-      H += 2;
-    }
-    else{
-      H = red-green;
-      H /= C;
-      H += 4;
-    }
-  }else{
-    H = -1;
-    Affiche("erreur calcul", DEBUG_ERR_NB);
-  }
-  H *= 60;
-  if(H < 0) {H *= -1;}
-  #ifdef CORRECTION_LUM
-    H += white;
-  #endif
-  Affiche("H="+String(H), DEBUG_COL_NB);
-  // Déduction de la couleur à partir du HSL 
-  if(white > 32) {
-    col = 0;
-    Affiche("pas de palet", DEBUG_COL_NB);
-  } else if(LIM_RED_MIN < H && H < LIM_RED_MAX) {
-    Affiche("Rouge", DEBUG_COL_NB);
-    col = 1;
-  } else if(LIM_GREEN_MIN < H && H < LIM_GREEN_MAX) {
-    Affiche("Vert", DEBUG_COL_NB);
-    col = 2;
-  } else if(LIM_BLUE_MIN < H && H < LIM_BLUE_MAX) {
-    Affiche("Bleu", DEBUG_COL_NB);
-    col = 3;
   } else {
-    Affiche("Aucune couleur", DEBUG_COL_NB);
-    col = 0;
+    return 5;
   }
-  //digitalWrite(TCS_ENABLE, HIGH);
-  return col;
 }
 
 /*******************************************************************/
@@ -552,7 +571,7 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 }
 
 /*******************************************************************/
-// Nom de la fonction: MesureCourantState
+// Nom de la fonction: MesureCourant
 //                    
 // Description: Fonction qui renvoi l'état du courant dans la pompe
 //
@@ -561,18 +580,21 @@ unsigned char GetRuptState(unsigned char nb_servo) {
 // Sorties: unsigned char res : nombre renvoyé PUMP_EN_CHARGE => courant > 512, PUMP_A_VIDE => courant > 100, sinon PUMP_ERREUR
 //                              
 /*******************************************************************/
-unsigned char MesureCourantState(unsigned char nb_pump) {
+unsigned char MesureCourant(unsigned char nb_pump) {
   int courant;
   unsigned char res;
   switch(nb_pump) {
     case 0:
       courant = analogRead(I_ARM_0);
+      Cur_full_0 = courant;
     break;
     case 1:
        courant = analogRead(I_ARM_1);
+      Cur_full_1 = courant;
     break;
     case 2:
        courant = analogRead(I_ARM_2);
+      Cur_full_2 = courant;
     break;
     default:
       Affiche("current error", DEBUG_ERR_NB);
@@ -597,39 +619,6 @@ unsigned char MesureCourantState(unsigned char nb_pump) {
 }
 
 /*******************************************************************/
-// Nom de la fonction: MesureCourant
-//                    
-// Description: Fonction qui renvoi l'état du courant dans la pompe
-//
-// Entrées: unsigned char nb_pump : numéro du bras
-//
-// Sorties: unsigned char res : valeur du courant
-//                              
-/*******************************************************************/
-unsigned char MesureCourant(unsigned char nb_pump) {
-  int courant;
-  unsigned char res;
-  switch(nb_pump) {
-    case 0:
-      courant = analogRead(I_ARM_0);
-    break;
-    case 1:
-       courant = analogRead(I_ARM_1);
-    break;
-    case 2:
-       courant = analogRead(I_ARM_2);
-    break;
-    default:
-      Affiche("current error", DEBUG_ERR_NB);
-      return WRONG_CHANNEL;
-    break;
-  }
-  Affiche("COURANT = "+String(courant), DEBUG_ACT_NB);
-  res = (unsigned char)(courant/4);
-  return res;
-}
-
-/*******************************************************************/
 // Nom de la fonction: RatioErr
 //                    
 // Description: Fonction qui renvoi une moyenne ou les valeurs min et max des couleurs lu
@@ -644,7 +633,7 @@ unsigned char MesureCourant(unsigned char nb_pump) {
 //                              
 /*******************************************************************/
 unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
-  int i, R = 0, G = 0, B = 0, E = 0, test;
+  int i, R = 0, G = 0, B = 0, E = 0, C = 0, W = 0, test;
   double mini = GetColor(nb_bras), maxi = GetColor(nb_bras);
   Affiche("Bras = "+String(nb_bras), DEBUG_RATIO_NB);
   for(i=0;i<taille;i++) {
@@ -664,6 +653,12 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
       case 3:
         B++;
       break;
+      case 4:
+        W++;
+      break;
+      case 5:
+        C++;
+      break;  
     }
   }
   if(minmax) {
@@ -679,7 +674,11 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
     Affiche("Ratio Erreur = "+String(E), DEBUG_RATIO_NB);
     Affiche("", DEBUG_RATIO_NB);
     if(E >= int(taille/2)) {
+      return 0;
+    } else if(W >= int(taille/2)) {
       return 4;
+    } else if(C >= int(taille/2)) {
+      return 5;
     } else if(max(E,max(R,max(B,G))) == R) {
       return 1;
     } else if(max(E,max(B,G)) == G) {
@@ -687,7 +686,7 @@ unsigned char RatioErr(unsigned char nb_bras, boolean minmax, int taille) {
     } else if(max(E,B) == B) {
       return 3;
     } else {
-      return 4;
+      return 0;
     }
   }
 }
@@ -795,7 +794,8 @@ ISR(SPI_STC_vect) {
     case SPI_NUM_VAR:
       //gestion du type
       TypeVarSpi = data_spi;
-      if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2) {
+      //if(TypeVarSpi == COLOR_SPI_0 || TypeVarSpi == COLOR_SPI_1 || TypeVarSpi == COLOR_SPI_2 || TypeVarSpi == CURENT_SPI_0 || TypeVarSpi == CURENT_SPI_1 || TypeVarSpi == CURENT_SPI_2 || TypeVarSpi == CURENT_SPI_FULL_0 || TypeVarSpi == CURENT_SPI_FULL_1 || TypeVarSpi == CURENT_SPI_FULL_2 || TypeVarSpi == COLOR_SPI_FULL_0 || TypeVarSpi == COLOR_SPI_FULL_1 || TypeVarSpi == COLOR_SPI_FULL_2 || TypeVarSpi == RESET_COLOR_ERR) {
+      if(TailleMsgSpi == 2) {
         EtatSpi = SPI_CHECKSUM; //pas de message utile
       } else {
         EtatSpi = SPI_MSG_UTILE;
@@ -896,6 +896,65 @@ ISR(SPI_STC_vect) {
             CptPile++;
             CptPile %= TAILLE_SEND;
           break;
+          case CURENT_SPI_FULL_0:
+            TabPileSend[CptPile] = CURENT_SPI_FULL_0;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case CURENT_SPI_FULL_1:
+            TabPileSend[CptPile] = CURENT_SPI_FULL_1;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case CURENT_SPI_FULL_2:
+            TabPileSend[CptPile] = CURENT_SPI_FULL_2;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case  COLOR_SPI_FULL_0:
+            TabPileSend[CptPile] = COLOR_SPI_FULL_0;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case  COLOR_SPI_FULL_1:
+            TabPileSend[CptPile] = COLOR_SPI_FULL_1;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case  COLOR_SPI_FULL_2:
+            TabPileSend[CptPile] = COLOR_SPI_FULL_2;
+            CptPile++;
+            CptPile %= TAILLE_SEND;
+          break;
+          case SEUIL_R_BAS:
+            LIM_RED_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_R_HAUT:
+            LIM_RED_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_G_BAS:
+            LIM_GREEN_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_G_HAUT:
+            LIM_GREEN_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_B_BAS:
+            LIM_BLUE_MIN = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_B_HAUT:
+            LIM_BLUE_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case SEUIL_W:
+            LIM_WHITE_MAX = TextSpi[0]*256+TextSpi[1];
+          break;
+          case RESET_COLOR_ERR:
+            cpt_capt_0 = 0;
+            cpt_capt_1 = 0;
+            cpt_capt_2 = 0;
+          break;
+          case MCLR:
+            resetFunc();  //call reset
+          break;
           default:
             //do nothing
           break;
@@ -913,7 +972,11 @@ ISR(SPI_STC_vect) {
     CptSpiSend++;
     switch(CptSpiSend) {
       case 1:
-        SPDR = 0x03;
+        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_0 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_1 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_2 == TabPileSend[CptReadPile]) {
+          SPDR = 0x04;
+        } else {
+          SPDR = 0x03;
+        }
       break;
       case 2:
         SPDR = TabPileSend[CptReadPile];
@@ -922,82 +985,87 @@ ISR(SPI_STC_vect) {
         switch(TabPileSend[CptReadPile]) {
           case COLOR_SPI_0:
             SendNbSpi = Color0;
+            CptSpiSend++;
           break;
           case COLOR_SPI_1:
             SendNbSpi = Color1;
+            CptSpiSend++;
           break;
           case COLOR_SPI_2:
             SendNbSpi = Color2;
+            CptSpiSend++;
+          break;
+          case COLOR_SPI_FULL_0:
+            SendNbSpi = (unsigned char)(Hg_0/256);
+          break;
+          case COLOR_SPI_FULL_1:
+            SendNbSpi = (unsigned char)(Hg_1/256);
+          break;
+          case COLOR_SPI_FULL_2:
+            SendNbSpi = (unsigned char)(Hg_2/256);
           break;
           case CURENT_SPI_0:
             SendNbSpi = Cur0;
+            CptSpiSend++;
           break;
           case CURENT_SPI_1:
             SendNbSpi = Cur1;
+            CptSpiSend++;
           break;
           case CURENT_SPI_2:
             SendNbSpi = Cur2;
+            CptSpiSend++;
+          break;
+          case CURENT_SPI_FULL_0:
+            SendNbSpi = (unsigned char)(Cur_full_0/256);
+          break;
+          case CURENT_SPI_FULL_1:
+            SendNbSpi = (unsigned char)(Cur_full_1/256);
+          break;
+          case CURENT_SPI_FULL_2:
+            SendNbSpi = (unsigned char)(Cur_full_2/256);
           break;
         }
         SPDR = SendNbSpi;
       break;
       case 4:
-        SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
+        switch(TabPileSend[CptReadPile]) {
+          case CURENT_SPI_FULL_0:
+            SendNbSpi_1 = (Cur_full_0%256);
+          break;
+          case CURENT_SPI_FULL_1:
+            SendNbSpi_1 = (Cur_full_1%256);
+          break;
+          case CURENT_SPI_FULL_2:
+            SendNbSpi_1 = (Cur_full_2%256);
+          break;
+          case COLOR_SPI_FULL_0:
+            SendNbSpi_1 = (Hg_0%256);
+          break;
+          case COLOR_SPI_FULL_1:
+            SendNbSpi_1 = (Hg_1%256);
+          break;
+          case COLOR_SPI_FULL_2:
+            SendNbSpi_1 = (Hg_2%256);
+          break;
+        }
+        SPDR = SendNbSpi_1;
+      break;
+      case 5:
+        if(CURENT_SPI_FULL_0 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_1 == TabPileSend[CptReadPile] || CURENT_SPI_FULL_2 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_0 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_1 == TabPileSend[CptReadPile] || COLOR_SPI_FULL_2 == TabPileSend[CptReadPile]) {
+          SPDR = (0x04 + TabPileSend[CptReadPile] + SendNbSpi + SendNbSpi_1)%256;
+        } else {
+          SPDR = (0x03 + TabPileSend[CptReadPile] + SendNbSpi)%256;
+        }
         TabPileSend[CptReadPile] = AUCUNE;
         CptReadPile++;
         CptReadPile %= TAILLE_SEND;
         CptSpiSend = 0;
+        SendNbSpi = 0;
+        SendNbSpi_1 = 0;
       break;
     }
   } else {
     SPDR = 0;
   }
 }
-
-/*ISR(TIMER0_COMPA_vect) {
-  unsigned char res;
-  //timer0 => rutpeur + courant + monté bras + flag = 0
-  res = GetRuptState(PUMP_LAUNCH_0) & MesureCourant(PUMP_LAUNCH_0);
-  MoveServo(PUMP_LAUNCH_0, SERVO_0_MAX);
-  FlagPump0 = 1;
-  SendTailleSpi = 3;
-  SendVarSpi = COLOR_0_SPI;
-  if(res) {
-    SendNbSpi = OK;
-  } else {
-    SendNbSpi = ECHEC;
-  }
-  TIMSK0 &= (0 << !OCIE0A); //a voir
-}
-
-ISR(TIMER1_COMPA_vect) {
-  unsigned char res;
-  //timer1 => rutpeur + courant + monté bras + flag = 0
-  res = GetRuptState(PUMP_LAUNCH_1) & MesureCourant(PUMP_LAUNCH_1);
-  MoveServo(PUMP_LAUNCH_1, SERVO_1_MAX);
-  FlagPump1 = 1;
-  SendTailleSpi = 3;
-  SendVarSpi = COLOR_1_SPI;
-  if(res) {
-    SendNbSpi = OK;
-  } else {
-    SendNbSpi = ECHEC;
-  }
-  TIMSK1 &= (0 << !OCIE1A);
-}
-
-ISR(TIMER2_COMPA_vect) {
-  unsigned char res;
-  //timer2 => rutpeur + courant + monté bras + flag = 0
-  res = GetRuptState(PUMP_LAUNCH_2) & MesureCourant(PUMP_LAUNCH_2);
-  MoveServo(PUMP_LAUNCH_2, SERVO_2_MAX);
-  FlagPump2 = 1;
-  SendTailleSpi = 3;
-  SendVarSpi = COLOR_2_SPI;
-  if(res) {
-    SendNbSpi = OK;
-  } else {
-    SendNbSpi = ECHEC;
-  }
-  TIMSK2 &= (0 << !OCIE2A);
-}*/
