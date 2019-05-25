@@ -57,15 +57,15 @@
 //DStarGlobal 
 int mapRows {MM_ROWS / MAP_MM_PER_ARRAY_ELEMENT};  
 int mapColumns {MM_COLUMNS / MAP_MM_PER_ARRAY_ELEMENT};  
-float km {0}; // variable for the D*
+int km {0}; // variable for the D*
 
 std::vector<std::vector<int>> mapVector; // the robot's map 
 
 bool obstacleDetection {false}; 
 bool pointReached {false}; 
  
-Node startNode = {(float)infinity,(float)infinity,0,std::pair<int,int>(ARRAY_START_X,ARRAY_START_Y)};
-Node goalNode  = {(float)infinity,0,0,std::pair<int,int>(9,9), false};
+Node startNode = {infinity,infinity,0,std::pair<int,int>(ARRAY_START_X,ARRAY_START_Y)};
+Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
 mappedNodes knownNodes; // node the robot can see
@@ -152,7 +152,7 @@ int main()
     createRectangle(1700/MAP_MM_PER_ARRAY_ELEMENT,0,250 / MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     std::vector<std::vector<int>> debugMap(mapVector); 
-    createRectangle(80,150,40,40, debugMap); 
+    //createRectangle(80,150,40,40, debugMap); 
 
    // /*Ensemble palets*/
    // createRectangle(90,85,30,30,mapVector); 
@@ -183,7 +183,7 @@ int main()
 	
 	unsigned int nbStrat = 0;
 	unsigned int nbPath = 0;
-	
+
     for(uint i = 0; i< strategyTour.size(); i++)
     {
     	DEBUG_PRINT("strategyTour iteration nb " << i);
