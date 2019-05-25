@@ -2,14 +2,23 @@
 
 DsPIC::DsPIC(){
     fd = serialOpen ("/dev/serial0", BAUDRATE);
-	int rc;
-	rc = pthread_create(&m_threadReception, NULL, print, this);
-	if (rc) {
-		std::cout << "Error:unable to create dspic thread" << rc << std::endl;
-    }
 }
 DsPIC::~DsPIC(){
-
+}
+void DsPIC::startThreadReception(){
+    m_mutex.lock();
+    m_continueThread = true;
+    m_mutex.unlock();
+    int rc;
+    rc = pthread_create(&m_threadReception, NULL, thread_reception, this);
+    if (rc) {
+        std::cout << "Error:unable to create dspic thread" << rc << std::endl;
+    }
+}
+void DsPIC::stopThreadReception(){
+    m_mutex.lock();
+    m_continueThread = false;
+    m_mutex.unlock();
 }
 /**
 Initialize constant parameters of dspic : PID, odometry, maximum speed, maximum acceleration
@@ -361,6 +370,18 @@ void DsPIC::stop(){
         serialPutchar (fd, buffer[i]);
     }
 }
+void DsPIC::reset(){
+    uint8_t buffer[RX_SIZE_RESET + 1];
+    buffer[0] = RX_SIZE_RESET;
+    buffer[1] = RX_CODE_RESET;
+    buffer[2] = 0;
+    for(int i = 0; i < RX_SIZE_RESET; i++){
+        buffer[2] += buffer[i]; //checksum
+    }
+    for(int i = 0; i < RX_SIZE_RESET + 1; i++){
+        serialPutchar (fd, buffer[i]);
+    }
+}
 /**
 arg : 	<x> 		: [?] mm	: 	x position in mm. Must be in [0;2000] range if relative = 0 or in [-xRobot;2000-xRobot] range if relative = 1
 		<y> 		: [?] mm	: 	y position in mm. Must be in [0;3000] range if relative = 0 or in [-yRobot;3000-yRobot] range if relative = 1
@@ -606,6 +627,37 @@ bool DsPIC::isUpdatedY(){
 	m_mutex.unlock();
 	return updated;
 }
+void DsPIC::setPos(double x, double y, double t){
+    m_mutex.lock();
+    this->x_ld = x;
+    this->y_ld = y;
+    this->t_ld = t;
+    
+    this->updatedX = true;
+    this->updatedY = true;
+    this->updatedT = true;
+    m_mutex.unlock();
+}
+
+void DsPIC::setArrived(bool arrived){
+    m_mutex.lock();
+    this->arrived = arrived;
+    this->updatedArrived = true;
+    m_mutex.unlock();
+}
+bool DsPIC::getArrived(){
+    m_mutex.lock();
+    bool arrived = this->arrived;
+    this->updatedArrived = false;
+    m_mutex.unlock();
+    return arrived;
+}
+bool DsPIC::isUpdatedArrived(){
+    m_mutex.lock();
+    bool updated = this->updatedArrived;
+    m_mutex.unlock();
+    return updated;
+}
 
 void DsPIC::setT(double t){
 	m_mutex.lock();
@@ -623,38 +675,6 @@ double DsPIC::getT(){
 bool DsPIC::isUpdatedT(){
 	m_mutex.lock();
 	bool updated = this->updatedT;
-	m_mutex.unlock();
-	return updated;
-}
-
-void DsPIC::setPos(double x, double y, double t){
-	m_mutex.lock();
-	this->x_ld = x;
-	this->y_ld = y;
-	this->t_ld = t;
-	
-	this->updatedX = true;
-	this->updatedY = true;
-	this->updatedT = true;
-	m_mutex.unlock();
-}
-
-void DsPIC::setArrived(bool arrived){
-	m_mutex.lock();
-	this->arrived = arrived;
-	this->updatedArrived = true;
-	m_mutex.unlock();
-}
-bool DsPIC::getArrived(){
-	m_mutex.lock();
-	bool arrived = this->arrived;
-	this->updatedArrived = false;
-	m_mutex.unlock();
-	return arrived;
-}
-bool DsPIC::isUpdatedArrived(){
-	m_mutex.lock();
-	bool updated = this->updatedArrived;
 	m_mutex.unlock();
 	return updated;
 }
@@ -862,28 +882,34 @@ bool DsPIC::isUpdatedPlots(){
 	m_mutex.unlock();
 	return b;
 }
-
+bool DsPIC::isContinueThread(){
+    m_mutex.lock();
+    bool b = m_continueThread;
+    m_mutex.unlock();
+    return b;
+}
 /**
 Thread for handling dsPIC UART response
 
 arg : 	<ptr> 		: 	pointer to instance of dspic
 */
-void *print(void *ptr) {
+void *thread_reception(void *ptr) {
     //std::cout << "DsPIC thread >Hello World!" << std::endl;
 	DsPIC *dspic = (DsPIC*)ptr;
-	while(1){
+	while(dspic->isContinueThread()){
         std::vector<uint8_t> msg = dspic->readMsg();
         uint8_t checksum = 0;
         for(unsigned int i = 0; i < msg.size() - 1; i++){
             checksum += msg[i];
         }
         if(checksum != msg[msg.size() - 1]){
-            std::cout << "CHECKSUM ERROR !" << std::endl;
-			std::cout << "CE dec :";
+            //std::cout << "CHECKSUM ERROR !" << std::endl;
+            DEBUG_DSPIC_PRINT("CHECKSUM ERROR !");
+			/*std::cout << "CE dec :";
             for(unsigned int i = 0; i < msg.size(); i++){
                 std::cout << " & [" << i << "] = " << (int)msg[i];
             }
-			std::cout << std::endl << "CE char :";
+			std::cout << std::endl << "CE char :";*/
 
             for(unsigned int i = 0; i < msg.size(); i++){
                 if(msg[i] > 31 && msg[i] < 127)
@@ -906,7 +932,8 @@ void *print(void *ptr) {
 									for(int i = 0; i < 4; i++){
 										ptrChar[i] = msg[3+i];
 									}
-									std::cout << "received from DsPIC : VBAT = " << vbat << std::endl;
+									//std::cout << "received from DsPIC : VBAT = " << vbat << std::endl;
+                                    DEBUG_DSPIC_PRINT("VBAT = " << vbat);
 									//dspic->bat = vbat;
 									dspic->setBat(vbat);
                                 }
@@ -976,9 +1003,6 @@ void *print(void *ptr) {
                                     std::cout.precision(6);*/
                                     //dspic->bat = vbat;
                                 }
-							case CODE_VAR_ARRIVED:
-                                dspic->setArrived(msg[3]);
-                                break;
                                 break;
                             case CODE_VAR_RUPT :
                                 if(msg.size() > 4){
@@ -1165,7 +1189,8 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout << "received from DsPIC : coef_Dissymetry_ld = " << var << std::endl;
+                                    //std::cout << "received from DsPIC : coef_Dissymetry_ld = " << var << std::endl;
+                                    DEBUG_DSPIC_PRINT("received from DsPIC : coef_Dissymetry_ld = " << var);
                                 }
                                 break;
                             case CODE_VAR_MM_PER_TICKS_LD:
@@ -1176,7 +1201,8 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout << "received from DsPIC : mm_per_ticks_ld = " << var << std::endl;
+                                    //std::cout << "received from DsPIC : mm_per_ticks_ld = " << var << std::endl;
+                                    DEBUG_DSPIC_PRINT("received from DsPIC : mm_per_ticks_ld = " << var);
                                 }
                                 break;
                             case CODE_VAR_RAD_PER_TICKS_LD:
@@ -1187,11 +1213,14 @@ void *print(void *ptr) {
                                     for(int i = 0; i < 8; i++){
                                         ptrChar[i] = msg[3+i];
                                     }
-                                    std::cout << "received from DsPIC : rad_per_ticks_ld = " << var << std::endl;
+                                    //std::cout << "received from DsPIC : rad_per_ticks_ld = " << var << std::endl;
+                                    DEBUG_DSPIC_PRINT("received from DsPIC : rad_per_ticks_ld = " << var);
                                 }
                                 break;
                             default :
-                                std::cout << "Received wrong variable code from DsPIC : " << (int)msg[2] << std::endl;
+                                //std::cout << "Received wrong variable code from DsPIC : " << (int)msg[2] << std::endl;
+                                DEBUG_DSPIC_PRINT("Received wrong variable code from DsPIC : " << (int)msg[2]);
+
                                 break;
 
                         }
@@ -1200,7 +1229,8 @@ void *print(void *ptr) {
                         std::string s;
                         for(unsigned int i = 2; i < msg.size() - 1; i++)
                             s += msg[i];
-                        std::cout << "Received log from DsPIC : " << s << std::endl;
+                        //std::cout << "Received log from DsPIC : " << s << std::endl;
+                        DEBUG_DSPIC_PRINT("Received log : " << s);
                         //dspic->logs.push(s);
                         dspic->addLog(s);
                         //sendMsg("l=" + s);
@@ -1217,7 +1247,8 @@ void *print(void *ptr) {
                         break;
                     }
                     default :
-                        std::cout << "Received wrong message code from DsPIC : " << msg[1] << std::endl;
+                        //std::cout << "Received wrong message code from DsPIC : " << msg[1] << std::endl;
+                        DEBUG_DSPIC_PRINT("Received wrong message code from DsPIC : " << msg[1]);
                         break;
                 }
             }
@@ -1228,6 +1259,7 @@ void *print(void *ptr) {
 
 	   //delay(100);
    }
-   std::cout << "Hello World!" << std::endl;
+   DEBUG_DSPIC_PRINT("Thread ended");
+   //std::cout << "Hello World!" << std::endl;
    pthread_exit(NULL);
 }

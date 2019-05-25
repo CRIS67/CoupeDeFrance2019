@@ -1,6 +1,14 @@
 #ifndef LIDAR_H
 #define LIDAR_H
 
+#define DEBUG_LIDAR_ENABLE_PRINT			0
+
+#if(DEBUG_LIDAR_ENABLE_PRINT)
+#define DEBUG_LIDAR_PRINT(x) 				std::cout << "Lidar Debug> " << x << std::endl;
+#else
+#define DEBUG_LIDAR_PRINT(x)				
+#endif
+
 #define SIZE_BUFFER_RX	1000
 
 #define CODE_VAR_DISTANCE   1
