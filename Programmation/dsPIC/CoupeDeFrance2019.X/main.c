@@ -180,7 +180,6 @@ int main(){
     initADC();
     initSPI();
     
-    
     x = 0;
     y = 0;
     theta = 0;
@@ -218,9 +217,22 @@ int main(){
     xf = x;
     yf = y;
     tf = theta;
+    
+    // <editor-fold defaultstate="collapsed" desc="Reset led">
+    TRISFbits.TRISF7 = 0;
+    LATFbits.LATF7 = 1;
+    delay_ms(50);
+    LATFbits.LATF7 = 0;
+    delay_ms(50);
+    LATFbits.LATF7 = 1;
+    delay_ms(50);
+    LATFbits.LATF7 = 0;
+    delay_ms(50); // </editor-fold>
+
+    
     while(1){
         delay_ms(10);
-        LED_PLATINE = !LED_PLATINE;
+        //LED_PLATINE = !LED_PLATINE;
         CheckMessages();
         sendPosLongDouble();
         if(newPosReceived){
