@@ -29,11 +29,34 @@
 #include <fstream>
 #include <sstream>
 
-#define MAP_MM_PER_ARRAY_ELEMENT 	10
-#define SIZE_ENNEMY					20	//size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
+#define DEBUG_ENABLE_PRINT			1
+
+#if(DEBUG_ENABLE_PRINT)
+#define DEBUG_PRINT(x) 				std::cout << "DEBUG_PRINT>> " << x << std::endl;
+#else
+#define DEBUG_PRINT(x)				
+#endif
+
+#define MAP_MM_PER_ARRAY_ELEMENT 	20
+
+
+#define MM_ROWS						2000
+#define MM_COLUMNS					3000
+
+#define MM_START_X					1000
+#define MM_START_Y					2500
+
+#define MM_SIZE_ENNEMY 				200
+#define MM_SIZE_ENNEMY_MARGIN		300
+
+#define SIZE_ENNEMY					MM_SIZE_ENNEMY / MAP_MM_PER_ARRAY_ELEMENT	//size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
+#define SIZE_ENNEMY_MARGIN			MM_SIZE_ENNEMY_MARGIN / MAP_MM_PER_ARRAY_ELEMENT
+
+#define ARRAY_START_X				MM_START_X / MAP_MM_PER_ARRAY_ELEMENT
+#define ARRAY_START_Y				MM_START_Y / MAP_MM_PER_ARRAY_ELEMENT
 //DStarGlobal 
-int mapRows {200};  
-int mapColumns {300};  
+int mapRows {MM_ROWS / MAP_MM_PER_ARRAY_ELEMENT};  
+int mapColumns {MM_COLUMNS / MAP_MM_PER_ARRAY_ELEMENT};  
 float km {0}; // variable for the D*
 
 std::vector<std::vector<int>> mapVector; // the robot's map 
@@ -41,8 +64,8 @@ std::vector<std::vector<int>> mapVector; // the robot's map
 bool obstacleDetection {false}; 
 bool pointReached {false}; 
  
-Node startNode = {infinity,infinity,0,std::pair<int,int>(100,250)};
-Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
+Node startNode = {(float)infinity,(float)infinity,0,std::pair<int,int>(ARRAY_START_X,ARRAY_START_Y)};
+Node goalNode  = {(float)infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
 mappedNodes knownNodes; // node the robot can see
@@ -56,8 +79,6 @@ std::vector<Node> completePath;
 // Strategy include 
 #include "LK.h" 
 
-
-void *print(void *ptr);
 void debugAct();
 void debugTestAllDelay();
 void debugTestAllInstant();
@@ -65,48 +86,47 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
+	std::cout << std::endl << "     Coupe de France 2019 by CRIS" << std::endl << std::endl;
     wiringPiSetup();
 	
-    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
-    Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
-	
-	DsPIC dspic;
-    dspic.async_read(); //flush rx buffer
-	
-    dspic.setVar8(CODE_VAR_VERBOSE,0);
-    dspic.stop();
-	delay(50);
-    dspic.async_read(); //flush rx buffer
-	
-    
-    Web web(&dspic);
-    web.startThread();
+    std::cout << "Initialisation..." << std::endl;
 
+    DsPIC dspic;
+    dspic.reset();
+    delay(250); //wait for reset
+    dspic.async_read(); //flush rx buffer
+
+    Web web(&dspic);
+
+    SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
+	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     Lidar lidar(&spi, SPI_ID_LIDAR, &web);
-    lidar.setSpeed(150);
-	lidar.stop();
-	std::cout << ">DEBUG : stop dspic & lidar" << std::endl;
-	std::cout << "Press <ENTER> to start" << std::endl;
-	getchar();
-    lidar.start();
-    lidar.startThreadDetection();
+    HMI hmi(&spi,SPI_ID_HMI);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
+	getchar();
 
-    getchar();
+	lidar.start();
+    dspic.startThreadReception();
+    web.startThread();
+    lidar.startThreadDetection();
+
     dspic.setVar8(CODE_VAR_VERBOSE,1);
     puts("verbose set to 1");
     dspic.getVar(CODE_VAR_BAT);
     dspic.loadVarDspicFromFile("config.txt");
     //dspic.initPos(1000,1500,3.14159);
     //dspic.initPos(1200,2550,-3.14159/2);
-    dspic.initPos(startNode.coord.first*10,startNode.coord.second*10, -3.14159/2);
+    dspic.initPos(startNode.coord.first*MAP_MM_PER_ARRAY_ELEMENT,startNode.coord.second*MAP_MM_PER_ARRAY_ELEMENT, -3.14159/2);
     //dspic.initPos(1000,1500,-3.14159/2);
     //dspic.initPos(0,0,0);
     //dspic.initPos(1000,3000,-3.14159/2);
 	
     std::cout << "Press enter to dspic.start() " << std::endl; 
     getchar();
+
+    //dspic.reset();
+    //getchar();
     dspic.start(); 
     std::cout << "Press enter to start the D*" << std::endl; 
     getchar(); 
@@ -115,7 +135,11 @@ int main()
     
     std::vector<Node> strategyTour; // Contains the nodes we are going to visit 
     LK strategy(100); 
-    strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file  
+    strategy.readNodes(strategyTour); // reads the nodes from the entree.txt file
+    for(unsigned int i = 0; i < strategyTour.size(); i++ ){
+    	strategyTour.at(i).coord.first /= MAP_MM_PER_ARRAY_ELEMENT;
+    	strategyTour.at(i).coord.second /= MAP_MM_PER_ARRAY_ELEMENT;
+    }  
     strategy.optimize(strategyTour); // optimize the tour 
     strategy.printSolution(); // debug 
     std::cout << "Initial distance " <<  strategy.calculateDistance(strategyTour) << std::endl; 
@@ -124,8 +148,8 @@ int main()
 
     // Map Generation 
     generateMap(mapVector,mapRows,mapColumns); // generates empty map 
-    createRectangle(0,0,30,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
-    createRectangle(170,0,25,300, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(0,0,300/MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
+    createRectangle(1700/MAP_MM_PER_ARRAY_ELEMENT,0,250 / MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     std::vector<std::vector<int>> debugMap(mapVector); 
     createRectangle(80,150,40,40, debugMap); 
@@ -147,17 +171,23 @@ int main()
 
 	
 	/*save map in a file*/
-	std::ofstream file;
-	file.open("out_map.txt");
-	for(unsigned int i = 0; i < mapRows;i++){
-		for(unsigned int j = 0; j < mapColumns; j++){
+	/*std::ofstream file;
+	file.open("logMaps/out_map.txt");
+	for(int i = 0; i < mapRows;i++){
+		for(int j = 0; j < mapColumns; j++){
 			file << mapVector.at(i).at(j) << " ";
 		}
 		file << std::endl;
 	}
-	file.close();
+	file.close();*/
+	
+	unsigned int nbStrat = 0;
+	unsigned int nbPath = 0;
+	
     for(uint i = 0; i< strategyTour.size(); i++)
     {
+    	DEBUG_PRINT("strategyTour iteration nb " << i);
+    	nbStrat =i;
 		/*=============DStarImplementation START===================*/
 
 		goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
@@ -173,7 +203,7 @@ int main()
 
 		std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the whole path 
 	  
-		std::cout << "getPath ended" << std::endl;
+		//std::cout << "debug1" << std::endl;
 		/* <modifié*/
 		
 		std::vector<Node> tempSimplifiedPath = pathTreatment(completePath);
@@ -202,10 +232,9 @@ int main()
 		 
 
 		int counter=0; 
-		unsigned int nb = 0;
 		/* Dstar Loop*/
 		while(startNode.coord != goalNode.coord){
-
+			DEBUG_PRINT("while start != goal iteration nb " << counter);
 			if(startNode.costG == infinity){
 				std::cerr << "NOT KNOWN PATH" << std::endl;
 				break;
@@ -247,11 +276,11 @@ int main()
 				for(unsigned int i = 0; i < nbPoints;i++){
 					pointFloat2d p = points.front();
 					points.pop();
-					unsigned int x = (unsigned int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
-					unsigned int y = (unsigned int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+					int x = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+					int y = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
 					//std::cout << "(" << x << " ; " << y << ") ";
-					for(unsigned int j = x - SIZE_ENNEMY; j < x + SIZE_ENNEMY;j++){
-						for(unsigned int k = y - SIZE_ENNEMY; k < y + SIZE_ENNEMY;k++){
+					for(int j = x - SIZE_ENNEMY; j < x + SIZE_ENNEMY;j++){
+						for(int k = y - SIZE_ENNEMY; k < y + SIZE_ENNEMY;k++){
 							if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
 								newMap.at(j).at(k) = 1;
 								//std::cout << "(" << j << " ; " << k << ") ";
@@ -262,21 +291,25 @@ int main()
 				}
 				//detect Collision
 				Node nRobot;
-				nRobot.coord.first = (int)(dspic.getX()/10);
-				nRobot.coord.second = (int)(dspic.getY()/10);
-				bool obstacleDetection = detectCollision(newMap,simplifiedPath, nRobot);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
+				nRobot.coord.first = (int)(dspic.getX()/MAP_MM_PER_ARRAY_ELEMENT);
+				nRobot.coord.second = (int)(dspic.getY()/MAP_MM_PER_ARRAY_ELEMENT);
+				DEBUG_PRINT("detect collision begin");
+				bool obstacleDetection = detectCollision(newMap,simplifiedPath, nRobot, startNode);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
+				DEBUG_PRINT("detect collision ended");
 				//bool obstacleDetection = detectCollisionLine(100,50,100,250,newMap);	//ATTENTION à changer plus tard pour ne pas prendre en compte la partie du trajet déjà fait
 				if(obstacleDetection){
-					
+					DEBUG_PRINT("collision detected !");
+					lidar.setFillBuffer(false);
 					std::vector<std::vector<int>> augmentedMap(mapVector);
+					DEBUG_PRINT("Filling augmentedMap ...");
 					for(unsigned int i = 0; i < nbPoints;i++){
 						pointFloat2d p = savePoints.front();
 						savePoints.pop();
-						unsigned int x = (unsigned int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
-						unsigned int y = (unsigned int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
+						int x = (int)round(p.x / MAP_MM_PER_ARRAY_ELEMENT);
+						int y = (int)round(p.y / MAP_MM_PER_ARRAY_ELEMENT);
 						//std::cout << "(" << x << " ; " << y << ") ";
-						for(unsigned int j = x - (SIZE_ENNEMY+20); j < x + (SIZE_ENNEMY+20);j++){
-							for(unsigned int k = y - (SIZE_ENNEMY+20); k < y + (SIZE_ENNEMY+20);k++){
+						for(int j = x - SIZE_ENNEMY_MARGIN; j < x + SIZE_ENNEMY_MARGIN;j++){
+							for(int k = y - SIZE_ENNEMY_MARGIN; k < y + SIZE_ENNEMY_MARGIN;k++){
 								if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
 									augmentedMap.at(j).at(k) = 1;
 									//std::cout << "(" << j << " ; " << k << ") ";
@@ -285,9 +318,11 @@ int main()
 						}
 						//std::cout << std::endl;
 					}
-				
+					DEBUG_PRINT("AugmentedMap filled ");
+					
 					startNode.coord.first = nRobot.coord.first;
 					startNode.coord.second = nRobot.coord.second;
+					startNode = knownNodes.at(startNode.coord); // we update the start node
 					std::cout << " WARNING : collision !" << std::endl;
 					km = km + distance2(lastNode, startNode);
 					lastNode = startNode;
@@ -297,9 +332,9 @@ int main()
 					std::cout << "new path found ! =)" << std::endl;
 					startNode = knownNodes.at(startNode.coord); // we update the start node
 					goalNode = knownNodes.at(goalNode.coord);	
-					std::cout << "debug1" << std::endl;
+					DEBUG_PRINT("Getting path ...");
 					completePath = getPath(augmentedMap, knownNodes, startNode, goalNode); // get the whole path 	
-					std::cout << "debug2" << std::endl;
+					DEBUG_PRINT("get Path ended");
 					tempSimplifiedPath = pathTreatment(completePath);
 					std::cout << "debug2.1" << std::endl;
 					tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
@@ -312,17 +347,23 @@ int main()
 				}
 				//std::cout << "collision = " << obstacleDetection << std::endl;
 				//std::cout << "collision = " << detectCollisionLine(100,100,100,250,newMap) << std::endl;
+				DEBUG_PRINT("printing MAP");
 				std::ofstream file;
 				std::ostringstream ss;
-				ss << "out_map" << nb++ << ".txt";
+				ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
 				file.open(ss.str());
-				for(unsigned int i = 0; i < mapRows;i++){
-					for(unsigned int j = 0; j < mapColumns; j++){
+				for(unsigned int i = 0; i < simplifiedPath.size();i++){
+					newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
+				}
+				newMap.at(nRobot.coord.first).at(nRobot.coord.second) = 3;
+				for(int i = 0; i < mapRows;i++){
+					for(int j = 0; j < mapColumns; j++){
 						file << newMap.at(i).at(j) << " ";
 					}
 					file << std::endl;
 				}
 				file.close();	
+				DEBUG_PRINT("printing MAP ended");
 				//printMap(mapRows,mapColumns,newMap);
 				delay(50);
 			}
@@ -370,14 +411,18 @@ int main()
 
     /*=============Strategy  END ===================*/
 
-    lidar.stopThreadDetection();
-	lidar.stop();
-    dspic.setVar8(CODE_VAR_VERBOSE,0);
-	dspic.stop();
-    puts("verbose set to 0");
+    dspic.stop();
+	dspic.setVar8(CODE_VAR_VERBOSE,0);
+    dspic.stopThreadReception();
+	puts("verbose set to 0");
     puts("exiting ...");
+	lidar.stop();
+    lidar.stopThreadDetection();
+    web.stopThread();
 
-	delay(50);
+    puts("exiting...");
+
+	delay(200);
 	
     return 0;
 }

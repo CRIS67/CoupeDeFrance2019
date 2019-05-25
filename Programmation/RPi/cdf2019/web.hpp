@@ -34,6 +34,8 @@ class Web
         bool sendMsg(std::string message);
 		std::string receiveMsg();
         bool startThread();
+        void stopThread();
+        bool isContinueThread();
 		
         std::string s;
 		DsPIC *dspic;
@@ -51,6 +53,8 @@ class Web
         int socket_listen;
         int socket_client;
         pthread_t threads;
+		bool m_continueThread;
+		std::mutex m_mutex;
     private:
 };
 

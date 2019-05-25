@@ -74,15 +74,31 @@ void printPath(std::vector<Node> path, std::vector<std::vector<int>>& mapVector)
     printMap(tmpMap.size(), tmpMap[0].size(), tmpMap);
 }
 
-bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path, Node start){
-	path.insert(path.begin(),start);
-	std::cout << "debug detectCollision : size of path = " << path.size() <<std::endl;
-	for(unsigned int i = 0; i < path.size() -1; i++){
+bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path, Node start, Node nextDestination){
+	unsigned int pathSize = path.size();
+  if(pathSize == 0){
+    std::cout << "path size = 0" << std::endl;
+    return false;
+  }
+
+  //path.insert(path.begin(),start);
+	//std::cout << "debug detectCollision : size of path = " << path.size() <<std::endl;
+  unsigned int indexOfNextDestination = 0;
+  for(unsigned int i = 0; i < path.size(); i++){
+    if(path.at(i).coord.first == nextDestination.coord.first && path.at(i).coord.second == nextDestination.coord.second){
+      indexOfNextDestination = i;
+      break;
+    }
+  }
+  if(detectCollisionLine(start.coord.first, start.coord.second, path.at(indexOfNextDestination).coord.first, path.at(indexOfNextDestination).coord.second,map))
+    return true;
+	for(unsigned int i = indexOfNextDestination; i < path.size() -1; i++){
 		/*int xA = path.at(i).coord.first;
 		int yA = path.at(i).coord.second;
 		int xB = path.at(i).coord.first;
 		int yB = path.at(i).coord.second;*/
-		std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
+		//std::cout << path.at(i).coord.first << " & " << path.at(i).coord.second << " -> " <<  path.at(i+1).coord.first << " & " << path.at(i+1).coord.second << std::endl;
+    
 		if(detectCollisionLine(path.at(i).coord.first, path.at(i).coord.second, path.at(i+1).coord.first, path.at(i+1).coord.second,map))
             return true;
 
@@ -117,7 +133,7 @@ std::vector<Node> optimizePath(std::vector<std::vector<int> > &map, std::vector<
 
     while(ind != lastIndex){
         bool shortcut = false;
-        for(int i = lastIndex; i > ind+1;i--){
+        for(unsigned int i = lastIndex; i > ind+1;i--){
             if(!detectCollisionLine(x,y,path.at(i).coord.first,path.at(i).coord.second,map)){
                 shortcut = true;
                 ind = i;

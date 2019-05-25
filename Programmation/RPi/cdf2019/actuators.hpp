@@ -33,6 +33,12 @@ class Actuators
 		int debugGetCurrent(int nb_bras);
 		int debugGetCurrentFull(int nb_bras);
 		int debugGetColor(int nb_bras);
+		
+		void ChangeColorLevel(int in, int val);
+		uint16_t GetColorFull(int in);
+		void ResetColorDefault(void);
+		void ResetAtmega(void);
+		
     protected:
     private:
 		uint8_t m_id;	//id of this SPI slave
