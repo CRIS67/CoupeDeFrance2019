@@ -367,6 +367,7 @@ void CheckMessages(){
                 if (size != RX_SIZE_RESET)
                     return;
                 sendLog(("RESET !\n"));
+                asm("RESET");
                 //delay_ms(10);
                 //asm("MOV 0x1000, W15");
                 //asm("GOTO 0x0");
@@ -564,12 +565,15 @@ void CheckMessages(){
                         // <editor-fold defaultstate="collapsed" desc="Odometry">
                         case CODE_VAR_COEF_DISSYMETRY_LD:
                             ptr = (uint8_t*) &coef_dissymmetry;
+                            sendLog("coef_dissymetry changed");
                             break;
                         case CODE_VAR_MM_PER_TICKS_LD:
                             ptr = (uint8_t*) &mm_per_ticks;
+                            sendLog("mm_per_ticks changed");
                             break;
                         case CODE_VAR_RAD_PER_TICKS_LD:
                             ptr = (uint8_t*) &rad_per_ticks;
+                            sendLog("rad_per_ticks changed");
                             break;
                         // </editor-fold>
                         // <editor-fold defaultstate="collapsed" desc="PID">
@@ -625,6 +629,18 @@ void CheckMessages(){
                         ptr[5] = RxDMABuffer[iArg8];
                         ptr[6] = RxDMABuffer[iArg9];
                         ptr[7] = RxDMABuffer[iArg10];
+                        long double d;
+                        ptr = (uint8_t*) &d;
+                        ptr[0] = RxDMABuffer[iArg3];
+                        ptr[1] = RxDMABuffer[iArg4];
+                        ptr[2] = RxDMABuffer[iArg5];
+                        ptr[3] = RxDMABuffer[iArg6];
+                        ptr[4] = RxDMABuffer[iArg7];
+                        ptr[5] = RxDMABuffer[iArg8];
+                        ptr[6] = RxDMABuffer[iArg9];
+                        ptr[7] = RxDMABuffer[iArg10];
+                        sendLog(" received value : ");
+                        sendLog(dtoa(d));
                     }
                     break;
                 }// </editor-fold>
