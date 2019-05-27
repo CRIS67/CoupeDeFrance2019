@@ -6783,7 +6783,7 @@ extern double fmod(double, double);
 extern double trunc(double);
 extern double round(double);
 
-# 135 "main.c"
+# 136 "main.c"
 char SendMsgSreen[252];
 char EtatScreen = 0;
 char EtatSpi = 0;
@@ -6836,7 +6836,7 @@ CptTmr0 = 0;
 if(AutoLight) {
 adc_res = Adc(1);
 
-# 196
+# 197
 adc_res = 90*exp(-(adc_res/901));
 adc_res = (int)(adc_res);
 if(adc_res < 0) {
@@ -6969,7 +6969,7 @@ SendMsgSreen[6] = 0x3D;
 SendMsgSreen[7] = 0x22;
 taille_text_spi = 0;
 
-# 331
+# 332
 while(taille_text_spi < TailleTerm) {
 SendMsgSreen[taille_text_spi+8] = TextSpi[taille_text_spi];
 taille_text_spi++;
@@ -7112,7 +7112,7 @@ TMR0IF = 0;
 TMR0ON = 1;
 }
 
-# 487
+# 488
 unsigned int Adc(unsigned char channel) {
 ADCON0bits.ADON = 1;
 ADCON0bits.CHS = channel;
@@ -7122,14 +7122,14 @@ ADCON0bits.ADON = 0;
 return (ADRESH << 8) + ADRESL;
 }
 
-# 505
+# 506
 void PrintC(char c_printC) {
 while(TXSTA1bits.TRMT == 0) {};
 TXREG1 = c_printC;
 asm("nop");
 }
 
-# 520
+# 521
 void PrintS(const char * s_printS) {
 while(*s_printS) {
 PrintC(*s_printS++);
@@ -7139,7 +7139,7 @@ PrintC(0xFF);
 PrintC(0xFF);
 }
 
-# 536
+# 537
 void ClearArray(void) {
 char cpt_vide = 0;
 for(cpt_vide=0;cpt_vide<252;cpt_vide++) {
@@ -7147,7 +7147,7 @@ SendMsgSreen[cpt_vide] = '\0';
 }
 }
 
-# 554
+# 555
 char Modulo(short int M_nombre) {
 while(M_nombre > 255) {
 M_nombre -= 256;
@@ -7175,7 +7175,11 @@ CptSpi = 1;
 break;
 case 1:
 TypeVarSpi = data_spi;
+
+
+
 EtatSpi = 2;
+
 CptSpi++;
 break;
 case 2:
@@ -7267,6 +7271,9 @@ Score += TextSpi[1];
 if(Score > 999) {
 Score = 999;
 }
+break;
+case 14:
+
 break;
 default:
 

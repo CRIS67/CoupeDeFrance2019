@@ -5,7 +5,7 @@ Linker command line:
 -W-3 --edf=C:\Program Files (x86)\Microchip\xc8\v1.45\dat\en_msgs.txt -cs \
   -h+dist/default/production\pic_aff.X.production.sym \
   --cmf=dist/default/production\pic_aff.X.production.cmf -z -Q18LF2520 \
-  -oC:\Users\xoxox\AppData\Local\Temp\sgj8.2 \
+  -oC:\Users\xoxox\AppData\Local\Temp\sikk.2 \
   -Mdist/default/production/pic_aff.X.production.map -E1 -ver=XC8 \
   -ASTACK=03C4h-05ffh -pstack=STACK -ACODE=00h-07FFFh -ACONST=00h-07FFFh \
   -ASMALLCONST=0600h-06FFhx122 -AMEDIUMCONST=0600h-07FFFh -ACOMRAM=01h-07Fh \
@@ -21,7 +21,7 @@ Linker command line:
   -pfarbss=FARRAM,fardata=FARRAM,nvFARRAM=FARRAM \
   -pintsave_regs=BIGRAM,bigbss=BIGRAM,bigdata=BIGRAM -pbss=RAM \
   -pidata=CODE,irdata=CODE,ibigdata=CODE,ifardata=CODE -prparam=COMRAM \
-  C:\Users\xoxox\AppData\Local\Temp\sgj8.obj \
+  C:\Users\xoxox\AppData\Local\Temp\sikk.obj \
   dist/default/production\pic_aff.X.production.obj 
 
 Object code version is 3.11
@@ -34,13 +34,13 @@ Call graph: (short form)
 
 
                 Name                               Link     Load   Length Selector   Space Scale
-C:\Users\xoxox\AppData\Local\Temp\sgj8.obj
-                init                                5B6      5B6        4        4       0
+C:\Users\xoxox\AppData\Local\Temp\sikk.obj
+                init                                5B8      5B8        4        4       0
                 reset_vec                             0        0        4        0       0
                 idloc                            200000   200000        8   200000       0
                 config                           300000   300000        E   300000       0
 dist/default/production\pic_aff.X.production.obj
-                intcode                               8        8      5AE        4       0
+                intcode                               8        8      5B0        4       0
                 temp                                 62       62        1        1       1
                 smallconst                          600      600       20      300       0
                 text29                             1D5E     1D5E       18      DA4       0
@@ -90,8 +90,8 @@ TOTAL           Name                               Link     Load   Length     Sp
         CLASS   STACK          
 
         CLASS   CODE           
-                intcode                               8        8      5AE         0
-                init                                5B6      5B6        4         0
+                intcode                               8        8      5B0         0
+                init                                5B8      5B8        4         0
                 reset_vec                             0        0        4         0
                 text29                             1D5E     1D5E       18         0
                 text27                             1CAC     1CAC       28         0
@@ -182,7 +182,7 @@ SEGMENTS        Name                           Load    Length   Top    Selector 
 
                 reset_vec                      000000  000004  000004         0       0  CODE    
                 cstackCOMRAM                   000001  000062  000063         1       1  COMRAM  
-                intcode                        000008  0005B2  0005BA         4       0  CODE    
+                intcode                        000008  0005B4  0005BC         4       0  CODE    
                 cstackBANK0                    000080  00004D  0000CD        80       1  BANK0   
                 bssBANK1                       000100  0000FC  0001FC       100       1  BANK1   
                 dataBANK2                      000200  00004B  00024B       200       1  BANK2   
@@ -209,12 +209,12 @@ UNUSED ADDRESS RANGES
                          00024B-0002FF               B5
                          0003C4-0005FF              23C
         CODE             000004-000007                4
-                         0005BA-0005FF               46
+                         0005BC-0005FF               44
                          001B47-001B47                1
                          001D99-007FFF             6267
         COMRAM           000063-00007F               1D
         CONST            000004-000007                4
-                         0005BA-0005FF               46
+                         0005BC-0005FF               44
                          001B47-001B47                1
                          001D99-007FFF             6267
         EEDATA           F00000-F000FF              100
@@ -410,10 +410,10 @@ __HidataBANK2            idataBANK2   000000
 __HidataCOMRAM           idataCOMRAM  000000
 __Hidloc                 idloc        200008
 __Hifardata              ifardata     000000
-__Hinit                  init         0005BA
-__Hintcode               intcode      0005B6
+__Hinit                  init         0005BC
+__Hintcode               intcode      0005B8
 __Hintcode_body          intcode_body 000000
-__Hintcodelo             intcodelo    0005B6
+__Hintcodelo             intcodelo    0005B8
 __Hintentry              intentry     000000
 __Hintret                intret       000000
 __Hintsave_regs          intsave_regs 000000
@@ -423,7 +423,7 @@ __HnvFARRAM              nvFARRAM     000000
 __Hnvbit                 nvbit        000000
 __Hnvrram                nvrram       000000
 __Hparam                 rparam       000000
-__Hpowerup               powerup      0005B6
+__Hpowerup               powerup      0005B8
 __Hram                   ram          000000
 __Hramtop                ramtop       000600
 __Hrbit                  rbit         000000
@@ -506,10 +506,10 @@ __LidataBANK2            idataBANK2   000000
 __LidataCOMRAM           idataCOMRAM  000000
 __Lidloc                 idloc        200000
 __Lifardata              ifardata     000000
-__Linit                  init         0005B6
+__Linit                  init         0005B8
 __Lintcode               intcode      000008
 __Lintcode_body          intcode_body 000000
-__Lintcodelo             intcodelo    0005B6
+__Lintcodelo             intcodelo    0005B8
 __Lintentry              intentry     000000
 __Lintret                intret       000000
 __Lintsave_regs          intsave_regs 000000
@@ -519,7 +519,7 @@ __LnvFARRAM              nvFARRAM     000000
 __Lnvbit                 nvbit        000000
 __Lnvrram                nvrram       000000
 __Lparam                 rparam       000000
-__Lpowerup               powerup      0005B6
+__Lpowerup               powerup      0005B8
 __Lram                   ram          000000
 __Lramtop                ramtop       000600
 __Lrbit                  rbit         000000
@@ -635,7 +635,7 @@ __end_of_ADCInit         text27       001CD4
 __end_of_Adc             text26       001C2A
 __end_of_ClearArray      text25       001CAC
 __end_of_ClockInit       text24       001D92
-__end_of_ISR             intcode      0005B6
+__end_of_ISR             intcode      0005B8
 __end_of_InitTmr0        text23       001D5E
 __end_of_Modulo          text29       001D76
 __end_of_PrintC          text22       001D84
@@ -783,7 +783,7 @@ main@taille_text_prgm    cstackBANK0  0000B9
 main@taille_text_spi     cstackBANK0  0000B8
 stackhi                  (abs)        0005FF
 stacklo                  (abs)        0003C4
-start                    init         0005B6
+start                    init         0005B8
 start_initialization     cinit        001862
 wtemp6                   temp         000063
 
@@ -792,7 +792,7 @@ FUNCTION INFORMATION:
 
  *************** function _main *****************
  Defined at:
-		line 160 in file "main.c"
+		line 161 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1443,7 +1443,7 @@ Total ram usage:        8 bytes
 
  *************** function _UartInit *****************
  Defined at:
-		line 425 in file "main.c"
+		line 426 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1473,7 +1473,7 @@ Total ram usage:        0 bytes
 
  *************** function _SpiInit *****************
  Defined at:
-		line 402 in file "main.c"
+		line 403 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1503,7 +1503,7 @@ Total ram usage:        0 bytes
 
  *************** function _PrintS *****************
  Defined at:
-		line 520 in file "main.c"
+		line 521 in file "main.c"
  Parameters:    Size  Location     Type
   s_printS        2   30[COMRAM] PTR const unsigned char 
 		 -> SendMsgSreen(252), 
@@ -1534,7 +1534,7 @@ Total ram usage:        2 bytes
 
  *************** function _PrintC *****************
  Defined at:
-		line 505 in file "main.c"
+		line 506 in file "main.c"
  Parameters:    Size  Location     Type
   c_printC        1    wreg     unsigned char 
  Auto vars:     Size  Location     Type
@@ -1564,7 +1564,7 @@ Total ram usage:        1 bytes
 
  *************** function _InitTmr0 *****************
  Defined at:
-		line 457 in file "main.c"
+		line 458 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1594,7 +1594,7 @@ Total ram usage:        0 bytes
 
  *************** function _ClockInit *****************
  Defined at:
-		line 382 in file "main.c"
+		line 383 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1624,7 +1624,7 @@ Total ram usage:        0 bytes
 
  *************** function _ClearArray *****************
  Defined at:
-		line 536 in file "main.c"
+		line 537 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1654,7 +1654,7 @@ Total ram usage:        1 bytes
 
  *************** function _Adc *****************
  Defined at:
-		line 487 in file "main.c"
+		line 488 in file "main.c"
  Parameters:    Size  Location     Type
   channel         1    wreg     unsigned char 
  Auto vars:     Size  Location     Type
@@ -1684,7 +1684,7 @@ Total ram usage:        5 bytes
 
  *************** function _ADCInit *****************
  Defined at:
-		line 388 in file "main.c"
+		line 389 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1714,7 +1714,7 @@ Total ram usage:        0 bytes
 
  *************** function _ISR *****************
  Defined at:
-		line 563 in file "main.c"
+		line 564 in file "main.c"
  Parameters:    Size  Location     Type
 		None
  Auto vars:     Size  Location     Type
@@ -1745,7 +1745,7 @@ Total ram usage:       27 bytes
 
  *************** function _Modulo *****************
  Defined at:
-		line 554 in file "main.c"
+		line 555 in file "main.c"
  Parameters:    Size  Location     Type
   M_nombre        2    0[COMRAM] short 
  Auto vars:     Size  Location     Type
@@ -1856,7 +1856,7 @@ C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\ftadd.c estimated size
 main.c
 		_SpiInit       		CODE           	1C5A	0000	43
 		_InitTmr0      		CODE           	1D42	0000	29
-		_ISR           		CODE           	0008	0000	1455
+		_ISR           		CODE           	0008	0000	1457
 		_Adc           		CODE           	1BF8	0000	51
 		_ClearArray    		CODE           	1C84	0000	41
 		_ADCInit       		CODE           	1CAC	0000	41
@@ -1867,7 +1867,7 @@ main.c
 		_ClockInit     		CODE           	1D84	0000	15
 		_PrintS        		CODE           	1BC2	0000	55
 
-main.c estimated size: 4034
+main.c estimated size: 4036
 
 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\lwtoft.c
 		___lwtoft      		CODE           	1D1E	0000	37

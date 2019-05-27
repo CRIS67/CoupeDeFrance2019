@@ -393,7 +393,7 @@ void ADCInit(void) {
 	TRISAbits.TRISA3 = 1;
 
 	//ADCON1bits.PCFG = 0b1101;   //AN0-1 are analog input 1011
-    ADCON1bits.PCFG = 0b1011;
+    //ADCON1bits.PCFG = 0b1011;
 	ADCON1bits.VCFG = 0;        //Voltage references are Vdd and Vss
 	ADCON2bits.ADFM = 1;        //Result is Right-justified
 	ADCON2bits.ACQT = 0b010;    //TAQC = 4TAD
