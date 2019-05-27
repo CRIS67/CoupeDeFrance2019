@@ -47,7 +47,7 @@
 #define MM_START_Y					2500
 
 #define MM_SIZE_ENNEMY 				200
-#define MM_SIZE_ENNEMY_MARGIN		300
+#define MM_SIZE_ENNEMY_MARGIN		220
 
 #define SIZE_ENNEMY					MM_SIZE_ENNEMY / MAP_MM_PER_ARRAY_ELEMENT	//size of ennemy /2 4 element in array map -> (here 40cm)WARNING depends of map resolution
 #define SIZE_ENNEMY_MARGIN			MM_SIZE_ENNEMY_MARGIN / MAP_MM_PER_ARRAY_ELEMENT
@@ -101,6 +101,7 @@ int main()
     SPI spi(SPI_CHANNEL,SPI_SPEED); //initialise SPI
 	Actuators actFront(&spi,SPI_ID_ACT_FRONT), actBack(&spi,SPI_ID_ACT_BACK);
     Lidar lidar(&spi, SPI_ID_LIDAR, &web);
+    lidar.stop();
     HMI hmi(&spi,SPI_ID_HMI);
 
     puts("Hello human ! I, your fervent robot, am initialised. Press <ENTER> to continue.");
@@ -152,7 +153,7 @@ int main()
     createRectangle(1700/MAP_MM_PER_ARRAY_ELEMENT,0,250 / MAP_MM_PER_ARRAY_ELEMENT,mapColumns, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     //createRectangle(90,140,20,20, mapVector); // creates a 400x2000 obstacle rectangle  at (1600,0) 
     std::vector<std::vector<int>> debugMap(mapVector); 
-    //createRectangle(80,150,40,40, debugMap); 
+    //createRectangle(800/MAP_MM_PER_ARRAY_ELEMENT,1500/MAP_MM_PER_ARRAY_ELEMENT,400/MAP_MM_PER_ARRAY_ELEMENT,400/MAP_MM_PER_ARRAY_ELEMENT, debugMap); 
 
    // /*Ensemble palets*/
    // createRectangle(90,85,30,30,mapVector); 
@@ -187,7 +188,7 @@ int main()
     for(uint i = 0; i< strategyTour.size(); i++)
     {
     	DEBUG_PRINT("strategyTour iteration nb " << i);
-    	nbStrat =i;
+    	nbStrat = i;
 		/*=============DStarImplementation START===================*/
 
 		goalNode.coord = strategyTour.at(i).coord; // Coordinates of the next action  
@@ -201,15 +202,28 @@ int main()
 		std::cout << "Start Node coord " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
 		std::cout << " Goal Node coord " << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 
+		if(startNode.costG == infinity){
+			std::cout << "AOUCH (but continue)" << std::endl;
+			continue;
+		}
+
 		std::vector<Node> completePath = getPath(mapVector, knownNodes, startNode, goalNode); // get the whole path 
-	  
+
+	  	DEBUG_PRINT("getPath ended");
 		//std::cout << "debug1" << std::endl;
 		/* <modifié*/
-		
+		/*DEBUG_PRINT("size of path = " << completePath.size());
 		std::vector<Node> tempSimplifiedPath = pathTreatment(completePath);
+		DEBUG_PRINT("path1");
 		tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
-		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);
+		DEBUG_PRINT("path2");
+		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);*/
+		completePath.push_back(goalNode);
+		DEBUG_PRINT("path1");
+		std::vector<Node> simplifiedPath = optimizePath(mapVector,completePath, startNode);
+
 		
+		DEBUG_PRINT("path optimized");
 		/*std::cout << "tempSimplified path : " << std::endl;
 		for(unsigned int i = 0 ; i < tempSimplifiedPath.size(); i++){
 			std::cout << i << " : (" << tempSimplifiedPath.at(i).coord.first << " ; "  << tempSimplifiedPath.at(i).coord.second << ")" << std::endl;
@@ -312,6 +326,9 @@ int main()
 							for(int k = y - SIZE_ENNEMY_MARGIN; k < y + SIZE_ENNEMY_MARGIN;k++){
 								if(j >= 0 && j < mapRows && k >= 0 && k < mapColumns){
 									augmentedMap.at(j).at(k) = 1;
+									if(newMap.at(j).at(k) == 0){
+										newMap.at(j).at(k) = 10;
+									}
 									//std::cout << "(" << j << " ; " << k << ") ";
 								}
 							}
@@ -320,6 +337,25 @@ int main()
 					}
 					DEBUG_PRINT("AugmentedMap filled ");
 					
+					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){
+						std::cout << "recalculated AOUCH " << std::endl;
+
+						dspic.stop();
+						dspic.setVar8(CODE_VAR_VERBOSE,0);
+					    dspic.stopThreadReception();
+						puts("verbose set to 0");
+					    puts("exiting ...");
+						lidar.stop();
+					    lidar.stopThreadDetection();
+					    web.stopThread();
+
+					    puts("exiting...");
+
+						delay(200);
+						
+					    return -1;
+					}
+
 					startNode.coord.first = nRobot.coord.first;
 					startNode.coord.second = nRobot.coord.second;
 					startNode = knownNodes.at(startNode.coord); // we update the start node
@@ -329,20 +365,59 @@ int main()
 					updateMap(knownNodes, augmentedMap, uList, startNode.coord, goalNode); // we update all the changed nodes
 					std::cout << "computing new path" << std::endl;
 					computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
+					
 					std::cout << "new path found ! =)" << std::endl;
 					startNode = knownNodes.at(startNode.coord); // we update the start node
 					goalNode = knownNodes.at(goalNode.coord);	
 					DEBUG_PRINT("Getting path ...");
+					if(startNode.costG == infinity){
+						std::cout << "recalculated AOUCH infinity" << std::endl;
+
+						dspic.stop();
+						dspic.setVar8(CODE_VAR_VERBOSE,0);
+					    dspic.stopThreadReception();
+						puts("verbose set to 0");
+					    puts("exiting ...");
+						lidar.stop();
+					    lidar.stopThreadDetection();
+					    web.stopThread();
+
+					    puts("exiting...");
+
+						delay(200);
+						
+					    return -1;
+
+					}
 					completePath = getPath(augmentedMap, knownNodes, startNode, goalNode); // get the whole path 	
 					DEBUG_PRINT("get Path ended");
-					tempSimplifiedPath = pathTreatment(completePath);
+					/*tempSimplifiedPath = pathTreatment(completePath);
 					std::cout << "debug2.1" << std::endl;
 					tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
 					std::cout << "debug2.2" << std::endl;
-					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);
+					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);*/
+					simplifiedPath = optimizePath(augmentedMap,completePath, startNode);
 					std::cout << "debug2.3" << std::endl;	
 					counter=0;
 					std::cout << "debug3" << std::endl;
+					DEBUG_PRINT("printing MAP");
+					std::ofstream file;
+					std::ostringstream ss;
+					//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
+					ss << "logMaps/out_map" << nbPath++ << ".txt";
+					file.open(ss.str());
+					for(unsigned int i = 0; i < simplifiedPath.size();i++){
+						newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
+					}
+					newMap.at(nRobot.coord.first).at(nRobot.coord.second) = 3;
+					for(int i = 0; i < mapRows;i++){
+						for(int j = 0; j < mapColumns; j++){
+							file << newMap.at(i).at(j) << " ";
+						}
+						file << std::endl;
+					}
+					file.close();	
+					DEBUG_PRINT("printing MAP ended");
 					break;
 				}
 				//std::cout << "collision = " << obstacleDetection << std::endl;
@@ -350,7 +425,8 @@ int main()
 				DEBUG_PRINT("printing MAP");
 				std::ofstream file;
 				std::ostringstream ss;
-				ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
+				//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
+				ss << "logMaps/out_map" << nbPath++ << ".txt";
 				file.open(ss.str());
 				for(unsigned int i = 0; i < simplifiedPath.size();i++){
 					newMap.at(simplifiedPath.at(i).coord.first).at(simplifiedPath.at(i).coord.second) = 4;
