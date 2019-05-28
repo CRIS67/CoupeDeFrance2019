@@ -21,7 +21,7 @@
 const int infinity = std::numeric_limits<int>::max(); // infinity value
 
 
-const int nodeCost = 3;// Cost to move from node to node
+const int nodeCost =500;// Cost to move from node to node
 const int linearCost = 1;
 const int diagonalCost=2;
 

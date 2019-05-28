@@ -5,12 +5,12 @@ extern int mapRows, mapColumns, obstaclesNumber;
 int distance(int x1, int y1, int x2, int y2) {
 	//return static_cast<int>(std::sqrt((x1-x2)*(x1-x2)+ (y1-y2)*(y1-y2)));
 	//return (x1-x2)*(x1-x2)+ (y1-y2)*(y1-y2);
-	//return std::abs(x1-x2) + std::abs(y1-y2); // Manhattan
+	return std::abs(x1-x2) + std::abs(y1-y2); // Manhattan
 	//return std::max(std::abs(x1-x2),std::abs(y1-y2)); // Norme infinie
 
-	int dx = std::abs(x1-x2);
-	int dy = std::abs(y1-y2);
-	return linearCost * (dx + dy) + (diagonalCost - 2 * linearCost) * std::min(dx, dy);
+	//int dx = std::abs(x1-x2);
+	//int dy = std::abs(y1-y2);
+	//return linearCost * (dx + dy) + (diagonalCost - 2 * linearCost) * std::min(dx, dy);
 }
 
 // Compare the keys of two nodes and returns true if k1<k2

@@ -343,7 +343,41 @@ int main()
 						//std::cout << std::endl;
 					}
 					DEBUG_PRINT("AugmentedMap filled ");
-				        	
+
+				        if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is an obstacle 
+
+                                          std::cout << "Start Node is an obstacle ! Finding new startNode..." << std::endl; 
+                                          std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl; 
+                                          std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl; 
+                                          int dx =  nRobot.coord.first - fromNode.coord.first ; 
+                                          int dy = nRobot.coord.second - fromNode.coord.second ; 
+                                          startNode = searchNewStartNode(nRobot.coord.first, nRobot.coord.second, fromNode.coord.first, fromNode.coord.second, augmentedMap); 
+                                        }
+                                        else{
+                                          startNode.coord.first = nRobot.coord.first;
+					  startNode.coord.second = nRobot.coord.second;
+                                        }	
+					startNode = knownNodes.at(startNode.coord); // we update the start node
+                                        std::cout << "New start Node " << startNode.coord.first << " " << startNode.coord.second << " Is obstacle : " << startNode.isObstacle << std::endl; 
+				        std::cout << "Augmented map New start Node : " << augmentedMap.at(startNode.coord.first).at(startNode.coord.second) << std::endl; 
+
+                                        DEBUG_PRINT("printing MAP");
+					std::ofstream file;
+					std::ostringstream ss;
+					//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
+					ss << "logMaps/out_mapDebug" << nbPath++ << ".txt";
+					file.open(ss.str());
+                                        std::vector<std::vector<int>> debugMap(augmentedMap); 
+					debugMap.at(startNode.coord.first).at(startNode.coord.second) = 3;
+					for(int i = 0; i < mapRows;i++){
+						for(int j = 0; j < mapColumns; j++){
+							file << debugMap.at(i).at(j) << " ";
+						}
+						file << std::endl;
+					}
+					file.close();	
+					DEBUG_PRINT("printing MAP ended");
+
 					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){ // If the goalNode is an obstacle
                                             std::cout << "AOUCH goalNode is an obstcale" << std::endl;
 
@@ -363,22 +397,6 @@ int main()
 					    return -1;
 					}
 
-					
-					if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is an obstacle 
-
-                                          std::cout << "Start Node is an obstacle ! Finding new startNode..." << std::endl; 
-                                          std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl; 
-                                          std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl; 
-                                          int dx =  nRobot.coord.first - fromNode.coord.first ; 
-                                          int dy = nRobot.coord.second - fromNode.coord.second ; 
-                                          startNode = searchNewStartNode(nRobot, augmentedMap, dx, dy); 
-                                        }
-                                        else{
-                                          startNode.coord.first = nRobot.coord.first;
-					  startNode.coord.second = nRobot.coord.second;
-                                        }
-					startNode = knownNodes.at(startNode.coord); // we update the start node
-                                        std::cout << "New start Node " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
                                         std::cout << "Goal Node" << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 					std::cout << " WARNING : collision !" << std::endl;
 					km = km + distance2(lastNode, startNode);
@@ -420,9 +438,8 @@ int main()
 					std::cout << "debug2.3" << std::endl;	
 					counter=0;
 					std::cout << "debug3" << std::endl;
+
 					DEBUG_PRINT("printing MAP");
-					std::ofstream file;
-					std::ostringstream ss;
 					//ss << "logMaps/out_map" << nbStrat << "_" << nbPath++ << ".txt";
 					ss << "logMaps/out_map" << nbPath++ << ".txt";
 					file.open(ss.str());
@@ -438,6 +455,7 @@ int main()
 					}
 					file.close();	
 					DEBUG_PRINT("printing MAP ended");
+
 					break;
 				}
 				//std::cout << "collision = " << obstacleDetection << std::endl;

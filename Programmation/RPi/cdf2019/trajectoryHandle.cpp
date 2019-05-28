@@ -223,24 +223,40 @@ Node searchNewStartNode( float xRobot, float yRobot, float xFrom, float yFrom , 
   int y = (int)yRobot;
 
   const int maxX = (int)xFrom;
-
+  bool firstZero = false;
   for(int x=(int)xRobot; x<=maxX; x++)
   {
     //std::cout << x << " / " << y << std::endl;
     if(steep)
     {
         if(map.at(y).at(x) != 1){
-			ret.coord.first = y;
-			ret.coord.second = x;
-			return ret;
+        	if(firstZero){
+				ret.coord.first = y;
+				ret.coord.second = x;
+				return ret;
+			}
+			else
+				firstZero = true;
+		}
+		else{
+			firstZero = false;
+			map.at(y).at(x) = 7; 
 		}
     }
     else
     {
         if(map.at(x).at(y) != 1){
-            ret.coord.first = x;
-			ret.coord.second = y;
-			return ret;
+        	if(firstZero){
+	            ret.coord.first = x;
+				ret.coord.second = y;
+				return ret;
+			}
+			else
+				firstZero = true;
+		}
+		else{
+			firstZero = false;
+			map.at(x).at(y) = 7; 
 		}
     }
 
