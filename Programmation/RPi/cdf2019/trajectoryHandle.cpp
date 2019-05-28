@@ -198,77 +198,60 @@ bool detectCollisionLine( float x1, float y1, float x2, float y2 , std::vector<s
   }
   return false;
 }
-
-Node searchNewStartNode(Node nRobot,  std::vector<std::vector<int> >& augmentedMap, int dx, int dy){
-
-  int x = nRobot.coord.first; 
-  int y = nRobot.coord.second; 
-  int xSize = augmentedMap.size(); 
-  int ySize = augmentedMap.at(0).size(); 
-
-  if(dx >=0){
-    if(dy >= 0){
-      while(augmentedMap.at(x).at(y) == 1){
-
-        if(std::abs(dx) > std::abs(y)){
-          x--;
-        }
-        else{
-          y--; 
-        }
-        if(x<0)
-          x = 0; 
-        if(y<0)
-          y = 0; 
-      }
-    }
-    else{
-      while(augmentedMap.at(x).at(y) == 1){
-        if(std::abs(dx) > std::abs(y)){
-          x--;
-        }
-        else{
-          y++; 
-        }
-        if(x<0)
-          x = 0; 
-        if(y== ySize)
-          y =ySize; 
-      }
-    }
+/*return a node with the coord of the first point that is not an obstacle on a line from the robot to the the "fromNode" */
+Node searchNewStartNode( float xRobot, float yRobot, float xFrom, float yFrom , std::vector<std::vector<int> >& map){
+        // Bresenham's line algorithm
+  Node ret;
+  const bool steep = (fabs(yFrom - yRobot) > fabs(xFrom - xRobot));
+  if(steep)
+  {
+    std::swap(xRobot, yRobot);
+    std::swap(xFrom, yFrom);
   }
 
-  else{
-    if(dy >= 0){
-      while(augmentedMap.at(x).at(y) == 1){
-        if(std::abs(dx) > std::abs(y)){
-          x++;
-        }
-        else{
-          y--; 
-        }
-        if(x== xSize)
-          x =xSize; 
-        if(y <0)
-          y =0; 
-      }
+  if(xRobot > xFrom)
+  {
+    std::swap(xRobot, xFrom);
+    std::swap(yRobot, yFrom);
+  }
+
+  const float dx = xFrom - xRobot;
+  const float dy = fabs(yFrom - yRobot);
+
+  float error = dx / 2.0f;
+  const int ystep = (yRobot < yFrom) ? 1 : -1;
+  int y = (int)yRobot;
+
+  const int maxX = (int)xFrom;
+
+  for(int x=(int)xRobot; x<=maxX; x++)
+  {
+    //std::cout << x << " / " << y << std::endl;
+    if(steep)
+    {
+        if(map.at(y).at(x) != 1){
+			ret.coord.first = y;
+			ret.coord.second = x;
+			return ret;
+		}
     }
-    else{
-      while(augmentedMap.at(x).at(y) == 1){
-        if(std::abs(dx) > std::abs(y)){
-          x++;
-        }
-        else{
-          y++; 
-        }
-        if(x== xSize)
-          x =xSize; 
-        if(y== ySize)
-          y =ySize; 
-      }
+    else
+    {
+        if(map.at(x).at(y) != 1){
+            ret.coord.first = x;
+			ret.coord.second = y;
+			return ret;
+		}
+    }
+
+    error -= dy;
+    if(error < 0)
+    {
+        y += ystep;
+        error += dx;
     }
   }
-  nRobot.coord.first = x; 
-  nRobot.coord.second = y;
-  return nRobot; 
+  ret.coord.first = -1;
+  ret.coord.second = -1;
+  return ret;
 }
