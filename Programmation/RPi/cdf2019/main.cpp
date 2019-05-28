@@ -218,12 +218,12 @@ int main()
 	  	DEBUG_PRINT("getPath ended");
 		//std::cout << "debug1" << std::endl;
 		/* <modifié*/
-		/*DEBUG_PRINT("size of path = " << completePath.size());
+		DEBUG_PRINT("size of path = " << completePath.size());
 		std::vector<Node> tempSimplifiedPath = pathTreatment(completePath);
 		DEBUG_PRINT("path1");
 		tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
 		DEBUG_PRINT("path2");
-		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);*/
+		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);
 		completePath.push_back(goalNode);
 		DEBUG_PRINT("path1");
 		std::vector<Node> simplifiedPath = optimizePath(mapVector,completePath, startNode);
@@ -412,11 +412,11 @@ int main()
 					}
 					completePath = getPath(augmentedMap, knownNodes, startNode, goalNode); // get the whole path 	
 					DEBUG_PRINT("get Path ended");
-					/*tempSimplifiedPath = pathTreatment(completePath);
+					tempSimplifiedPath = pathTreatment(completePath);
 					std::cout << "debug2.1" << std::endl;
 					tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
 					std::cout << "debug2.2" << std::endl;
-					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);*/
+					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);
 					simplifiedPath = optimizePath(augmentedMap,completePath, startNode);
 					std::cout << "debug2.3" << std::endl;	
 					counter=0;
