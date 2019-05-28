@@ -37,7 +37,7 @@
 #define DEBUG_PRINT(x)				
 #endif
 
-#define MAP_MM_PER_ARRAY_ELEMENT 	20
+#define MAP_MM_PER_ARRAY_ELEMENT 	10
 
 
 #define MM_ROWS						2000
@@ -65,6 +65,7 @@ bool obstacleDetection {false};
 bool pointReached {false}; 
  
 Node startNode = {infinity,infinity,0,std::pair<int,int>(ARRAY_START_X,ARRAY_START_Y)};
+Node fromNode; 
 Node goalNode  = {infinity,0,0,std::pair<int,int>(9,9), false};
 
 priorityList uList; // priority List
@@ -79,6 +80,10 @@ std::vector<Node> completePath;
 // Strategy include 
 #include "LK.h" 
 
+// Debug 
+std::string command = "rm ./logMaps/*.txt"; 
+const char *commandPointer = command.c_str();
+
 void debugAct();
 void debugTestAllDelay();
 void debugTestAllInstant();
@@ -86,6 +91,7 @@ void debugBN();
 void debugGoldenium();
 int main()
 {
+    std::system(commandPointer); 
 	std::cout << std::endl << "     Coupe de France 2019 by CRIS" << std::endl << std::endl;
     wiringPiSetup();
 	
@@ -203,7 +209,7 @@ int main()
 		std::cout << " Goal Node coord " << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 
 		if(startNode.costG == infinity){
-			std::cout << "AOUCH (but continue)" << std::endl;
+			std::cout << "AOUCH (but continue to next action)" << std::endl;
 			continue;
 		}
 
@@ -255,6 +261,7 @@ int main()
 			}
 
 			//startNode = bestNode(startNode, knownNodes); // we "move" the robot
+                        fromNode = startNode; 
 			startNode = simplifiedPath.at(counter); 
 			counter++;
 			std::cout << "PRINTING PATH" << std::endl; 
@@ -336,42 +343,56 @@ int main()
 						//std::cout << std::endl;
 					}
 					DEBUG_PRINT("AugmentedMap filled ");
-					
-					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){
-						std::cout << "recalculated AOUCH " << std::endl;
+				        	
+					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){ // If the goalNode is on the augmented map 
+                                            std::cout << "AOUCH goalNode is an obstcale" << std::endl;
 
-						dspic.stop();
-						dspic.setVar8(CODE_VAR_VERBOSE,0);
-					    dspic.stopThreadReception();
-						puts("verbose set to 0");
-					    puts("exiting ...");
-						lidar.stop();
-					    lidar.stopThreadDetection();
-					    web.stopThread();
+                                            dspic.stop();
+                                            dspic.setVar8(CODE_VAR_VERBOSE,0);
+                                            dspic.stopThreadReception();
+                                            puts("verbose set to 0");
+                                            puts("exiting ...");
+                                            lidar.stop();
+                                            lidar.stopThreadDetection();
+                                            web.stopThread();
 
-					    puts("exiting...");
+                                            puts("exiting...");
 
-						delay(200);
-						
+                                            delay(200);
+                                            
 					    return -1;
 					}
 
-					startNode.coord.first = nRobot.coord.first;
-					startNode.coord.second = nRobot.coord.second;
+					
+					if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is on the augmented map 
+                                          
+
+                                          std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl; 
+                                          std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl; 
+                                          int dx =  nRobot.coord.first - fromNode.coord.first ; 
+                                          int dy = nRobot.coord.second - fromNode.coord.second ; 
+                                          startNode = searchNewStartNode(nRobot, augmentedMap, dx, dy); 
+                                          
+                                        }
+                                        else{
+                                          startNode.coord.first = nRobot.coord.first;
+					  startNode.coord.second = nRobot.coord.second;
+                                        }
 					startNode = knownNodes.at(startNode.coord); // we update the start node
+                                        std::cout << "New start Node " << startNode.coord.first << " " << startNode.coord.second << std::endl; 
+                                        std::cout << "Goal Node" << goalNode.coord.first << " " << goalNode.coord.second << std::endl; 
 					std::cout << " WARNING : collision !" << std::endl;
 					km = km + distance2(lastNode, startNode);
 					lastNode = startNode;
 					updateMap(knownNodes, augmentedMap, uList, startNode.coord, goalNode); // we update all the changed nodes
 					std::cout << "computing new path" << std::endl;
 					computeShortestPath(uList, knownNodes, startNode.coord, goalNode);
-					
 					std::cout << "new path found ! =)" << std::endl;
 					startNode = knownNodes.at(startNode.coord); // we update the start node
 					goalNode = knownNodes.at(goalNode.coord);	
 					DEBUG_PRINT("Getting path ...");
 					if(startNode.costG == infinity){
-						std::cout << "recalculated AOUCH infinity" << std::endl;
+						std::cout << "not new recalculated path found :( " << std::endl;
 
 						dspic.stop();
 						dspic.setVar8(CODE_VAR_VERBOSE,0);

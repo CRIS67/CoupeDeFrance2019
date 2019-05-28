@@ -107,9 +107,10 @@ bool detectCollision(std::vector<std::vector<int> > &map, std::vector<Node> path
 	}
 	return false;
 }
+
 std::vector<Node> optimizePath(std::vector<std::vector<int> > &map, std::vector<Node> path, Node &start){
   unsigned int lastIndex = path.size()-1;
-  std::cout << "path size = " << path.size() << std::endl;
+  //std::cout << "path size = " << path.size() << std::endl;
   std::vector<Node> newPath;
   unsigned int ind = -1;
 
@@ -121,7 +122,7 @@ std::vector<Node> optimizePath(std::vector<std::vector<int> > &map, std::vector<
   while(ind != lastIndex){
     bool shortcut = false;
     for(unsigned int i = lastIndex; i > ind+1;i--){
-      std::cout << "i = " << i << std::endl; 
+      //std::cout << "i = " << i << std::endl; 
       if(!detectCollisionLine(x,y,path.at(i).coord.first,path.at(i).coord.second,map)){
         shortcut = true;
         ind = i;
@@ -196,4 +197,61 @@ bool detectCollisionLine( float x1, float y1, float x2, float y2 , std::vector<s
     }
   }
   return false;
+}
+
+Node searchNewStartNode(Node nRobot,  std::vector<std::vector<int> >& augmentedMap, int dx, int dy){
+
+  int x = nRobot.coord.first; 
+  int y = nRobot.coord.second; 
+  int xSize = augmentedMap.size(); 
+  int ySize = augmentedMap.at(0).size(); 
+
+  if(dx >=0){
+    if(dy >= 0){
+      while(augmentedMap.at(x).at(y) == 1){
+        x--;
+        if(x<0)
+          x = 0; 
+        y--; 
+        if(y<0)
+          y = 0; 
+      }
+    }
+    else{
+      while(augmentedMap.at(x).at(y) == 1){
+        x--;
+        if(x<0)
+          x = 0; 
+        y++;
+        if(y== ySize)
+          y =ySize; 
+      }
+    }
+  }
+
+  else{
+    if(dy >= 0){
+      while(augmentedMap.at(x).at(y) == 1){
+        x++;
+        if(x== xSize)
+          x =xSize; 
+        y--;
+        if(y <0)
+          y =0; 
+      }
+    }
+    else{
+      while(augmentedMap.at(x).at(y) == 1){
+        x++;
+        if(x== xSize)
+          x =xSize; 
+        y++;
+        if(y== ySize)
+          y =ySize; 
+      }
+    }
+  }
+  nRobot.coord.first = x; 
+  nRobot.coord.second = y;
+  return nRobot; 
 }

@@ -150,11 +150,11 @@ void updateNode( Node node, priorityList& uList, mappedNodes& knownNodes, std::p
 
 void computeShortestPath(priorityList& uList, mappedNodes& knownNodes, std::pair<int,int> startCoord, Node goalNode) {
 
-    std::cout << "topKey ";
-    printKey(topKey(uList));
-    std::cout << "Calculate key start ";
-    printKey(calculateKey(knownNodes.at(startCoord), knownNodes.at(startCoord)));
-    std::cout << "StartNode RHS " << knownNodes.at(startCoord).costRHS << "  StartNode G " << knownNodes.at(startCoord).costG << std::endl;
+    //std::cout << "topKey ";
+    //printKey(topKey(uList));
+    //std::cout << "Calculate key start ";
+    //printKey(calculateKey(knownNodes.at(startCoord), knownNodes.at(startCoord)));
+    //std::cout << "StartNode RHS " << knownNodes.at(startCoord).costRHS << "  StartNode G " << knownNodes.at(startCoord).costG << std::endl;
 
 	while( ( compareKeys(topKey(uList), calculateKey(knownNodes.at(startCoord), knownNodes.at(startCoord)))  ) ||
                                             ( knownNodes.at(startCoord).costRHS != knownNodes.at(startCoord).costG) ) {
