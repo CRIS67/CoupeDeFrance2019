@@ -207,4 +207,15 @@ void HMI::setScore(int score) {
 	Send((uint8_t)(17+msb+lsb));
 
 	m_pSpi->unlock();
+
+}
+void HMI::resetPic(void){
+	m_pSpi->lock();
+	if(m_pSpi->getSlaveId() != m_id){
+		m_pSpi->setSlave(m_id);		//change Chip select
+	}
+	Send(2);
+	Send(14);
+	Send(16);
+	m_pSpi->unlock();
 }

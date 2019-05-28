@@ -31,6 +31,8 @@ class HMI
 		void EraseScreen(int in_era);
 		void flush(uint16_t nb);
 		void setScore(int score);
+		void resetPic(void);
+
 
     protected:
     private:
