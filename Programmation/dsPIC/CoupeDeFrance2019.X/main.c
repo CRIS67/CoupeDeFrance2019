@@ -360,8 +360,10 @@ int main(){
         plot(21,(uint32_t)(int32_t)(phi*1800/PI));
         plot(22,(uint32_t)(int32_t)(angle*1800/PI));
         plot(23,(uint32_t)(int32_t)((atan2(cy-y,cx-x)-theta)*1800/PI));*/
-        plot(1,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
-        plot(2,(uint32_t)(int32_t)(pidSpeedRight.prevError*1000));
+        plot(11,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
+        plot(21,(uint32_t)(int32_t)(pidSpeedRight.prevError*1000));
+        plot(31,(uint32_t)(int32_t)(pidDistance.prevError*1000));
+        plot(41,(uint32_t)(int32_t)(pidAngle.prevError*1000));
     }
     return 0;
 }
