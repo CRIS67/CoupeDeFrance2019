@@ -370,6 +370,18 @@ void DsPIC::stop(){
         serialPutchar (fd, buffer[i]);
     }
 }
+void DsPIC::brake(){
+    uint8_t buffer[RX_SIZE_BRAKE + 1];
+    buffer[0] = RX_SIZE_BRAKE;
+    buffer[1] = RX_CODE_BRAKE;
+    buffer[2] = 0;
+    for(int i = 0; i < RX_SIZE_BRAKE; i++){
+        buffer[2] += buffer[i]; //checksum
+    }
+    for(int i = 0; i < RX_SIZE_BRAKE + 1; i++){
+        serialPutchar (fd, buffer[i]);
+    }
+}
 void DsPIC::reset(){
     uint8_t buffer[RX_SIZE_RESET + 1];
     buffer[0] = RX_SIZE_RESET;

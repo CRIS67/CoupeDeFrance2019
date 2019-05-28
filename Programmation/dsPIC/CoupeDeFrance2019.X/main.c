@@ -347,11 +347,11 @@ int main(){
        //plot(2,(uint32_t)((int32_t)(readAdcLowPass(ADC_CHANNEL_I_ASS_1,200,0.005))));
         //plot(1,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_PUMP,100))));
         //plot(2,(uint32_t)((int32_t)(readAdcMean(ADC_CHANNEL_I_ASS_1,100))));
-        plot(1,statePathGeneration);
-        plot(2,stateTrap);
+        //plot(1,statePathGeneration);
+        //plot(2,stateTrap);
        /* plot(3,finalPoint);
         plot(4,arrived);*/
-        plot(5,trajMode);
+        /*plot(5,trajMode);
         plot(11,(uint32_t)(int32_t)(theta*1800/PI));
         plot(12,(uint32_t)(int32_t)(thetac*1800/PI));
         plot(13,(uint32_t)(int32_t)(pidAngle.setPoint*1800/PI));
@@ -359,7 +359,9 @@ int main(){
         
         plot(21,(uint32_t)(int32_t)(phi*1800/PI));
         plot(22,(uint32_t)(int32_t)(angle*1800/PI));
-        plot(23,(uint32_t)(int32_t)((atan2(cy-y,cx-x)-theta)*1800/PI));
+        plot(23,(uint32_t)(int32_t)((atan2(cy-y,cx-x)-theta)*1800/PI));*/
+        plot(1,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
+        plot(2,(uint32_t)(int32_t)(pidSpeedLeft.prevError*1000));
     }
     return 0;
 }

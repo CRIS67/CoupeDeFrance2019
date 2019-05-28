@@ -74,6 +74,9 @@ extern volatile long double rotAcc;    //rad/s^2
 
 extern volatile uint8_t arrived;
 extern volatile long double distanceMax;
+
+extern unsigned char statePathGeneration;
+extern unsigned char stateTrap;
 // </editor-fold>				 
 // <editor-fold defaultstate="collapsed" desc="Init">
 
@@ -347,6 +350,13 @@ void CheckMessages(){
                 if (size != RX_SIZE_START)
                     return;
                 stop = 0;
+                statePathGeneration = 0;
+                stateTrap = 1;
+                xc = x;
+                xf = x;
+                yc = y;
+                yf = y;
+                thetac = theta;
                 //cout << "Start" << endl;
                 sendLog(("Started !\n"));
                 success = 1;
@@ -360,6 +370,14 @@ void CheckMessages(){
                 //cout << "Stop" << endl;
                 sendLog(("Stopped !\n"));
                 success = 1;
+                break; // </editor-fold>
+               
+            case RX_CODE_BRAKE:
+                if (size != RX_SIZE_BRAKE)
+                    return;
+                statePathGeneration = 5;
+                stateTrap = 1;
+                sendLog(("brake !\n"));
                 break; // </editor-fold>
 
                 // <editor-fold defaultstate="collapsed" desc="Reset">
@@ -565,15 +583,15 @@ void CheckMessages(){
                         // <editor-fold defaultstate="collapsed" desc="Odometry">
                         case CODE_VAR_COEF_DISSYMETRY_LD:
                             ptr = (uint8_t*) &coef_dissymmetry;
-                            sendLog("coef_dissymetry changed");
+                            //sendLog("coef_dissymetry changed");
                             break;
                         case CODE_VAR_MM_PER_TICKS_LD:
                             ptr = (uint8_t*) &mm_per_ticks;
-                            sendLog("mm_per_ticks changed");
+                            //sendLog("mm_per_ticks changed");
                             break;
                         case CODE_VAR_RAD_PER_TICKS_LD:
                             ptr = (uint8_t*) &rad_per_ticks;
-                            sendLog("rad_per_ticks changed");
+                            //sendLog("rad_per_ticks changed");
                             break;
                         // </editor-fold>
                         // <editor-fold defaultstate="collapsed" desc="PID">
@@ -629,7 +647,7 @@ void CheckMessages(){
                         ptr[5] = RxDMABuffer[iArg8];
                         ptr[6] = RxDMABuffer[iArg9];
                         ptr[7] = RxDMABuffer[iArg10];
-                        long double d;
+                        /*long double d;
                         ptr = (uint8_t*) &d;
                         ptr[0] = RxDMABuffer[iArg3];
                         ptr[1] = RxDMABuffer[iArg4];
@@ -640,7 +658,7 @@ void CheckMessages(){
                         ptr[6] = RxDMABuffer[iArg9];
                         ptr[7] = RxDMABuffer[iArg10];
                         sendLog(" received value : ");
-                        sendLog(dtoa(d));
+                        sendLog(dtoa(d));*/
                     }
                     break;
                 }// </editor-fold>

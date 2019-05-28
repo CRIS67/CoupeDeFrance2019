@@ -86,6 +86,8 @@
 #define RX_CODE_SET_MOT_LIN   	11
 #define RX_CODE_GET_ADC_LP		12
 
+#define RX_CODE_BRAKE           13
+
 #define RX_CODE_RESET           66
 
 #define RX_SIZE_START           2
@@ -102,6 +104,8 @@
 #define RX_SIZE_TURN            5 // option,t_H,t_L
 
 #define RX_SIZE_RESET           2
+
+#define RX_SIZE_BRAKE           2
 
 #define TX_CODE_VAR             1
 #define TX_CODE_LOG             2

@@ -23,6 +23,9 @@
 
 #define RX_CODE_MOTOR_VOLTAGE   10
 #define RX_CODE_SET_MOT_LIN   	11
+#define RX_CODE_GET_ADC_LP		12
+
+#define RX_CODE_BRAKE           13
 
 
 
@@ -44,6 +47,8 @@
 #define RX_SIZE_TURN    5 // option,t_H,t_L
 
 #define RX_SIZE_RESET           2
+
+#define RX_SIZE_BRAKE           2
 
 #define MASK_OPTION_RELATIVE    0x2
 #define MASK_OPTION_REVERSE     0x1
@@ -210,6 +215,7 @@ class DsPIC
 		void setMotLin(uint8_t state);
 		void start();
 		void stop();
+		void brake();
 		void reset();
 		void go(int16_t x, int16_t y,unsigned char rev, unsigned char relative);
 		void turn(int16_t t, unsigned char relative);
