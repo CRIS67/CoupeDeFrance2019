@@ -209,20 +209,29 @@ Node searchNewStartNode(Node nRobot,  std::vector<std::vector<int> >& augmentedM
   if(dx >=0){
     if(dy >= 0){
       while(augmentedMap.at(x).at(y) == 1){
-        x--;
+
+        if(std::abs(dx) > std::abs(y)){
+          x--;
+        }
+        else{
+          y--; 
+        }
         if(x<0)
           x = 0; 
-        y--; 
         if(y<0)
           y = 0; 
       }
     }
     else{
       while(augmentedMap.at(x).at(y) == 1){
-        x--;
+        if(std::abs(dx) > std::abs(y)){
+          x--;
+        }
+        else{
+          y++; 
+        }
         if(x<0)
           x = 0; 
-        y++;
         if(y== ySize)
           y =ySize; 
       }
@@ -232,20 +241,28 @@ Node searchNewStartNode(Node nRobot,  std::vector<std::vector<int> >& augmentedM
   else{
     if(dy >= 0){
       while(augmentedMap.at(x).at(y) == 1){
-        x++;
+        if(std::abs(dx) > std::abs(y)){
+          x++;
+        }
+        else{
+          y--; 
+        }
         if(x== xSize)
           x =xSize; 
-        y--;
         if(y <0)
           y =0; 
       }
     }
     else{
       while(augmentedMap.at(x).at(y) == 1){
-        x++;
+        if(std::abs(dx) > std::abs(y)){
+          x++;
+        }
+        else{
+          y++; 
+        }
         if(x== xSize)
           x =xSize; 
-        y++;
         if(y== ySize)
           y =ySize; 
       }

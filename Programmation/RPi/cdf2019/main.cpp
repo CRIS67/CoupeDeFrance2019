@@ -226,7 +226,7 @@ int main()
 		std::vector<Node> simplifiedPath = optimizePath(mapVector,tempSimplifiedPath, startNode);
 		completePath.push_back(goalNode);
 		DEBUG_PRINT("path1");
-		std::vector<Node> simplifiedPath = optimizePath(mapVector,completePath, startNode);
+		//std::vector<Node> simplifiedPath = optimizePath(mapVector,completePath, startNode);
 
 		
 		DEBUG_PRINT("path optimized");
@@ -344,7 +344,7 @@ int main()
 					}
 					DEBUG_PRINT("AugmentedMap filled ");
 				        	
-					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){ // If the goalNode is on the augmented map 
+					if(augmentedMap.at(goalNode.coord.first).at(goalNode.coord.second) == 1){ // If the goalNode is an obstacle
                                             std::cout << "AOUCH goalNode is an obstcale" << std::endl;
 
                                             dspic.stop();
@@ -364,15 +364,14 @@ int main()
 					}
 
 					
-					if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is on the augmented map 
-                                          
+					if(augmentedMap.at(nRobot.coord.first).at(nRobot.coord.second) == 1){ // If the nRobot is an obstacle 
 
+                                          std::cout << "Start Node is an obstacle ! Finding new startNode..." << std::endl; 
                                           std::cout << "fromNode " << fromNode.coord.first << " " << fromNode.coord.second << std::endl; 
                                           std::cout << "nRobot Node " << nRobot.coord.first << " " << nRobot.coord.second << std::endl; 
                                           int dx =  nRobot.coord.first - fromNode.coord.first ; 
                                           int dy = nRobot.coord.second - fromNode.coord.second ; 
                                           startNode = searchNewStartNode(nRobot, augmentedMap, dx, dy); 
-                                          
                                         }
                                         else{
                                           startNode.coord.first = nRobot.coord.first;
@@ -417,7 +416,7 @@ int main()
 					tempSimplifiedPath.push_back(goalNode); // we need to add the last node manually :(
 					std::cout << "debug2.2" << std::endl;
 					simplifiedPath = optimizePath(augmentedMap,tempSimplifiedPath, startNode);
-					simplifiedPath = optimizePath(augmentedMap,completePath, startNode);
+					//simplifiedPath = optimizePath(augmentedMap,completePath, startNode);
 					std::cout << "debug2.3" << std::endl;	
 					counter=0;
 					std::cout << "debug3" << std::endl;
