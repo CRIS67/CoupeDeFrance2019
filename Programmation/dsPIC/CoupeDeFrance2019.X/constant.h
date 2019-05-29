@@ -88,6 +88,8 @@
 
 #define RX_CODE_BRAKE           13
 
+#define RX_CODE_SET_MOT_LIN_SPEED       15
+        
 #define RX_CODE_RESET           66
 
 #define RX_SIZE_START           2
@@ -98,6 +100,7 @@
 #define RX_SIZE_MOTOR           4 // id,value
 #define RX_SIZE_MOTOR_VOLTAGE   7 // id,val_double[4]
 #define RX_SIZE_SET_MOT_LIN   	3 // state
+#define RX_SIZE_SET_MOT_LIN_SPEED   	8 // state-speed
 #define RX_SIZE_GET_I_PUMP_LP	9 // channel, nbSamples[2], coefLP[4]
 #define RX_SIZE_AX12            5 // id,value_H,value_L
 #define RX_SIZE_GO              7 // option,x_H,x_L,y_H,y_L

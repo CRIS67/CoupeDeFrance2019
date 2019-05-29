@@ -809,6 +809,31 @@ void CheckMessages(){
                 break;
             }// </editor-fold>
             
+                // <editor-fold defaultstate="collapsed" desc="Set Motor linear speed">
+            case RX_CODE_SET_MOT_LIN_SPEED:
+            {
+                if (size != RX_SIZE_SET_MOT_LIN_SPEED)
+                    return;
+
+				uint8_t state = RxDMABuffer[iArg1];
+				uint8_t speed = RxDMABuffer[iArg2];
+                uint32_t timeout = (RxDMABuffer[iArg3] << 24) + (RxDMABuffer[iArg4] << 16) + (RxDMABuffer[iArg5] << 8) + (RxDMABuffer[iArg6]);
+				
+				/*
+				if(state == 0 || state ==1){
+					flagSetMotLin = state+1;	//0-> do nothing / 1->in / 2->out
+				}*/
+				if(state == 0 || state == 1){
+					setMotLinSpeed(state,speed,timeout);
+				}
+                sendLog("set_mot_lin_speed");
+                sendLog(itoa((int)state));
+                sendLog(" ");
+                sendLog(itoa((int)speed));
+                sendLog("\n");
+                break;
+            }// </editor-fold>
+            
                 // <editor-fold defaultstate="collapsed" desc="Filtered ADC">
             case RX_CODE_GET_ADC_LP:
             {
