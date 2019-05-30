@@ -117,6 +117,10 @@
 #define DEBUG				12
 #define SCORE               13
 #define RESET               14
+#define DROITE              15
+#define GAUCHE              16
+#define SHUTDOWN            17
+#define CHOIXPRGM           18
 
 #define SEND_VAR			1
 #define SEND_TAILLE			4
@@ -126,6 +130,7 @@
 #define TAILLE_PRGM_CHAINE	15
 #define TAILLE_SPI_CHAINE	196
 #define TAILLE_SEND_CHAINE	252
+#define TAILLE_SEND         10
 
 #define ON					1
 #define OFF					0
@@ -150,6 +155,13 @@ unsigned char CptSend = 1;                  //compteur d'envoi des octets
 unsigned char FlagSleep = 0;                //drapeau de mise en veille de l'écran
 int TailleTerm = 0;
 int Score = 0;
+unsigned char PrgmSens = 0;
+unsigned char Stop = 0;
+char TabPileSend[TAILLE_SEND];        //pile de récéption pour stocker les réponse à donner
+unsigned char CptSpiSend = 0;
+unsigned char SendNbSpi = 0;
+unsigned char CptReadPile = 0;
+unsigned char CptPile = 0;
 
 char TextSpi[TAILLE_SPI_CHAINE];          	//chaine de text recu de la communication spi
 char text_prgm[NB_PRGM][TAILLE_PRGM_CHAINE] = {"prgmDroite","prgmGauche","prgmBleu","prgmBlanc","prgmRouge"}; //nom des prgm à choisir
@@ -691,28 +703,42 @@ void interrupt ISR(void) {
 				break;
 		}
 		Checksum += data_spi;
-		if(PrgmChoisi) {
-			switch(CptSend) {
-				case 1:
-					SSPBUF = SEND_TAILLE;
-				break;
-				case 2:
-					SSPBUF = SEND_VAR;
-				break;
-				case 3:
-					SSPBUF = PosCursorPrgm;
-				break;
-				case 4:
-					SSPBUF = SEND_TAILLE + SEND_VAR + PosCursorPrgm;
-                    PrgmChoisi = 0;
-                    CptSend = 0;
-				break;
-                default:
-                    CptSend = 1;
-                break;
-			}
-            CptSend++;
-		} else {
+        if(TabPileSend[CptReadPile]) {
+            CptSpiSend++;
+            switch(CptSpiSend) {
+                case 1:
+                    SSPBUF = 0x04;
+                    break;
+                case 2:
+                    SSPBUF = TabPileSend[CptReadPile];
+                    break;
+                case 3:
+                    switch(TabPileSend[CptReadPile]) {
+                        case DROITE:
+                        case GAUCHE:
+                            SendNbSpi = PrgmSens;
+                            PrgmSens = 0;
+                            break;
+                        case SHUTDOWN:
+                            SendNbSpi = Stop;
+                            Stop = 0;
+                            break;
+                        case CHOIXPRGM:
+                            SendNbSpi = PosCursorPrgm;
+                            break;
+                    }
+                    SSPBUF = SendNbSpi;
+                    break;
+                case 4:
+                    SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+4);
+                    TabPileSend[CptReadPile] = AUCUN;
+                    CptReadPile++;
+                    CptReadPile %= TAILLE_SEND;
+                    CptSpiSend = 0;
+                    SendNbSpi = 0;
+                    break;
+            }
+        } else {
             SSPBUF = 0;
         }
 	}
@@ -763,9 +789,30 @@ void interrupt ISR(void) {
                 case 0x39:
                     //send spi pgrm choisi -> PosCursorPrgm
                     PrgmChoisi = 1;
+                    TabPileSend[CptPile] = CHOIXPRGM;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
                     break;
                 case 0x40:
                     FlagSleep = 1;
+                    break;
+                case 0x51:
+                    PrgmSens = 1;
+                    TabPileSend[CptPile] = DROITE;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
+                    break;
+                case 0x52:
+                    PrgmSens = 2;
+                    TabPileSend[CptPile] = GAUCHE;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
+                    break;
+                case 0x53:
+                    Stop = 1;
+                    TabPileSend[CptPile] = SHUTDOWN;
+                    CptPile++;
+                    CptPile %= TAILLE_SEND;
                     break;
                 default:
                     //do nothing

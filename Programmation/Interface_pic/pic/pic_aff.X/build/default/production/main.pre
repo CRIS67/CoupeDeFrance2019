@@ -6783,7 +6783,7 @@ extern double fmod(double, double);
 extern double trunc(double);
 extern double round(double);
 
-# 136 "main.c"
+# 141 "main.c"
 char SendMsgSreen[252];
 char EtatScreen = 0;
 char EtatSpi = 0;
@@ -6801,6 +6801,13 @@ unsigned char CptSend = 1;
 unsigned char FlagSleep = 0;
 int TailleTerm = 0;
 int Score = 0;
+unsigned char PrgmSens = 0;
+unsigned char Stop = 0;
+char TabPileSend[10];
+unsigned char CptSpiSend = 0;
+unsigned char SendNbSpi = 0;
+unsigned char CptReadPile = 0;
+unsigned char CptPile = 0;
 
 char TextSpi[196];
 char text_prgm[5][15] = {"prgmDroite","prgmGauche","prgmBleu","prgmBlanc","prgmRouge"};
@@ -6836,7 +6843,7 @@ CptTmr0 = 0;
 if(AutoLight) {
 adc_res = Adc(1);
 
-# 197
+# 209
 adc_res = 90*exp(-(adc_res/901));
 adc_res = (int)(adc_res);
 if(adc_res < 0) {
@@ -6969,7 +6976,7 @@ SendMsgSreen[6] = 0x3D;
 SendMsgSreen[7] = 0x22;
 taille_text_spi = 0;
 
-# 332
+# 344
 while(taille_text_spi < TailleTerm) {
 SendMsgSreen[taille_text_spi+8] = TextSpi[taille_text_spi];
 taille_text_spi++;
@@ -7112,7 +7119,7 @@ TMR0IF = 0;
 TMR0ON = 1;
 }
 
-# 488
+# 500
 unsigned int Adc(unsigned char channel) {
 ADCON0bits.ADON = 1;
 ADCON0bits.CHS = channel;
@@ -7122,14 +7129,14 @@ ADCON0bits.ADON = 0;
 return (ADRESH << 8) + ADRESL;
 }
 
-# 506
+# 518
 void PrintC(char c_printC) {
 while(TXSTA1bits.TRMT == 0) {};
 TXREG1 = c_printC;
 asm("nop");
 }
 
-# 521
+# 533
 void PrintS(const char * s_printS) {
 while(*s_printS) {
 PrintC(*s_printS++);
@@ -7139,7 +7146,7 @@ PrintC(0xFF);
 PrintC(0xFF);
 }
 
-# 537
+# 549
 void ClearArray(void) {
 char cpt_vide = 0;
 for(cpt_vide=0;cpt_vide<252;cpt_vide++) {
@@ -7147,7 +7154,7 @@ SendMsgSreen[cpt_vide] = '\0';
 }
 }
 
-# 555
+# 567
 char Modulo(short int M_nombre) {
 while(M_nombre > 255) {
 M_nombre -= 256;
@@ -7175,11 +7182,11 @@ CptSpi = 1;
 break;
 case 1:
 TypeVarSpi = data_spi;
-
-
-
+if(TailleMsgSpi == 2) {
+EtatSpi = 3;
+} else {
 EtatSpi = 2;
-
+}
 CptSpi++;
 break;
 case 2:
@@ -7273,7 +7280,7 @@ Score = 999;
 }
 break;
 case 14:
-
+asm("RESET");
 break;
 default:
 
@@ -7287,27 +7294,41 @@ EtatSpi = 0;
 break;
 }
 Checksum += data_spi;
-if(PrgmChoisi) {
-switch(CptSend) {
+if(TabPileSend[CptReadPile]) {
+CptSpiSend++;
+switch(CptSpiSend) {
 case 1:
-SSPBUF = 4;
+SSPBUF = 0x04;
 break;
 case 2:
-SSPBUF = 1;
+SSPBUF = TabPileSend[CptReadPile];
 break;
 case 3:
-SSPBUF = PosCursorPrgm;
+switch(TabPileSend[CptReadPile]) {
+case 15:
+case 16:
+SendNbSpi = PrgmSens;
+PrgmSens = 0;
 break;
-case 4:
-SSPBUF = 4 + 1 + PosCursorPrgm;
-PrgmChoisi = 0;
-CptSend = 0;
+case 17:
+SendNbSpi = Stop;
+Stop = 0;
 break;
-default:
-CptSend = 1;
+case 18:
+SendNbSpi = PosCursorPrgm;
 break;
 }
-CptSend++;
+SSPBUF = SendNbSpi;
+break;
+case 4:
+SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+4);
+TabPileSend[CptReadPile] = 0;
+CptReadPile++;
+CptReadPile %= 10;
+CptSpiSend = 0;
+SendNbSpi = 0;
+break;
+}
 } else {
 SSPBUF = 0;
 }
@@ -7359,9 +7380,30 @@ break;
 case 0x39:
 
 PrgmChoisi = 1;
+TabPileSend[CptPile] = 18;
+CptPile++;
+CptPile %= 10;
 break;
 case 0x40:
 FlagSleep = 1;
+break;
+case 0x51:
+PrgmSens = 1;
+TabPileSend[CptPile] = 15;
+CptPile++;
+CptPile %= 10;
+break;
+case 0x52:
+PrgmSens = 2;
+TabPileSend[CptPile] = 16;
+CptPile++;
+CptPile %= 10;
+break;
+case 0x53:
+Stop = 1;
+TabPileSend[CptPile] = 17;
+CptPile++;
+CptPile %= 10;
 break;
 default:
 
