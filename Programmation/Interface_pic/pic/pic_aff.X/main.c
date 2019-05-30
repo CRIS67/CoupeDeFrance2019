@@ -117,10 +117,9 @@
 #define DEBUG				12
 #define SCORE               13
 #define RESET               14
-#define DROITE              15
-#define GAUCHE              16
+#define SENS                15
+#define CHOIXPRGM           16
 #define SHUTDOWN            17
-#define CHOIXPRGM           18
 
 #define SEND_VAR			1
 #define SEND_TAILLE			4
@@ -714,8 +713,7 @@ void interrupt ISR(void) {
                     break;
                 case 3:
                     switch(TabPileSend[CptReadPile]) {
-                        case DROITE:
-                        case GAUCHE:
+                        case SENS:
                             SendNbSpi = PrgmSens;
                             PrgmSens = 0;
                             break;
@@ -798,13 +796,13 @@ void interrupt ISR(void) {
                     break;
                 case 0x51:
                     PrgmSens = 1;
-                    TabPileSend[CptPile] = DROITE;
+                    TabPileSend[CptPile] = SENS;
                     CptPile++;
                     CptPile %= TAILLE_SEND;
                     break;
                 case 0x52:
                     PrgmSens = 2;
-                    TabPileSend[CptPile] = GAUCHE;
+                    TabPileSend[CptPile] = SENS;
                     CptPile++;
                     CptPile %= TAILLE_SEND;
                     break;
