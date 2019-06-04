@@ -7062,9 +7062,9 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;main.c: 708: case 1:
 "708
 [e :U 612 ]
-[; ;main.c: 709: SSPBUF = 0x04;
+[; ;main.c: 709: SSPBUF = 0x03;
 "709
-[e = _SSPBUF -> -> 4 `i `uc ]
+[e = _SSPBUF -> -> 3 `i `uc ]
 [; ;main.c: 710: break;
 "710
 [e $U 610  ]
@@ -7138,9 +7138,9 @@ Version 3.2 HI-TECH Software Intermediate Code
 [; ;main.c: 730: case 4:
 "730
 [e :U 620 ]
-[; ;main.c: 731: SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+4);
+[; ;main.c: 731: SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+3);
 "731
-[e = _SSPBUF ( _Modulo (1 -> + + -> _SendNbSpi `i -> *U + &U _TabPileSend * -> _CptReadPile `ux -> -> # *U &U _TabPileSend `ui `ux `i -> 4 `i `s ]
+[e = _SSPBUF ( _Modulo (1 -> + + -> _SendNbSpi `i -> *U + &U _TabPileSend * -> _CptReadPile `ux -> -> # *U &U _TabPileSend `ui `ux `i -> 3 `i `s ]
 [; ;main.c: 732: TabPileSend[CptReadPile] = 0;
 "732
 [e = *U + &U _TabPileSend * -> _CptReadPile `ux -> -> # *U &U _TabPileSend `ui `ux -> -> 0 `i `uc ]

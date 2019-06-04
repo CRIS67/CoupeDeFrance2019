@@ -7298,7 +7298,7 @@ if(TabPileSend[CptReadPile]) {
 CptSpiSend++;
 switch(CptSpiSend) {
 case 1:
-SSPBUF = 0x04;
+SSPBUF = 0x03;
 break;
 case 2:
 SSPBUF = TabPileSend[CptReadPile];
@@ -7320,7 +7320,7 @@ break;
 SSPBUF = SendNbSpi;
 break;
 case 4:
-SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+4);
+SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+3);
 TabPileSend[CptReadPile] = 0;
 CptReadPile++;
 CptReadPile %= 10;

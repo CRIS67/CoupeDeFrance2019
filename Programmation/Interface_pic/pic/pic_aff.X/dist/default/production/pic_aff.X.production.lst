@@ -1,7 +1,7 @@
 
 
 Microchip Technology PIC18 LITE Macro Assembler V1.45 build -152302408 
-                                                                                               Thu May 30 20:57:12 2019
+                                                                                               Tue Jun 04 17:41:26 2019
 
 Microchip Technology Omniscient Code Generator v1.45 (Free mode) build 201711160504
      1                           	processor	18LF2520
@@ -7051,8 +7051,8 @@ Microchip Technology Omniscient Code Generator v1.45 (Free mode) build 201711160
   7034                           ;main.c: 707: switch(CptSpiSend) {
   7035  00048C  D05E               	goto	i2l327
   7036  00048E                     
-  7037                           ;main.c: 709: SSPBUF = 0x04;
-  7038  00048E  0E04               	movlw	4
+  7037                           ;main.c: 709: SSPBUF = 0x03;
+  7038  00048E  0E03               	movlw	3
   7039  000490  D06B               	goto	L5
   7040  000492                     
   7041                           ;main.c: 712: SSPBUF = TabPileSend[CptReadPile];
@@ -7130,7 +7130,7 @@ Microchip Technology Omniscient Code Generator v1.45 (Free mode) build 201711160
   7113                           ;main.c: 729: break;
   7114  0004E8  D040               	goto	i2l338
   7115  0004EA                     
-  7116                           ;main.c: 731: SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+4);
+  7116                           ;main.c: 731: SSPBUF = Modulo(SendNbSpi+TabPileSend[CptReadPile]+3);
   7117  0004EA  5055               	movf	_CptReadPile,w,c
   7118  0004EC  0D01               	mullw	1
   7119  0004EE  0E48               	movlw	low _TabPileSend
@@ -7147,7 +7147,7 @@ Microchip Technology Omniscient Code Generator v1.45 (Free mode) build 201711160
   7130  000506  2606               	addwf	??_ISR+1,f,c
   7131  000508  0E00               	movlw	0
   7132  00050A  2207               	addwfc	??_ISR+2,f,c
-  7133  00050C  0E04               	movlw	4
+  7133  00050C  0E03               	movlw	3
   7134  00050E  2406               	addwf	??_ISR+1,w,c
   7135  000510  6E01               	movwf	Modulo@M_nombre,c
   7136  000512  0E00               	movlw	0
@@ -8559,7 +8559,7 @@ CODE                 0      0       0       0        0.0%
 
 
 Microchip Technology PIC18 Macro Assembler V1.45 build -152302408 
-Symbol Table                                                                                   Thu May 30 20:57:12 2019
+Symbol Table                                                                                   Tue Jun 04 17:41:26 2019
 
            ___altoft@exp 0046              main@CptTmr0 00C7              _SSPSTATbits 000FC7  
           ___altoft@sign 0047             ___awdiv@sign 0025      ___wmul@multiplicand 0022  
