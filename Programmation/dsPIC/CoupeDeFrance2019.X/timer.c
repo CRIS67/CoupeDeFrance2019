@@ -489,11 +489,17 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
         }
 
 
-        if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
-            /*while (1) {
-                testSendToMotor(0, 0);
-            }*/
+        /*if (pidDistance.prevError > 60 || pidDistance.prevError < -60 || pidAngle.prevError > 0.9 || pidAngle.prevError < -0.9 || pidSpeedLeft.prevError > 21 || pidSpeedLeft.prevError < -21 || pidSpeedRight.prevError > 21 || pidSpeedRight.prevError < -21){
+            //statePathGeneration = 5;
+            //stateTrap = 0;
+            //while (1) {
+            //    testSendToMotor(0, 0);
+            //}
             //testSendToMotor(0, 0);
+        }*/
+        if (pidSpeedLeft.prevError > 100 || pidSpeedLeft.prevError < -100 || pidSpeedRight.prevError > 100 || pidSpeedRight.prevError < -100){
+            //statePathGeneration = 5;
+            //stateTrap = 0;
         }
         
         /*plot(31,(uint32_t)((int32_t)(x*1000)));
@@ -721,6 +727,26 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void) {
                     xf = x;
                     yf = y;
                     statePathGeneration = 1;
+                }
+                break;
+            case 5: //transition go
+                countTransition = 0;
+                xc = x;
+                yc = y;
+                xf = x;
+                yf = y;
+                thetac = theta;
+                finalPoint = 1;
+                trajMode = TRAJ_MODE_LIN;
+                statePathGeneration = 6;
+                break;
+            case 6:
+                if(countTransition < 50){
+                    countTransition++;
+                    //testSendToMotor(0,0);
+                }
+                else{
+                    statePathGeneration = 0;
                 }
                 break;// </editor-fold>
 
