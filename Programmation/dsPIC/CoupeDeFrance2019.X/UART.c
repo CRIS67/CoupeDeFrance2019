@@ -367,7 +367,10 @@ void CheckMessages(){
                 if (size != RX_SIZE_RESET)
                     return;
                 sendLog(("RESET !\n"));
-                asm ("RESET");
+                //delay_ms(10);
+                //asm("MOV 0x1000, W15");
+                //asm("GOTO 0x0");
+                //__asm__ volatile ("reset");
                 break; // </editor-fold>
 
                 // <editor-fold defaultstate="collapsed" desc="Set">

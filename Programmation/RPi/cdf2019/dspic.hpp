@@ -1,6 +1,14 @@
 #ifndef DSPIC_H
 #define DSPIC_H
 
+//#define DEBUG_DSPIC_ENABLE_PRINT			1
+
+//#if(DEBUG_LIDAR_ENABLE_PRINT)
+#define DEBUG_DSPIC_PRINT(x) 				std::cout << "DsPIC Debug> " << x << std::endl;
+//#else
+//#define DEBUG_DSPIC_PRINT(x)				
+//#endif
+
 #define BAUDRATE	500000
 
 #define RX_CODE_START 1
@@ -59,6 +67,8 @@
 #define CODE_VAR_RUPT   4
 
 #define CODE_VAR_VERBOSE    5
+
+#define CODE_VAR_ARRIVED    6
 
 /*#define CODE_VAR_X_LD       6
 #define CODE_VAR_Y_LD       7
@@ -182,7 +192,7 @@ struct pid{
   uint32_t Ki;
   uint32_t Kd;
 };
-void *print(void *ptr);
+void *thread_reception(void *ptr);
 class DsPIC
 {
     public:
@@ -190,6 +200,8 @@ class DsPIC
         virtual ~DsPIC();
 
 		//void initVarDspic();
+		void startThreadReception();
+		void stopThreadReception();
 		void loadVarDspicFromFile(std::string path);
 		void servo(uint8_t id, uint16_t value);
 		void AX12(uint8_t id, uint16_t value);
@@ -198,6 +210,7 @@ class DsPIC
 		void setMotLin(uint8_t state);
 		void start();
 		void stop();
+		void reset();
 		void go(int16_t x, int16_t y,unsigned char rev, unsigned char relative);
 		void turn(int16_t t, unsigned char relative);
 		void setVar8(uint8_t varCode, uint8_t var);
@@ -279,6 +292,8 @@ class DsPIC
         std::queue<point> getPlots();
         bool isUpdatedPlots();
 
+        bool isContinueThread();
+
     protected:
 		double x_ld = 0;
 		double y_ld = 0;
@@ -294,7 +309,10 @@ class DsPIC
 		std::queue<point> plots;
 		int fd;
         pthread_t m_threadReception;
-		std::mutex m_mutex;
+        std::mutex m_mutex;
+		bool m_continueThread;
+		bool arrived = false;
+		bool updatedArrived = false;
 		bool updatedX = false;
 		bool updatedY = false;
 		bool updatedT = false;
@@ -308,6 +326,7 @@ class DsPIC
 		bool updatedAllPid = false;
 		bool updatedPlots = false;
 		bool updatedLogs = false;
+		
     private:
 };
 

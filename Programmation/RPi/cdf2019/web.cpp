@@ -85,16 +85,28 @@ std::string Web::receiveMsg(){
 	//puts("end receive");
 	return str;
 }
-bool Web::startThread(){
-   int rc;
-    //std::cout << "Web::ctor() : creating thread, " << std::endl;
-    rc = pthread_create(&threads, NULL, thread_HandleConnnection, (void*)this);
 
+bool Web::startThread(){
+	m_mutex.lock();
+	m_continueThread = true;
+	m_mutex.unlock();
+	int rc = pthread_create(&threads, NULL, thread_HandleConnnection, (void*)this);
     if (rc) {
 		std::cout << "Error:unable to create thread," << rc << std::endl;
 		return false;
     }
-    return true;
+	return true;
+}
+void Web::stopThread(){
+	m_mutex.lock();
+	m_continueThread = false;
+	m_mutex.unlock();
+}
+bool Web::isContinueThread(){
+	m_mutex.lock();
+	bool b = m_continueThread;
+	m_mutex.unlock();
+	return b;
 }
 
 void Web::addLidarPoints(float x, float y){
@@ -121,7 +133,7 @@ void* thread_HandleConnnection(void *threadid){
    //std::cout << "Web thread >Hello World!" << std::endl;
    double i = 0;
    char msg_arr[100];
-   while(1){
+   while(w->isContinueThread()){
 	    i += 0.05;
         w->acceptClient();
 		//printf("Connection accepted : ");
@@ -140,7 +152,7 @@ void* thread_HandleConnnection(void *threadid){
 		bool rX = false;
 		bool rY = false;
 
-		int x,y;
+		int x = -1,y = -1;
 
 		while(msg != NULL){	//for each message
 			sub = strtok_r(msg,"=",&savePtr);
@@ -609,6 +621,7 @@ void* thread_HandleConnnection(void *threadid){
 			w->sendMsg(sendStr);
 		w->closeClient();
    }
+   std::cout << "Web Debug> Thread ended"<< std::endl;
    pthread_exit(NULL);
 }
 std::string simulateResponse(double i){

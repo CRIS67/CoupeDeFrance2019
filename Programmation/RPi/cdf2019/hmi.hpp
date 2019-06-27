@@ -13,6 +13,7 @@
 #include "SPI.hpp"
 
 #define ERASE_TIME 100
+#define EraseTime 100
 
 class HMI
 {
@@ -26,9 +27,11 @@ class HMI
 		void SetPos(int in, int pos);
 		void SetTxt(int in, std::string txt);
 		void SetTxtFull(std::string txt_in);
+		void SetPosXY(int pos_x, int pos_y);
 		void EraseScreen(int in_era);
 		void flush(uint16_t nb);
 		void resetPic(void);
+		void setScore(int score);
 
     protected:
     private:

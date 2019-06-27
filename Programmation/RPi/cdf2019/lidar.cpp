@@ -8,6 +8,7 @@ Lidar::Lidar(SPI *pSpi,uint8_t id, Web *pWeb){
 	
 	/*Initialize*/
 	flush(255);
+	setSpeed(150);
 	iRxIn = 0;
 	iRxOut = 0;
 	receivingMsg = false;
@@ -160,13 +161,16 @@ void Lidar::checkMessages(){
 		else{	//Checksum ok
 			switch(buf[1]){	//type of msg
 				case LIDAR_RET_DEBUG_DEBUG:
-					std::cout << "Lidar> Debug : debug received" << std::endl;
+					//std::cout << "Lidar> Debug : debug received" << std::endl;
+					DEBUG_LIDAR_PRINT("Debug received");
 					break;
 				case LIDAR_RET_DEBUG_START:
-					std::cout << "Lidar> Debug : Start received" << std::endl;
+					//std::cout << "Lidar> Debug : Start received" << std::endl;
+					DEBUG_LIDAR_PRINT("Start received");
 					break;
 				case LIDAR_RET_DEBUG_STOP:
-					std::cout << "Lidar> Debug : Stop received" << std::endl;
+					//std::cout << "Lidar> Debug : Stop received" << std::endl;
+					DEBUG_LIDAR_PRINT("Stop received");
 					break;
 				case LIDAR_RET_DATA_AVAILABLE:
 					std::cout << "Lidar> Data available = " << (int)buf[2]  << std::endl;
@@ -221,12 +225,16 @@ void Lidar::checkMessages(){
 						//addDetectedPoint(p);
 						double angle = atan2(p.y,p.x);
 						double distance = sqrt(p.x*p.x + p.y*p.y);
-						angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						//angle += m_pWeb->dspic->getT() + 3.14159/4 + 3.14159;
+						angle += m_pWeb->dspic->getT() + 3.14159/4;
 						p.x = distance*cos(angle);
 						p.y = distance*sin(angle);
 						p.x += m_pWeb->dspic->getX();
 						p.y += m_pWeb->dspic->getY();
 						m_pWeb->addLidarPoints(p);
+						if(getFillBuffer()){
+							addDetectedPoint(p);
+						}
 					}
 					
 					break;}
@@ -303,7 +311,18 @@ std::queue<pointFloat2d> Lidar::getAndClearDetectedPoints(){
 	m_mutex.unlock();
 	return q;
 }
-		
+	
+void Lidar::setFillBuffer(bool b){
+	m_mutex.lock();
+	m_fillBuffer = b;
+	m_mutex.unlock();
+}
+bool Lidar::getFillBuffer(){
+	m_mutex.lock();
+	bool b = m_fillBuffer;
+	m_mutex.unlock();
+	return b;
+}	
 /*void Lidar::initPos(double x, double y, double t){
     setVarDouble64b(CODE_VAR_X_LD,x);
     setVarDouble64b(CODE_VAR_Y_LD,y);
